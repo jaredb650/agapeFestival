@@ -354,14 +354,14 @@ export function getStages(): StageInfo[] {
 // ---- PHOTOS ----
 
 export const PHOTOS = [
-  `${BASE_PATH}/assets/photos/1D3A9267.jpg`,
-  `${BASE_PATH}/assets/photos/1D3A9488.jpeg`,
-  `${BASE_PATH}/assets/photos/1D3A9620-2.jpeg`,
-  `${BASE_PATH}/assets/photos/3BF199AD.jpg`,
-  `${BASE_PATH}/assets/photos/AGAPE_D7.jpeg`,
-  `${BASE_PATH}/assets/photos/AGAPE_F5.jpeg`,
-  `${BASE_PATH}/assets/photos/DSC05585.jpeg`,
-  `${BASE_PATH}/assets/photos/DSC05632.jpeg`,
+  `${BASE_PATH}/assets/photos/web/1D3A9267.jpg`,
+  `${BASE_PATH}/assets/photos/web/1D3A9488.jpeg`,
+  `${BASE_PATH}/assets/photos/web/1D3A9620-2.jpeg`,
+  `${BASE_PATH}/assets/photos/web/3BF199AD.jpg`,
+  `${BASE_PATH}/assets/photos/web/AGAPE_D7.jpeg`,
+  `${BASE_PATH}/assets/photos/web/AGAPE_F5.jpeg`,
+  `${BASE_PATH}/assets/photos/web/DSC05585.jpeg`,
+  `${BASE_PATH}/assets/photos/web/DSC05632.jpeg`,
 ];
 
 // ---- VIDEOS ----

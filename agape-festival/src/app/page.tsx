@@ -37,6 +37,42 @@ const versions = [
     accent: "#cc0000",
     bgTexture: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(204,0,0,0.03) 1px, rgba(204,0,0,0.03) 2px)",
   },
+  {
+    id: "v5",
+    title: "Signal",
+    subtitle: "05",
+    description:
+      "Restrained. Framed. Numbered. One signature corner-frame motif repeated everywhere. Syne + JetBrains Mono. Discipline over spectacle.",
+    accent: "#c41818",
+    bgTexture: "none",
+  },
+  {
+    id: "v6",
+    title: "Monolith",
+    subtitle: "06",
+    description:
+      "Editorial massive type. Bebas Neue at 20vw. Hover artist names to reveal photos. Full-bleed images. The typography IS the design.",
+    accent: "#ff2020",
+    bgTexture: "none",
+  },
+  {
+    id: "v7",
+    title: "Signal Cathedral",
+    subtitle: "07",
+    description:
+      "V2 + V5 hybrid. V5's tight layouts and corner frames married with V2's cinematic intro, 3D background, chrome effects, and typewriter (fixed: no container jumping).",
+    accent: "#8b0000",
+    bgTexture: "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%, rgba(255,255,255,0.02) 100%)",
+  },
+  {
+    id: "v8",
+    title: "Trajectory",
+    subtitle: "08",
+    description:
+      "V7 refined through a strict design-token system. 37 type combos → 11 tokens. Consistent spacing rhythm. Tight color palette. Thin-line section dividers deepen the motif.",
+    accent: "#8b0000",
+    bgTexture: "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%, rgba(255,255,255,0.02) 100%)",
+  },
 ];
 
 export default function SelectorPage() {
@@ -123,7 +159,7 @@ export default function SelectorPage() {
       {/* Footer */}
       <footer className="px-6 md:px-12 py-6 border-t border-white/5 flex items-center justify-between text-[10px] text-white/20 tracking-[0.2em] uppercase">
         <span>ÄGAPĒ FESTIVAL 2026</span>
-        <span>4 Versions • Single Page Scroll</span>
+        <span>8 Versions • Single Page Scroll</span>
       </footer>
     </main>
   );

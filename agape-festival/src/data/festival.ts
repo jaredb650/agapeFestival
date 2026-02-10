@@ -312,7 +312,6 @@ export const ARTISTS: Artist[] = [
     bio: placeholderBio("Ueberrest"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/ueberrest.jpg`,
-    note: "B2B2B",
   },
 ];
 

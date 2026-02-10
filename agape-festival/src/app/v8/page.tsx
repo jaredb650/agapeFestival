@@ -39,6 +39,7 @@ import {
   COPY,
   SOCIALS,
   PARTNERS,
+  ARTISTS,
   getStages,
   PHOTOS,
   VIDEOS,
@@ -156,6 +157,15 @@ const STYLES = `
     -webkit-text-fill-color: transparent;
     background-clip: text;
     animation: shimmer 10s linear infinite;
+  }
+
+  @keyframes mysteryPulse {
+    0%, 100% { opacity: 0.03; }
+    50% { opacity: 0.08; }
+  }
+  @keyframes mysteryGlow {
+    0%, 100% { text-shadow: 0 0 20px rgba(139,0,0,0.3); }
+    50% { text-shadow: 0 0 40px rgba(139,0,0,0.6), 0 0 80px rgba(139,0,0,0.2); }
   }
 `;
 
@@ -481,83 +491,7 @@ function ParallaxScene() {
   );
 }
 
-// ============================================================
-// ARTIST CARD — Frame + hover + overlay bio
-// ============================================================
-function ArtistCard({ artist }: { artist: Artist }) {
-  const [expanded, setExpanded] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
-
-  return (
-    <motion.div
-      variants={fadeInUp}
-      onClick={() => setExpanded(!expanded)}
-      className="cursor-pointer group"
-      whileHover={{ y: -4, transition: { duration: 0.3 } }}
-    >
-      <Frame>
-        <div className="bg-[#060606]">
-          <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
-            {artist.imageUrl ? (
-              <Image
-                src={artist.imageUrl}
-                alt={artist.name}
-                fill
-                className={`object-cover transition-all duration-700 ease-out ${
-                  imgLoaded ? "" : "opacity-0"
-                } ${
-                  expanded
-                    ? "opacity-100 scale-105"
-                    : "opacity-70 group-hover:opacity-100"
-                }`}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                onLoad={() => setImgLoaded(true)}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`${T.label} text-white/10`}>—</span>
-              </div>
-            )}
-
-            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
-
-            <AnimatePresence>
-              {expanded && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 bg-black/85 p-4 flex flex-col justify-end z-[2] overflow-y-auto"
-                >
-                  <p className={`${T.monoSm} text-neutral-500`}>
-                    {artist.bio}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Name bar */}
-          <div className="px-4 py-3 flex items-center justify-between border-t border-white/[0.06]">
-            <h3
-              className={`${T.card} transition-colors duration-300 ${
-                expanded ? "text-white" : "text-neutral-300 group-hover:text-white"
-              }`}
-            >
-              {artist.name}
-            </h3>
-            {artist.note && (
-              <span className={`${T.detail} text-[#8b0000] shrink-0`}>
-                {artist.note}
-              </span>
-            )}
-          </div>
-        </div>
-      </Frame>
-    </motion.div>
-  );
-}
+// (ArtistCard moved to lineup section below)
 
 // ---- About Photo with scroll-zoom ----
 function AboutPhoto() {
@@ -843,6 +777,403 @@ function Timeline() {
     </div>
   );
 }
+
+// ============================================================
+// ARTIST LINEUP — Grid layout with F2F/B2B pairing tags
+// Uses the site's Reveal + StaggerGrid + fadeInUp system.
+// ============================================================
+
+// ---- Artist Card (restored from original grid, with modal click) ----
+function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) => void }) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  return (
+    <motion.div
+      variants={fadeInUp}
+      onClick={() => onClick(artist)}
+      className="cursor-pointer group"
+      whileHover={{ y: -4, transition: { duration: 0.3 } }}
+    >
+      <Frame>
+        <div className="bg-[#060606]">
+          <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
+            {artist.imageUrl ? (
+              <Image
+                src={artist.imageUrl}
+                alt={artist.name}
+                fill
+                className={`object-cover transition-all duration-700 ease-out ${
+                  imgLoaded ? "opacity-70 group-hover:opacity-100" : "opacity-0"
+                }`}
+                sizes="(max-width: 640px) 50vw, 25vw"
+                onLoad={() => setImgLoaded(true)}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`${T.label} text-white/10`}>—</span>
+              </div>
+            )}
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+          </div>
+          <div className="px-4 py-3 flex items-center justify-between border-t border-white/[0.06]">
+            <h3 className={`${T.card} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
+              {artist.name}
+            </h3>
+            {artist.note && (
+              <span className={`${T.detail} ${artist.note === "F2F" ? "text-[#8b0000]" : "text-neutral-500"} shrink-0`}>
+                {artist.note}
+              </span>
+            )}
+          </div>
+        </div>
+      </Frame>
+    </motion.div>
+  );
+}
+
+// ---- Single inline card (no motion wrapper — used inside PairedCard) ----
+function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) => void }) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  return (
+    <div
+      onClick={() => onClick(artist)}
+      className="cursor-pointer group"
+    >
+      <Frame>
+        <div className="bg-[#060606]">
+          <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
+            {artist.imageUrl ? (
+              <Image
+                src={artist.imageUrl}
+                alt={artist.name}
+                fill
+                className={`object-cover transition-all duration-700 ease-out ${
+                  imgLoaded ? "opacity-70 group-hover:opacity-100" : "opacity-0"
+                }`}
+                sizes="(max-width: 640px) 50vw, 25vw"
+                onLoad={() => setImgLoaded(true)}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`${T.label} text-white/10`}>—</span>
+              </div>
+            )}
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+          </div>
+          <div className="px-4 py-3 flex items-center justify-between border-t border-white/[0.06]">
+            <h3 className={`${T.card} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
+              {artist.name}
+            </h3>
+          </div>
+        </div>
+      </Frame>
+    </div>
+  );
+}
+
+// ---- Paired F2F/B2B Card — two artists side by side with bridging tag ----
+function PairedCard({
+  artistA,
+  artistB,
+  tag,
+  onClick,
+}: {
+  artistA: Artist;
+  artistB: Artist;
+  tag: string;
+  onClick: (a: Artist) => void;
+}) {
+  return (
+    <motion.div variants={fadeInUp} className="col-span-2 grid grid-cols-2 relative">
+      <InlineCard artist={artistA} onClick={onClick} />
+      <InlineCard artist={artistB} onClick={onClick} />
+      {/* Bridging tag on the divider */}
+      <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 z-10 flex items-center pointer-events-none">
+        <span
+          className={`${orbitron.className} bg-black/90 px-2 py-1.5 text-[10px] sm:text-xs font-bold tracking-[0.12em] whitespace-nowrap ${
+            tag === "F2F" ? "text-[#8b0000]" : "text-white/60"
+          }`}
+        >
+          {tag}
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
+// ---- B2B2B Mystery Element — full-width at bottom of grid ----
+function B2B2BMystery({ onClick }: { onClick: () => void }) {
+  return (
+    <motion.div
+      variants={fadeInUp}
+      className="col-span-2 lg:col-span-4 cursor-pointer group"
+      onClick={onClick}
+    >
+      <Frame>
+        <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
+          {/* Animated noise background */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+              backgroundSize: "200px 200px",
+              animation: "mysteryPulse 4s ease-in-out infinite",
+            }}
+          />
+          <div className="absolute inset-0 border border-[#8b0000]/10 group-hover:border-[#8b0000]/30 transition-colors duration-500" />
+          <div className="absolute inset-0 flex items-center justify-center gap-6 sm:gap-10">
+            <p
+              className={`${orbitron.className} text-3xl sm:text-5xl md:text-7xl font-black tracking-[0.15em] text-[#8b0000]/30 group-hover:text-[#8b0000]/50 transition-colors duration-500`}
+              style={{ animation: "mysteryGlow 3s ease-in-out infinite" }}
+            >
+              B2B2B
+            </p>
+            <div className="flex flex-col items-center">
+              <p className={`${orbitron.className} text-base sm:text-lg text-neutral-600 tracking-[0.3em]`}>
+                ???
+              </p>
+              <p className={`${T.detail} text-neutral-700 mt-1`}>TO BE REVEALED</p>
+            </div>
+          </div>
+        </div>
+      </Frame>
+    </motion.div>
+  );
+}
+
+// ---- Artist Detail Modal ----
+function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void }) {
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
+        className="relative w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.06]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className={`absolute top-4 right-4 z-10 ${T.label} text-neutral-500 hover:text-white transition-colors`}
+        >
+          CLOSE ×
+        </button>
+
+        {artist.imageUrl && (
+          <div className="aspect-[16/9] relative overflow-hidden">
+            <Image
+              src={artist.imageUrl}
+              alt={artist.name}
+              fill
+              className="object-cover"
+              sizes="90vw"
+            />
+          </div>
+        )}
+
+        <div className="p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className={`${T.heading} text-white text-xl sm:text-2xl`}>{artist.name}</h3>
+            {artist.note && (
+              <span className={`${T.detail} ${artist.note === "F2F" ? "text-[#8b0000]" : "text-neutral-500"}`}>
+                {artist.note}
+              </span>
+            )}
+          </div>
+          <p className={`${T.monoSm} text-neutral-500`}>{artist.bio}</p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ---- B2B2B Modal (mystery) ----
+function B2B2BModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
+        className="relative w-[90vw] max-w-lg bg-[#0a0a0a] border border-white/[0.06] p-8 sm:p-12 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className={`absolute top-4 right-4 z-10 ${T.label} text-neutral-500 hover:text-white transition-colors`}
+        >
+          CLOSE ×
+        </button>
+        <p className={`${orbitron.className} text-5xl font-bold text-[#8b0000]/40 mb-4`}>B2B2B</p>
+        <p className={`${T.label} text-[#8b0000]/50 mb-3`}>???</p>
+        <p className={`${T.monoSm} text-neutral-500`}>
+          Three artists. One decks setup. The closing act of ÄGAPĒ FESTIVAL has not yet been announced.
+          Stay tuned.
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ---- Helper: group artists into render items (solo, paired, b2b2b) ----
+type RenderItem =
+  | { type: "solo"; artist: Artist }
+  | { type: "pair"; artistA: Artist; artistB: Artist; tag: string };
+
+function buildRenderItems(artists: Artist[]): RenderItem[] {
+  const items: RenderItem[] = [];
+  let i = 0;
+  while (i < artists.length) {
+    const a = artists[i];
+    const b = i + 1 < artists.length ? artists[i + 1] : null;
+    // Check for pair (F2F or B2B) — either artist in pair has the tag
+    const pairNote = a.note === "F2F" || a.note === "B2B"
+      ? a.note
+      : b && (b.note === "F2F" || b.note === "B2B")
+        ? b.note
+        : null;
+    if (pairNote && b) {
+      items.push({ type: "pair", artistA: a, artistB: b, tag: pairNote });
+      i += 2;
+      continue;
+    }
+    // Solo
+    items.push({ type: "solo", artist: a });
+    i++;
+  }
+  return items;
+}
+
+// ---- Lineup Section ----
+function Lineup() {
+  const stages = getStages();
+  const totalArtists = stages.reduce((a, s) => a + s.artists.length, 0);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [showB2B2B, setShowB2B2B] = useState(false);
+
+  return (
+    <>
+      <section id="artists" className={`${S.section} ${S.px} bg-black/70`}>
+        <div className="max-w-[1400px] mx-auto">
+          <Reveal>
+            <motion.div variants={fadeInUp}>
+              <Label num="02" text="LINEUP" />
+            </motion.div>
+            <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
+              THE LINEUP
+            </motion.h2>
+            <motion.div variants={fadeInUp}>
+              <HeadingLine />
+            </motion.div>
+            <motion.p variants={fadeInUp} className={`${T.body} text-neutral-600 mt-4`}>
+              {totalArtists} ARTISTS · 2 DAYS · 4 STAGES
+            </motion.p>
+          </Reveal>
+
+          {stages.map((stage, stageIdx) => {
+            const renderItems = buildRenderItems(stage.artists);
+            const isDay2Indoor = stage.day === 2 && stage.stage === "indoor";
+            return (
+              <div key={`${stage.day}-${stage.stage}`} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
+                {stageIdx > 0 && <div className="mb-12"><SectionLine /></div>}
+                <Reveal>
+                  <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-8">
+                    <div
+                      className="h-[1px] flex-1"
+                      style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06))" }}
+                    />
+                    <div className="text-center shrink-0">
+                      <p className={`${T.detail} text-neutral-600 mb-1.5`}>
+                        {stage.dayLabel.toUpperCase()}
+                      </p>
+                      <p className={`${T.card} text-neutral-500`}>
+                        {stage.stage.toUpperCase()} STAGE
+                        <span className="text-neutral-600 ml-2">— {stage.host}</span>
+                      </p>
+                    </div>
+                    <div
+                      className="h-[1px] flex-1"
+                      style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.06), transparent)" }}
+                    />
+                  </motion.div>
+                </Reveal>
+
+                <StaggerGrid className={`grid grid-cols-2 lg:grid-cols-4 ${S.gridGap}`}>
+                  {renderItems.map((item, idx) => {
+                    if (item.type === "pair") {
+                      return (
+                        <PairedCard
+                          key={`pair-${item.artistA.name}-${item.artistB.name}`}
+                          artistA={item.artistA}
+                          artistB={item.artistB}
+                          tag={item.tag}
+                          onClick={setSelectedArtist}
+                        />
+                      );
+                    }
+                    return (
+                      <ArtistCard
+                        key={item.artist.name + idx}
+                        artist={item.artist}
+                        onClick={setSelectedArtist}
+                      />
+                    );
+                  })}
+                  {isDay2Indoor && (
+                    <B2B2BMystery key="b2b2b" onClick={() => setShowB2B2B(true)} />
+                  )}
+                </StaggerGrid>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Artist detail modal */}
+      <AnimatePresence>
+        {selectedArtist && (
+          <ArtistModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
+        )}
+      </AnimatePresence>
+
+      {/* B2B2B mystery modal */}
+      <AnimatePresence>
+        {showB2B2B && (
+          <B2B2BModal onClose={() => setShowB2B2B(false)} />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 
 // ---- Nav Links (numbered) ----
 const NAV_LINKS = [
@@ -1328,59 +1659,7 @@ export default function Trajectory() {
         <SectionLine />
 
         {/* ===== ARTISTS / LINEUP ===== */}
-        <section id="artists" className={`${S.section} ${S.px} bg-black/70`}>
-          <div className="max-w-[1400px] mx-auto">
-            <Reveal>
-              <motion.div variants={fadeInUp}>
-                <Label num="02" text="LINEUP" />
-              </motion.div>
-              <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
-                THE LINEUP
-              </motion.h2>
-              <motion.div variants={fadeInUp}>
-                <HeadingLine />
-              </motion.div>
-              <motion.p variants={fadeInUp} className={`${T.body} text-neutral-600 mt-4`}>
-                {totalArtists} ARTISTS · 2 DAYS · 4 STAGES
-              </motion.p>
-            </Reveal>
-
-            {stages.map((stage, stageIdx) => (
-              <div key={`${stage.day}-${stage.stage}`} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
-                <Reveal>
-                  <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-8">
-                    <div
-                      className="h-[1px] flex-1"
-                      style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06))" }}
-                    />
-                    <div className="text-center shrink-0">
-                      <p className={`${T.detail} text-neutral-600 mb-1.5`}>
-                        {stage.dayLabel.toUpperCase()}
-                      </p>
-                      <p className={`${T.card} text-neutral-500`}>
-                        {stage.stage.toUpperCase()} STAGE
-                        <span className="text-neutral-600 ml-2">— {stage.host}</span>
-                      </p>
-                    </div>
-                    <div
-                      className="h-[1px] flex-1"
-                      style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.06), transparent)" }}
-                    />
-                  </motion.div>
-                </Reveal>
-
-                <StaggerGrid className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${S.gridGap}`}>
-                  {stage.artists.map((artist) => (
-                    <ArtistCard
-                      key={`${artist.name}-${stage.day}-${stage.stage}`}
-                      artist={artist}
-                    />
-                  ))}
-                </StaggerGrid>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Lineup />
 
         <SectionLine />
 

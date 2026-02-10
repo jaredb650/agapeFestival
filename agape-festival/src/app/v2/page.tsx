@@ -35,6 +35,7 @@ import {
   PHOTOS,
   VIDEOS,
   LOGOS,
+  BASE_PATH,
   type Artist,
 } from "@/data/festival";
 
@@ -539,7 +540,7 @@ function FlyerParallax() {
         <div className="relative bg-black p-1 overflow-hidden">
           <motion.div style={{ y: smoothY }}>
             <Image
-              src="/assets/1000x1778.avif"
+              src={`${BASE_PATH}/assets/1000x1778.avif`}
               alt="ÄGAPE FESTIVAL 2026 — Full Lineup"
               width={600}
               height={1067}

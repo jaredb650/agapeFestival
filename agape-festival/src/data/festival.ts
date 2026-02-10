@@ -2,6 +2,9 @@
 // ÄGAPĒ FESTIVAL 2026 — Single source of truth for all content
 // ============================================================
 
+// Base path for GitHub Pages deployment — empty in dev, /agapeFestival in prod
+export const BASE_PATH = process.env.NODE_ENV === "production" ? "/agapeFestival" : "";
+
 export interface Artist {
   name: string;
   day: 1 | 2;
@@ -85,30 +88,30 @@ export const SOCIALS: SocialLink[] = [
 export const PARTNERS: BrandPartner[] = [
   {
     name: "ÄGAPĒ",
-    logoUrl: "/assets/logos/agape_logo_white.png",
+    logoUrl: `${BASE_PATH}/assets/logos/agape_logo_white.png`,
     website: "https://agapemusic.us/",
   },
   {
     name: "44",
-    logoUrl: "/assets/logos/44-logo-white.png",
+    logoUrl: `${BASE_PATH}/assets/logos/44-logo-white.png`,
   },
   {
     name: "240 km/h",
-    logoUrl: "/assets/logos/240-logo-white.png",
+    logoUrl: `${BASE_PATH}/assets/logos/240-logo-white.png`,
   },
   {
     name: "Face 2 Face",
-    logoUrl: "/assets/logos/f2f-logo-white.png",
-    logoUrlAlt: "/assets/logos/f2f-logo-black.png",
+    logoUrl: `${BASE_PATH}/assets/logos/f2f-logo-white.png`,
+    logoUrlAlt: `${BASE_PATH}/assets/logos/f2f-logo-black.png`,
   },
   {
     name: "HotMeal",
-    logoUrl: "/assets/logos/hotmeal-logo-white.png",
+    logoUrl: `${BASE_PATH}/assets/logos/hotmeal-logo-white.png`,
   },
   {
     name: "Industry City",
-    logoUrl: "/assets/logos/ic-logo-block-white.png",
-    logoUrlAlt: "/assets/logos/ic-logo-line.png",
+    logoUrl: `${BASE_PATH}/assets/logos/ic-logo-block-white.png`,
+    logoUrlAlt: `${BASE_PATH}/assets/logos/ic-logo-line.png`,
   },
 ];
 
@@ -126,7 +129,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "ÄGAPĒ",
     bio: placeholderBio("Ollie Lishman"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/ollie-lishman.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/ollie-lishman.jpg`,
   },
   {
     name: "FUMI",
@@ -135,7 +138,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "ÄGAPĒ",
     bio: placeholderBio("FUMI"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/fumi.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/fumi.jpg`,
   },
   {
     name: "Mischluft",
@@ -144,7 +147,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "ÄGAPĒ",
     bio: placeholderBio("Mischluft"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/mischluft.png",
+    imageUrl: `${BASE_PATH}/assets/artists/mischluft.png`,
   },
   {
     name: "Bad Boombox",
@@ -153,7 +156,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "ÄGAPĒ",
     bio: placeholderBio("Bad Boombox"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/bad-boombox.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/bad-boombox.jpg`,
   },
 
   // DAY 1 — INDOOR (Face 2 Face)
@@ -164,7 +167,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Cloudy"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/cloudy.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/cloudy.jpg`,
   },
   {
     name: "Serafina",
@@ -173,7 +176,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Serafina"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/serafina.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/serafina.jpg`,
     note: "F2F",
   },
   {
@@ -183,7 +186,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Adrian Mills"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/adrian-mills.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/adrian-mills.jpg`,
   },
   {
     name: "Hector Oaks",
@@ -192,7 +195,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Hector Oaks"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/hector-oaks.webp",
+    imageUrl: `${BASE_PATH}/assets/artists/hector-oaks.webp`,
     note: "F2F",
   },
   {
@@ -202,7 +205,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Odymel"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/odymel.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/odymel.jpg`,
   },
   {
     name: "Emilija",
@@ -211,7 +214,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Emilija"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/emilija.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/emilija.jpg`,
     note: "F2F",
   },
   {
@@ -221,7 +224,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Fenrick"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/fenrick.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/fenrick.jpg`,
   },
   {
     name: "Supergloss",
@@ -230,7 +233,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Supergloss"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/supergloss.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/supergloss.jpg`,
     note: "F2F",
   },
 
@@ -242,7 +245,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Aiden"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/aiden.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/aiden.jpg`,
     note: "B2B",
   },
   {
@@ -252,7 +255,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Kobosil"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/kobosil.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/kobosil.jpg`,
   },
   {
     name: "David Löhlein",
@@ -261,7 +264,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("David Löhlein"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/david-lohlein.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/david-lohlein.jpg`,
   },
   {
     name: "Future.666",
@@ -270,7 +273,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Future.666"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/future666.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/future666.jpg`,
   },
 
   // DAY 2 — INDOOR (44)
@@ -281,7 +284,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Clara Cuve"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/clara-cuve.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/clara-cuve.jpg`,
   },
   {
     name: "Kobosil",
@@ -290,7 +293,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Kobosil"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/kobosil.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/kobosil.jpg`,
   },
   {
     name: "Somewhen",
@@ -299,7 +302,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Somewhen"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/somewhen.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/somewhen.jpg`,
   },
   {
     name: "Ueberrest",
@@ -308,7 +311,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Ueberrest"),
     isPlaceholderBio: true,
-    imageUrl: "/assets/artists/ueberrest.jpg",
+    imageUrl: `${BASE_PATH}/assets/artists/ueberrest.jpg`,
     note: "B2B2B",
   },
 ];
@@ -351,39 +354,39 @@ export function getStages(): StageInfo[] {
 // ---- PHOTOS ----
 
 export const PHOTOS = [
-  "/assets/photos/1D3A9267.jpg",
-  "/assets/photos/1D3A9488.jpeg",
-  "/assets/photos/1D3A9620-2.jpeg",
-  "/assets/photos/3BF199AD.jpg",
-  "/assets/photos/AGAPE_D7.jpeg",
-  "/assets/photos/AGAPE_F5.jpeg",
-  "/assets/photos/DSC05585.jpeg",
-  "/assets/photos/DSC05632.jpeg",
+  `${BASE_PATH}/assets/photos/1D3A9267.jpg`,
+  `${BASE_PATH}/assets/photos/1D3A9488.jpeg`,
+  `${BASE_PATH}/assets/photos/1D3A9620-2.jpeg`,
+  `${BASE_PATH}/assets/photos/3BF199AD.jpg`,
+  `${BASE_PATH}/assets/photos/AGAPE_D7.jpeg`,
+  `${BASE_PATH}/assets/photos/AGAPE_F5.jpeg`,
+  `${BASE_PATH}/assets/photos/DSC05585.jpeg`,
+  `${BASE_PATH}/assets/photos/DSC05632.jpeg`,
 ];
 
 // ---- VIDEOS ----
 
 export const VIDEOS = {
   davidLohlein: {
-    mp4: "/assets/videos/david_lohlein_4x5.mp4",
-    webm: "/assets/videos/david_lohlein_4x5.webm",
+    mp4: `${BASE_PATH}/assets/videos/david_lohlein_4x5.mp4`,
+    webm: `${BASE_PATH}/assets/videos/david_lohlein_4x5.webm`,
   },
   flyerAnimated: {
-    mp4: "/assets/videos/flyer-animated.mp4",
-    webm: "/assets/videos/flyer-animated.webm",
+    mp4: `${BASE_PATH}/assets/videos/flyer-animated.mp4`,
+    webm: `${BASE_PATH}/assets/videos/flyer-animated.webm`,
   },
 };
 
 // ---- LOGOS ----
 
 export const LOGOS = {
-  festivalBlack: "/assets/logos/AGAPE_FESTIVAL.PNG",
-  festivalWhite: "/assets/logos/AGAPE_FESTIVALWHITE.PNG",
-  festivalWhiteTransparent: "/assets/logos/aFestWhite.png",
-  festivalBlackTransparent: "/assets/logos/aFestBlack.png",
-  agapeWhite: "/assets/logos/agape_logo_white.png",
-  agapeWhiteSm: "/assets/logos/agape_logo_white_sm.png",
-  agapeIcon: "/assets/logos/agape_icon.png",
-  agapeTxt: "/assets/logos/agape_txtLogo.png",
-  flyer2d: "/assets/flyer-2d.png",
+  festivalBlack: `${BASE_PATH}/assets/logos/AGAPE_FESTIVAL.PNG`,
+  festivalWhite: `${BASE_PATH}/assets/logos/AGAPE_FESTIVALWHITE.PNG`,
+  festivalWhiteTransparent: `${BASE_PATH}/assets/logos/aFestWhite.png`,
+  festivalBlackTransparent: `${BASE_PATH}/assets/logos/aFestBlack.png`,
+  agapeWhite: `${BASE_PATH}/assets/logos/agape_logo_white.png`,
+  agapeWhiteSm: `${BASE_PATH}/assets/logos/agape_logo_white_sm.png`,
+  agapeIcon: `${BASE_PATH}/assets/logos/agape_icon.png`,
+  agapeTxt: `${BASE_PATH}/assets/logos/agape_txtLogo.png`,
+  flyer2d: `${BASE_PATH}/assets/flyer-2d.png`,
 };

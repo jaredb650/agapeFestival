@@ -1770,13 +1770,13 @@ export default function Trajectory() {
           <div className="max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
               {/* Brand */}
-              <div className="flex flex-col items-center md:items-start gap-4">
+              <div className="flex flex-col items-center md:items-start gap-3">
                 <Image
                   src={LOGOS.festivalWhiteTransparent}
                   alt={FESTIVAL.name}
-                  width={160}
-                  height={160}
-                  className="opacity-15 w-[100px] h-auto"
+                  width={586}
+                  height={310}
+                  className="opacity-15 w-[120px] h-auto"
                 />
                 <p className={`${T.bodySm} text-neutral-700`}>
                   {FESTIVAL.venue.full}
@@ -1788,7 +1788,7 @@ export default function Trajectory() {
 
               {/* Navigation + Social */}
               <div className="flex flex-col items-center gap-6">
-                <div>
+                <div className="text-center">
                   <p className={`${T.detail} text-neutral-600 mb-3`}>NAVIGATE</p>
                   <div className="flex flex-col items-center gap-2">
                     {NAV_LINKS.map((link) => (
@@ -1803,7 +1803,7 @@ export default function Trajectory() {
                     ))}
                   </div>
                 </div>
-                <div>
+                <div className="text-center">
                   <p className={`${T.detail} text-neutral-600 mb-3`}>FOLLOW</p>
                   <div className="flex flex-col items-center gap-2">
                     {SOCIALS.map((social) => (
@@ -1823,14 +1823,14 @@ export default function Trajectory() {
 
               {/* Contact */}
               <div className="flex flex-col items-center md:items-end gap-4">
-                <p className={`${T.detail} text-neutral-600 mb-2`}>CONTACT</p>
+                <p className={`${T.detail} text-neutral-600`}>CONTACT</p>
                 <a
                   href={`mailto:${FESTIVAL.contactEmail}`}
                   className={`${T.bodySm} text-neutral-600 hover:text-white transition-colors duration-300`}
                 >
                   {FESTIVAL.contactEmail}
                 </a>
-                <p className={`${T.bodySm} text-neutral-700 mt-4`}>
+                <p className={`${T.bodySm} text-neutral-700 mt-4 text-center md:text-right`}>
                   For bookings, press, and
                   <br />
                   partnership inquiries.

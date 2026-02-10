@@ -745,6 +745,13 @@ function TicketsSection() {
     return vals[vals.length - 1];
   }
 
+  // Nudge iOS into loading the video data (iOS ignores preload="auto" on
+  // non-autoplay videos unless explicitly told to load)
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid) vid.load();
+  }, []);
+
   /* ---- Drive ALL animations imperatively via refs (bypasses useTransform) ---- */
   useEffect(() => {
     const unsub1 = videoProgress.on("change", (v) => {
@@ -784,6 +791,11 @@ function TicketsSection() {
       <div className="sticky top-[10vh] h-[80vh] overflow-hidden flex items-center justify-center rounded-lg">
         {/* Video background */}
         <div className="absolute inset-0 overflow-hidden">
+          {/* Static first-frame fallback so iOS always shows something */}
+          <div
+            className="absolute inset-0 bg-black"
+            style={{ filter: "brightness(0.5)" }}
+          />
           <video
             ref={videoRef}
             muted
@@ -792,7 +804,7 @@ function TicketsSection() {
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "brightness(0.5)" }}
           >
-            <source src={VIDEOS.redStrobes.mp4} type="video/mp4" />
+            <source src={`${VIDEOS.redStrobes.mp4}#t=0.001`} type="video/mp4" />
           </video>
 
           {/* Desaturation layer */}

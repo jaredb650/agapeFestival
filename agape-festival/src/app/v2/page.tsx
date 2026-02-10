@@ -24,6 +24,7 @@ import {
 } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Orbitron, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import Image from "next/image";
 import * as THREE from "three";
 import {
@@ -48,6 +49,12 @@ const orbitron = Orbitron({
 const outfit = Outfit({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500", "600"],
+});
+
+const chonkyPixels = localFont({
+  src: "../../../public/assets/fonts/ChonkyPixels.ttf",
+  display: "swap",
+  variable: "--font-chonky",
 });
 
 // ---- Styles ----
@@ -88,6 +95,11 @@ const CHROME_STYLES = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
   }
 
   .chrome-text {
@@ -152,6 +164,56 @@ function VideoLoader({ label }: { label?: string }) {
         </span>
       )}
     </div>
+  );
+}
+
+// ---- Typewriter Effect for Chonky Text ----
+function TypewriterText({
+  text,
+  className = "",
+  speed = 12,
+  delay = 0,
+  trigger,
+}: {
+  text: string;
+  className?: string;
+  speed?: number;
+  delay?: number;
+  trigger?: boolean;
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const shouldStart = trigger !== undefined ? trigger : isInView;
+  const [displayCount, setDisplayCount] = useState(0);
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    if (!shouldStart || started) return;
+    const timer = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(timer);
+  }, [shouldStart, delay, started]);
+
+  useEffect(() => {
+    if (!started) return;
+    if (displayCount >= text.length) return;
+    const timer = setTimeout(() => {
+      setDisplayCount((c) => Math.min(c + 1, text.length));
+    }, speed);
+    return () => clearTimeout(timer);
+  }, [started, displayCount, text.length, speed]);
+
+  const done = displayCount >= text.length;
+
+  return (
+    <p ref={ref} className={className}>
+      <span>{text.slice(0, displayCount)}</span>
+      {!done && started && (
+        <span
+          className="inline-block w-[2px] h-[1em] bg-neutral-400 ml-[1px] align-middle"
+          style={{ animation: "cursorBlink 0.6s step-end infinite" }}
+        />
+      )}
+    </p>
   );
 }
 
@@ -322,14 +384,16 @@ function Reveal({
   className = "",
   id,
   variants: customVariants,
+  replay = false,
 }: {
   children: ReactNode;
   className?: string;
   id?: string;
   variants?: typeof stagger;
+  replay?: boolean;
 }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const isInView = useInView(ref, { once: !replay, margin: "-80px" });
 
   return (
     <motion.div
@@ -525,11 +589,13 @@ function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
                       background: "linear-gradient(90deg, #333, transparent)",
                     }}
                   />
-                  <p
-                    className={`${outfit.className} text-[11px] leading-relaxed text-neutral-500`}
-                  >
-                    {artist.bio}
-                  </p>
+                  <TypewriterText
+                    text={artist.bio}
+                    className={`${chonkyPixels.className} text-[11px] leading-relaxed text-neutral-500`}
+                    speed={10}
+                    delay={100}
+                    trigger={expanded}
+                  />
                 </div>
               </motion.div>
             )}
@@ -583,6 +649,14 @@ function AboutPhoto() {
 // Hero video with loading state
 function HeroVideo() {
   const [loaded, setLoaded] = useState(false);
+  const heroVidRef = useRef<HTMLVideoElement>(null);
+
+  // Fallback: if the video already loaded before React hydrated,
+  // the onCanPlayThrough event was missed. Check readyState on mount.
+  useEffect(() => {
+    const vid = heroVidRef.current;
+    if (vid && vid.readyState >= 3) setLoaded(true);
+  }, []);
 
   return (
     <motion.div
@@ -603,6 +677,7 @@ function HeroVideo() {
         )}
       </AnimatePresence>
       <video
+        ref={heroVidRef}
         autoPlay
         muted
         loop
@@ -616,6 +691,189 @@ function HeroVideo() {
         <source src={VIDEOS.flyerAnimated.mp4} type="video/mp4" />
       </video>
     </motion.div>
+  );
+}
+
+// Scroll-bound video with parallax + GPU-friendly BW→color→BW
+// ── Scroll-locked Tickets Section ─────────────────────────────
+// 400vh scroll track with a sticky 100vh viewport.
+// offset: ["start end", "end start"] → progress spans the ENTIRE
+// time the track is anywhere on screen, so the video plays the
+// whole way through (entering, locked, and leaving).
+//
+// With 400vh track + 100vh viewport the total scroll = 500vh:
+//   progress 0.00        track top enters viewport bottom
+//   progress 0.20        track top reaches viewport top → section LOCKS
+//   progress 0.80        track bottom reaches viewport bottom → section UNLOCKS
+//   progress 1.00        track bottom exits viewport top
+//
+// Animations:
+//   Video playback    0 → 1 (always playing)
+//   Black cover       fades out 0→0.2, fades in 0.8→1
+//   B&W → color       transitions in 0.1→0.3, transitions out 0.7→0.9
+//   Content reveal    hidden until lock, fades in 0.2→0.3, fades out 0.7→0.8
+function TicketsSection() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const blackCoverRef = useRef<HTMLDivElement>(null);
+  const desatRef = useRef<HTMLDivElement>(null);
+  const darkRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Video progress: spans the FULL time the track is on-screen (for playback)
+  const { scrollYProgress: videoProgress } = useScroll({
+    target: trackRef,
+    offset: ["start end", "end start"],
+  });
+
+  // FX progress: spans ONLY the sticky phase (0 = just locked, 1 = about to unlock)
+  const { scrollYProgress: stickyProgress } = useScroll({
+    target: trackRef,
+    offset: ["start start", "end end"],
+  });
+
+  // Helper: interpolate value from keyframe array
+  function lerp(s: number, keys: number[], vals: number[]): number {
+    if (s <= keys[0]) return vals[0];
+    if (s >= keys[keys.length - 1]) return vals[vals.length - 1];
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (s >= keys[i] && s <= keys[i + 1]) {
+        const t = (s - keys[i]) / (keys[i + 1] - keys[i]);
+        return vals[i] + t * (vals[i + 1] - vals[i]);
+      }
+    }
+    return vals[vals.length - 1];
+  }
+
+  /* ---- Drive ALL animations imperatively via refs (bypasses useTransform) ---- */
+  useEffect(() => {
+    const unsub1 = videoProgress.on("change", (v) => {
+      const vid = videoRef.current;
+      if (vid && vid.duration && isFinite(vid.duration)) {
+        vid.currentTime = v * vid.duration;
+      }
+    });
+
+    const unsub2 = stickyProgress.on("change", (s) => {
+      // Black cover
+      const bc = lerp(s, [0, 0.18, 0.82, 1], [1, 0, 0, 1]);
+      if (blackCoverRef.current) blackCoverRef.current.style.opacity = String(bc);
+
+      // Desaturation overlay
+      const ds = lerp(s, [0, 0.08, 0.25, 0.75, 0.92, 1], [1, 0.8, 0, 0, 0.8, 1]);
+      if (desatRef.current) desatRef.current.style.opacity = String(ds);
+
+      // Dark overlay
+      const dk = lerp(s, [0, 0.08, 0.25, 0.75, 0.92, 1], [0.5, 0.35, 0.05, 0.05, 0.35, 0.5]);
+      if (darkRef.current) darkRef.current.style.opacity = String(dk);
+
+      // Content
+      const co = lerp(s, [0, 0.2, 0.32, 0.68, 0.8, 1], [0, 0, 1, 1, 0, 0]);
+      const cy = lerp(s, [0, 0.2, 0.32, 0.68, 0.8, 1], [30, 30, 0, 0, -30, -30]);
+      if (contentRef.current) {
+        contentRef.current.style.opacity = String(co);
+        contentRef.current.style.transform = `translateY(${cy}px)`;
+      }
+    });
+
+    return () => { unsub1(); unsub2(); };
+  }, [videoProgress, stickyProgress]);
+
+  return (
+    <div ref={trackRef} style={{ height: "400vh" }} className="relative">
+      <div className="sticky top-[10vh] h-[80vh] overflow-hidden flex items-center justify-center rounded-lg">
+        {/* Video background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: "brightness(0.5)" }}
+          >
+            <source src={VIDEOS.redStrobes.mp4} type="video/mp4" />
+          </video>
+
+          {/* Desaturation layer */}
+          <div
+            ref={desatRef}
+            style={{ opacity: 1, mixBlendMode: "saturation" }}
+            className="absolute inset-0 bg-neutral-500 pointer-events-none"
+            aria-hidden
+          />
+
+          {/* Dim overlay */}
+          <div
+            ref={darkRef}
+            style={{ opacity: 0.5 }}
+            className="absolute inset-0 bg-black pointer-events-none"
+          />
+
+          {/* Edge gradients */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 pointer-events-none" />
+
+        </div>
+
+        {/* Black cover — sits ABOVE the video bg, BELOW the content */}
+        <div
+          ref={blackCoverRef}
+          style={{ opacity: 1 }}
+          className="absolute inset-0 bg-black pointer-events-none z-[1]"
+        />
+
+        {/* Content — hidden initially, reveals when section locks, hides when it unlocks */}
+        <div
+          ref={contentRef}
+          style={{ opacity: 0, transform: "translateY(30px)" }}
+          className="relative z-[2] text-center max-w-3xl mx-auto px-6"
+        >
+          <p
+            className={`${orbitron.className} text-[10px] tracking-[0.4em] text-neutral-600 mb-8`}
+          >
+            02 — TICKETS
+          </p>
+          <h2
+            className={`${orbitron.className} text-3xl sm:text-5xl md:text-6xl font-bold tracking-[0.08em] chrome-text`}
+          >
+            SECURE YOUR ENTRY
+          </h2>
+          <div className="mt-6">
+            <TypewriterText
+              text={`${FESTIVAL.tagline} — ${FESTIVAL.venue.full}`}
+              className={`${chonkyPixels.className} text-sm text-neutral-500 tracking-[0.15em]`}
+              speed={15}
+            />
+          </div>
+          <div className="mt-12 inline-block">
+            <a
+              href={FESTIVAL.ticketUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block relative group"
+            >
+              <div
+                className="absolute inset-0 rounded-[2px]"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #5a0000, #8b0000, #cc2222, #8b0000, #5a0000)",
+                  backgroundSize: "300% 300%",
+                  animation: "borderFlow 4s ease infinite",
+                  opacity: 0.6,
+                }}
+              />
+              <div className="relative bg-black m-[1px] px-12 py-5 rounded-[2px] group-hover:bg-[#080000] transition-colors duration-500">
+                <span
+                  className={`${orbitron.className} text-xs tracking-[0.3em] text-neutral-200 group-hover:text-white transition-colors duration-300`}
+                >
+                  GET TICKETS →
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -783,7 +1041,7 @@ export default function ChromeCathedral() {
       <motion.nav
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 5.8, ease: "easeOut" }}
+        transition={{ duration: 0.6, delay: 6.8, ease: "easeOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
             ? "bg-black/80 backdrop-blur-xl border-b border-white/[0.04]"
@@ -1005,30 +1263,34 @@ export default function ChromeCathedral() {
               className="h-[1px] bg-white mt-10 mb-10"
             />
 
-            {/* 6. Date & venue cascade in */}
+            {/* 6. Date & venue — chonky pixels typewriter after intro */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 4.6 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 4.6 }}
               className="flex flex-col items-center gap-3"
             >
-              <p
-                className={`${outfit.className} text-sm sm:text-base tracking-[0.3em] text-neutral-300`}
-              >
-                SEPTEMBER 5 + 6, 2026
-              </p>
-              <p
-                className={`${outfit.className} text-[11px] sm:text-xs tracking-[0.2em] text-neutral-500`}
-              >
-                INDUSTRY CITY — BROOKLYN, NYC
-              </p>
+              <TypewriterText
+                text="SEPTEMBER 5 + 6, 2026"
+                className={`${chonkyPixels.className} text-sm sm:text-base tracking-[0.3em] text-neutral-300 text-center`}
+                speed={35}
+                trigger={true}
+                delay={4700}
+              />
+              <TypewriterText
+                text="INDUSTRY CITY — BROOKLYN, NYC"
+                className={`${chonkyPixels.className} text-[11px] sm:text-xs tracking-[0.2em] text-neutral-500 text-center`}
+                speed={25}
+                trigger={true}
+                delay={5500}
+              />
             </motion.div>
 
-            {/* 7. CTA */}
+            {/* 7. CTA — appears after typewriter finishes */}
             <motion.a
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 5.2 }}
+              transition={{ duration: 0.8, delay: 6.4 }}
               href={FESTIVAL.ticketUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -1056,7 +1318,7 @@ export default function ChromeCathedral() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 5.6, duration: 0.6 }}
+            transition={{ delay: 6.8, duration: 0.6 }}
             className="absolute bottom-10 right-10 z-[2] hidden md:block"
           >
             <p
@@ -1067,24 +1329,6 @@ export default function ChromeCathedral() {
             </p>
           </motion.div>
 
-          {/* Scroll indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 5.8, duration: 1 }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[2] flex flex-col items-center gap-2"
-          >
-            <span
-              className={`${outfit.className} text-[9px] tracking-[0.3em] text-neutral-500`}
-            >
-              SCROLL
-            </span>
-            <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="w-[1px] h-6 bg-gradient-to-b from-neutral-500 to-transparent"
-            />
-          </motion.div>
         </section>
 
         {/* ========== MARQUEE TICKER ========== */}
@@ -1125,21 +1369,24 @@ export default function ChromeCathedral() {
                 >
                   01 — ABOUT
                 </motion.p>
-                <motion.p
-                  variants={fadeInUp}
-                  className={`${outfit.className} text-xl sm:text-2xl md:text-3xl leading-relaxed text-neutral-200 font-light`}
-                >
-                  {COPY.about}
-                </motion.p>
+                <motion.div variants={fadeInUp}>
+                  <TypewriterText
+                    text={COPY.about}
+                    className={`${chonkyPixels.className} text-xl sm:text-2xl md:text-3xl leading-relaxed text-neutral-200`}
+                    speed={18}
+                  />
+                </motion.div>
 
                 <MetallicDivider />
 
-                <motion.p
-                  variants={fadeInUp}
-                  className={`${outfit.className} text-sm sm:text-[15px] leading-[1.9] text-neutral-500`}
-                >
-                  {COPY.aboutExtended}
-                </motion.p>
+                <motion.div variants={fadeInUp}>
+                  <TypewriterText
+                    text={COPY.aboutExtended}
+                    className={`${chonkyPixels.className} text-sm sm:text-[15px] leading-[1.9] text-neutral-500`}
+                    speed={8}
+                    delay={200}
+                  />
+                </motion.div>
 
                 <motion.p
                   variants={fadeInUp}
@@ -1179,18 +1426,21 @@ export default function ChromeCathedral() {
                 >
                   A STACKED WEEKEND
                 </motion.h3>
-                <motion.p
-                  variants={fadeInUp}
-                  className={`${outfit.className} text-base sm:text-lg leading-[1.8] text-neutral-300 font-light mb-6`}
-                >
-                  Two days of unrelenting sound across indoor and outdoor stages at Industry City, Brooklyn. From internationally acclaimed headliners to rising underground talent — every set is curated to deliver the energy ÄGAPE is known for.
-                </motion.p>
-                <motion.p
-                  variants={fadeInUp}
-                  className={`${outfit.className} text-sm leading-[1.8] text-neutral-500 mb-8`}
-                >
-                  Day one brings the raw power of the ÄGAPE and Face 2 Face stages. Day two escalates with 44 taking over both rooms for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection.
-                </motion.p>
+                <motion.div variants={fadeInUp} className="mb-6">
+                  <TypewriterText
+                    text="Two days of unrelenting sound across indoor and outdoor stages at Industry City, Brooklyn. From internationally acclaimed headliners to rising underground talent — every set is curated to deliver the energy ÄGAPE is known for."
+                    className={`${chonkyPixels.className} text-base sm:text-lg leading-[1.8] text-neutral-300`}
+                    speed={8}
+                  />
+                </motion.div>
+                <motion.div variants={fadeInUp} className="mb-8">
+                  <TypewriterText
+                    text="Day one brings the raw power of the ÄGAPE and Face 2 Face stages. Day two escalates with 44 taking over both rooms for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
+                    className={`${chonkyPixels.className} text-sm leading-[1.8] text-neutral-500`}
+                    speed={6}
+                    delay={200}
+                  />
+                </motion.div>
                 <motion.div variants={fadeInUp}>
                   <a
                     href={FESTIVAL.ticketUrl}
@@ -1206,56 +1456,8 @@ export default function ChromeCathedral() {
           </div>
         </section>
 
-        {/* ========== TICKETS CTA ========== */}
-        <section className="py-24 sm:py-32 px-6 bg-black/20">
-          <Reveal className="text-center max-w-3xl mx-auto">
-            <motion.p
-              variants={fadeInUp}
-              className={`${orbitron.className} text-[10px] tracking-[0.4em] text-neutral-600 mb-8`}
-            >
-              02 — TICKETS
-            </motion.p>
-            <motion.h2
-              variants={fadeInUp}
-              className={`${orbitron.className} text-3xl sm:text-5xl md:text-6xl font-bold tracking-[0.08em] chrome-text`}
-            >
-              SECURE YOUR ENTRY
-            </motion.h2>
-            <motion.p
-              variants={fadeInUp}
-              className={`${outfit.className} text-sm text-neutral-500 tracking-[0.15em] mt-6`}
-            >
-              {FESTIVAL.tagline} — {FESTIVAL.venue.full}
-            </motion.p>
-            <motion.a
-              variants={fadeInUp}
-              href={FESTIVAL.ticketUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-12 relative group"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div
-                className="absolute inset-0 rounded-[2px]"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #5a0000, #8b0000, #cc2222, #8b0000, #5a0000)",
-                  backgroundSize: "300% 300%",
-                  animation: "borderFlow 4s ease infinite",
-                  opacity: 0.6,
-                }}
-              />
-              <div className="relative bg-black m-[1px] px-12 py-5 rounded-[2px] group-hover:bg-[#080000] transition-colors duration-500">
-                <span
-                  className={`${orbitron.className} text-xs tracking-[0.3em] text-neutral-200 group-hover:text-white transition-colors duration-300`}
-                >
-                  GET TICKETS →
-                </span>
-              </div>
-            </motion.a>
-          </Reveal>
-        </section>
+        {/* ========== TICKETS CTA (SCROLL-LOCKED) ========== */}
+        <TicketsSection />
 
         {/* ========== ARTISTS ========== */}
         <section id="artists" className="py-24 sm:py-32 px-6 lg:px-10 bg-black/30">
@@ -1352,18 +1554,19 @@ export default function ChromeCathedral() {
             >
               COMING SOON
             </motion.h3>
-            <motion.p
-              variants={fadeInUp}
-              className={`${outfit.className} text-xs text-neutral-600 mt-4 tracking-wider`}
-            >
-              {COPY.merchComingSoon}
-            </motion.p>
+            <motion.div variants={fadeInUp} className="mt-4">
+              <TypewriterText
+                text={COPY.merchComingSoon}
+                className={`${chonkyPixels.className} text-xs text-neutral-600 tracking-wider`}
+                speed={20}
+              />
+            </motion.div>
           </Reveal>
         </section>
 
         {/* ========== PARTNERS ========== */}
         <section id="partners" className="py-20 sm:py-28 px-6 lg:px-10 bg-black/20">
-          <Reveal>
+          <Reveal replay>
             <motion.p
               variants={fadeInUp}
               className={`${orbitron.className} text-[10px] tracking-[0.4em] text-neutral-600 text-center mb-4`}

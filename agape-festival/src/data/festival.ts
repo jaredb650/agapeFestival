@@ -375,6 +375,12 @@ export const VIDEOS = {
     mp4: `${BASE_PATH}/assets/videos/flyer-animated.mp4`,
     webm: `${BASE_PATH}/assets/videos/flyer-animated.webm`,
   },
+  skullCorridor: {
+    mp4: `${BASE_PATH}/assets/videos/skull-corridor.mp4`,
+  },
+  redStrobes: {
+    mp4: `${BASE_PATH}/assets/videos/red-strobes.mp4`,
+  },
 };
 
 // ---- LOGOS ----

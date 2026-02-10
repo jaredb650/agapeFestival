@@ -80,6 +80,16 @@ const CHROME_STYLES = `
     50% { box-shadow: 0 0 30px rgba(139,0,0,0.3), 0 0 80px rgba(139,0,0,0.1); }
   }
 
+  @keyframes shimmerSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
   .chrome-text {
     background: linear-gradient(90deg, #444, #aaa, #fff, #aaa, #444);
     background-size: 200% auto;
@@ -98,6 +108,52 @@ const CHROME_STYLES = `
     animation: shimmer 10s linear infinite;
   }
 `;
+
+// ---- Loading Skeleton ----
+function Shimmer({ className = "" }: { className?: string }) {
+  return (
+    <div className={`relative overflow-hidden bg-neutral-900 ${className}`}>
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 20%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 80%, transparent 100%)",
+          animation: "shimmerSlide 2s ease-in-out infinite",
+        }}
+      />
+    </div>
+  );
+}
+
+function VideoLoader({ label }: { label?: string }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-[1]">
+      <div className="relative w-10 h-10 mb-4">
+        <div
+          className="absolute inset-0 rounded-full border border-neutral-700"
+          style={{
+            borderTopColor: "rgba(255,255,255,0.5)",
+            animation: "spin 1.2s linear infinite",
+          }}
+        />
+        <div
+          className="absolute inset-[6px] rounded-full border border-neutral-800"
+          style={{
+            borderBottomColor: "rgba(255,255,255,0.2)",
+            animation: "spin 2s linear infinite reverse",
+          }}
+        />
+      </div>
+      {label && (
+        <span
+          className={`text-[9px] tracking-[0.4em] text-neutral-600 uppercase`}
+        >
+          {label}
+        </span>
+      )}
+    </div>
+  );
+}
 
 // ---- Animation Variants ----
 const fadeInUp = {
@@ -383,6 +439,7 @@ function ChromeBorder({
 
 function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
   const [expanded, setExpanded] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
     <motion.div
@@ -395,16 +452,22 @@ function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
         <div className="bg-[#060606]">
           <div className="aspect-[4/3] flex items-center justify-center bg-[#090909] relative overflow-hidden">
             {artist.imageUrl ? (
-              <Image
-                src={artist.imageUrl}
-                alt={artist.name}
-                fill
-                className={`object-cover transition-all duration-700 ease-out ${
-                  expanded
-                    ? "grayscale-0 opacity-100 scale-105"
-                    : "grayscale opacity-60 group-hover:opacity-80 group-hover:grayscale-[50%]"
-                }`}
-              />
+              <>
+                {!imgLoaded && <Shimmer className="absolute inset-0" />}
+                <Image
+                  src={artist.imageUrl}
+                  alt={artist.name}
+                  fill
+                  className={`object-cover transition-all duration-700 ease-out ${
+                    imgLoaded ? "" : "opacity-0"
+                  } ${
+                    expanded
+                      ? "grayscale-0 opacity-100 scale-105"
+                      : "grayscale opacity-60 group-hover:opacity-80 group-hover:grayscale-[50%]"
+                  }`}
+                  onLoad={() => setImgLoaded(true)}
+                />
+              </>
             ) : (
               <WireframeIcon />
             )}
@@ -480,6 +543,7 @@ function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
 // About section photo with scroll-locked zoom
 function AboutPhoto() {
   const ref = useRef(null);
+  const [photoLoaded, setPhotoLoaded] = useState(false);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -495,13 +559,15 @@ function AboutPhoto() {
       transition={{ duration: 0.8 }}
       className="order-1 lg:order-2 aspect-[3/4] rounded-[2px] overflow-hidden relative"
     >
+      {!photoLoaded && <Shimmer className="absolute inset-0 z-[1]" />}
       <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
         <Image
           src={PHOTOS[6]}
           alt="ÄGAPE event"
           fill
-          className="object-cover"
+          className={`object-cover transition-opacity duration-700 ${photoLoaded ? "opacity-100" : "opacity-0"}`}
           sizes="(max-width: 1024px) 100vw, 50vw"
+          onLoad={() => setPhotoLoaded(true)}
         />
       </motion.div>
       <div
@@ -514,9 +580,49 @@ function AboutPhoto() {
   );
 }
 
+// Hero video with loading state
+function HeroVideo() {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 2.5, delay: 4.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="absolute inset-0"
+    >
+      <AnimatePresence>
+        {!loaded && (
+          <motion.div
+            key="hero-loader"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+          >
+            <VideoLoader label="Loading" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className={`w-full h-full object-cover transition-opacity duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}
+        style={{ filter: "brightness(0.5) contrast(1.1)" }}
+        onCanPlayThrough={() => setLoaded(true)}
+        onPlaying={() => setLoaded(true)}
+      >
+        <source src={VIDEOS.flyerAnimated.webm} type="video/webm" />
+        <source src={VIDEOS.flyerAnimated.mp4} type="video/mp4" />
+      </video>
+    </motion.div>
+  );
+}
+
 // Parallax flyer image component
 function FlyerParallax() {
   const ref = useRef(null);
+  const [flyerLoaded, setFlyerLoaded] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -538,13 +644,15 @@ function FlyerParallax() {
           }}
         />
         <div className="relative bg-black p-1 overflow-hidden">
+          {!flyerLoaded && <Shimmer className="w-full aspect-[1000/1778]" />}
           <motion.div style={{ y: smoothY }}>
             <Image
               src={`${BASE_PATH}/assets/1000x1778.avif`}
               alt="ÄGAPE FESTIVAL 2026 — Full Lineup"
               width={600}
               height={1067}
-              className="w-full h-auto scale-110"
+              className={`w-full h-auto scale-110 transition-opacity duration-700 ${flyerLoaded ? "opacity-100" : "opacity-0"}`}
+              onLoad={() => setFlyerLoaded(true)}
             />
           </motion.div>
         </div>
@@ -556,6 +664,7 @@ function FlyerParallax() {
 // Parallax video break component
 function ParallaxVideoBreak() {
   const ref = useRef(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -567,6 +676,18 @@ function ParallaxVideoBreak() {
 
   return (
     <div ref={ref} className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
+      <AnimatePresence>
+        {!videoLoaded && (
+          <motion.div
+            key="break-loader"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 z-[2]"
+          >
+            <Shimmer className="w-full h-full" />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <motion.div
         style={{ y: smoothVideoY }}
         className="absolute left-0 right-0 h-[160%] -top-[30%]"
@@ -576,8 +697,10 @@ function ParallaxVideoBreak() {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
           style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
+          onCanPlayThrough={() => setVideoLoaded(true)}
+          onPlaying={() => setVideoLoaded(true)}
         >
           <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
           <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
@@ -757,24 +880,7 @@ export default function ChromeCathedral() {
         <section id="hero" className="relative h-screen w-full overflow-hidden bg-black">
 
           {/* Background Video — fades in after intro sequence */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 2.5, delay: 4.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="absolute inset-0"
-          >
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-              style={{ filter: "brightness(0.5) contrast(1.1)" }}
-            >
-              <source src={VIDEOS.flyerAnimated.webm} type="video/webm" />
-              <source src={VIDEOS.flyerAnimated.mp4} type="video/mp4" />
-            </video>
-          </motion.div>
+          <HeroVideo />
 
           {/* Dark overlays */}
           <motion.div

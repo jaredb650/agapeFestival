@@ -124,16 +124,6 @@ const CHROME_STYLES = `
     animation: shimmer 10s linear infinite;
   }
 
-  /* Hide native iOS video controls / play button overlay */
-  video::-webkit-media-controls-panel,
-  video::-webkit-media-controls-play-button,
-  video::-webkit-media-controls-start-playback-button,
-  video::-webkit-media-controls {
-    display: none !important;
-    -webkit-appearance: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
 `;
 
 // ---- Loading Skeleton ----
@@ -579,25 +569,11 @@ function HeroVideo() {
   const [loaded, setLoaded] = useState(false);
   const heroVidRef = useRef<HTMLVideoElement>(null);
 
-  // On mount: check if already loaded (race condition guard) and
-  // explicitly call play() for iOS which often ignores the autoplay attribute.
+  // Fallback: if the video already loaded before React hydrated,
+  // the onCanPlayThrough event was missed. Check readyState on mount.
   useEffect(() => {
     const vid = heroVidRef.current;
-    if (!vid) return;
-    if (vid.readyState >= 3) setLoaded(true);
-
-    // iOS Safari needs an explicit play() even with autoPlay + muted + playsInline
-    const tryPlay = () => {
-      vid.play().catch(() => {
-        // Autoplay blocked — nothing we can do, the poster will show
-      });
-    };
-
-    if (vid.readyState >= 2) {
-      tryPlay();
-    } else {
-      vid.addEventListener("loadeddata", tryPlay, { once: true });
-    }
+    if (vid && vid.readyState >= 3) setLoaded(true);
   }, []);
 
   return (
@@ -607,22 +583,12 @@ function HeroVideo() {
       transition={{ duration: 2.5, delay: 4.8, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="absolute inset-0"
     >
-      {/* Poster image as fallback — avoids iOS native play button */}
-      {!loaded && (
-        <img
-          src={VIDEOS.flyerAnimated.poster}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: "brightness(0.5) contrast(1.1)" }}
-        />
-      )}
       <AnimatePresence>
         {!loaded && (
           <motion.div
             key="hero-loader"
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
-            className="z-[2]"
           >
             <VideoLoader label="Loading" />
           </motion.div>
@@ -634,7 +600,6 @@ function HeroVideo() {
         muted
         loop
         playsInline
-        preload="auto"
         className={`w-full h-full object-cover transition-opacity duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}
         style={{ filter: "brightness(0.5) contrast(1.1)" }}
         onCanPlayThrough={() => setLoaded(true)}
@@ -672,24 +637,6 @@ function TicketsSection() {
   const desatRef = useRef<HTMLDivElement>(null);
   const darkRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // Lazy-load the video when the track is within 1 viewport distance
-  useEffect(() => {
-    const el = trackRef.current;
-    const vid = videoRef.current;
-    if (!el || !vid) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && vid.preload === "none") {
-          vid.preload = "auto";
-          vid.load();
-        }
-      },
-      { rootMargin: "100% 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   // Video progress: spans the FULL time the track is on-screen (for playback)
   const { scrollYProgress: videoProgress } = useScroll({
@@ -742,18 +689,11 @@ function TicketsSection() {
       <div className="sticky top-[10vh] h-[80vh] overflow-hidden flex items-center justify-center rounded-lg">
         {/* Video background */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Poster behind video — avoids iOS native play button */}
-          <img
-            src={VIDEOS.redStrobes.poster}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: "brightness(0.5)" }}
-          />
           <video
             ref={videoRef}
             muted
             playsInline
-            preload="none"
+            preload="auto"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "brightness(0.5)" }}
           >
@@ -888,9 +828,7 @@ function FlyerParallax() {
 // Parallax video break component
 function ParallaxVideoBreak() {
   const ref = useRef(null);
-  const breakVidRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [shouldLoad, setShouldLoad] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -899,27 +837,6 @@ function ParallaxVideoBreak() {
   const smoothVideoY = useSpring(videoY, { stiffness: 80, damping: 30 });
   const inViewRef = useRef(null);
   const isInView = useInView(inViewRef, { once: true, margin: "-80px" });
-
-  // Intersection Observer: load video when within 1 viewport, play/pause based on visibility
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShouldLoad(true);
-          const vid = breakVidRef.current;
-          if (vid && vid.readyState >= 2) vid.play().catch(() => {});
-        } else {
-          const vid = breakVidRef.current;
-          if (vid && !vid.paused) vid.pause();
-        }
-      },
-      { rootMargin: "100% 0px" } // load when within 1 viewport distance
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div ref={ref} className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
@@ -939,30 +856,19 @@ function ParallaxVideoBreak() {
         style={{ y: smoothVideoY }}
         className="absolute left-0 right-0 h-[160%] -top-[30%]"
       >
-        {/* Poster image always behind — avoids iOS native play button */}
-        <img
-          src={VIDEOS.davidLohlein.poster}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
           style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
-        />
-        {shouldLoad && (
-          <video
-            ref={breakVidRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
-            style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
-            onCanPlayThrough={() => setVideoLoaded(true)}
-            onPlaying={() => setVideoLoaded(true)}
-          >
-            <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
-            <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
-          </video>
-        )}
+          onCanPlayThrough={() => setVideoLoaded(true)}
+          onPlaying={() => setVideoLoaded(true)}
+        >
+          <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
+          <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
+        </video>
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
       <div ref={inViewRef} className="absolute inset-0 flex items-center justify-center">

@@ -568,11 +568,25 @@ function HeroVideo() {
   const [loaded, setLoaded] = useState(false);
   const heroVidRef = useRef<HTMLVideoElement>(null);
 
-  // Fallback: if the video already loaded before React hydrated,
-  // the onCanPlayThrough event was missed. Check readyState on mount.
+  // On mount: check if already loaded (race condition guard) and
+  // explicitly call play() for iOS which often ignores the autoplay attribute.
   useEffect(() => {
     const vid = heroVidRef.current;
-    if (vid && vid.readyState >= 3) setLoaded(true);
+    if (!vid) return;
+    if (vid.readyState >= 3) setLoaded(true);
+
+    // iOS Safari needs an explicit play() even with autoPlay + muted + playsInline
+    const tryPlay = () => {
+      vid.play().catch(() => {
+        // Autoplay blocked — nothing we can do, the poster will show
+      });
+    };
+
+    if (vid.readyState >= 2) {
+      tryPlay();
+    } else {
+      vid.addEventListener("loadeddata", tryPlay, { once: true });
+    }
   }, []);
 
   return (
@@ -599,7 +613,7 @@ function HeroVideo() {
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="auto"
         poster={VIDEOS.flyerAnimated.poster}
         className={`w-full h-full object-cover transition-opacity duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}
         style={{ filter: "brightness(0.5) contrast(1.1)" }}

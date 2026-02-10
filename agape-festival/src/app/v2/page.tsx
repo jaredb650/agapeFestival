@@ -123,6 +123,17 @@ const CHROME_STYLES = `
     background-clip: text;
     animation: shimmer 10s linear infinite;
   }
+
+  /* Hide native iOS video controls / play button overlay */
+  video::-webkit-media-controls-panel,
+  video::-webkit-media-controls-play-button,
+  video::-webkit-media-controls-start-playback-button,
+  video::-webkit-media-controls {
+    display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 `;
 
 // ---- Loading Skeleton ----
@@ -596,12 +607,22 @@ function HeroVideo() {
       transition={{ duration: 2.5, delay: 4.8, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="absolute inset-0"
     >
+      {/* Poster image as fallback — avoids iOS native play button */}
+      {!loaded && (
+        <img
+          src={VIDEOS.flyerAnimated.poster}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.5) contrast(1.1)" }}
+        />
+      )}
       <AnimatePresence>
         {!loaded && (
           <motion.div
             key="hero-loader"
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
+            className="z-[2]"
           >
             <VideoLoader label="Loading" />
           </motion.div>
@@ -614,7 +635,6 @@ function HeroVideo() {
         loop
         playsInline
         preload="auto"
-        poster={VIDEOS.flyerAnimated.poster}
         className={`w-full h-full object-cover transition-opacity duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}
         style={{ filter: "brightness(0.5) contrast(1.1)" }}
         onCanPlayThrough={() => setLoaded(true)}
@@ -722,12 +742,18 @@ function TicketsSection() {
       <div className="sticky top-[10vh] h-[80vh] overflow-hidden flex items-center justify-center rounded-lg">
         {/* Video background */}
         <div className="absolute inset-0 overflow-hidden">
+          {/* Poster behind video — avoids iOS native play button */}
+          <img
+            src={VIDEOS.redStrobes.poster}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ filter: "brightness(0.5)" }}
+          />
           <video
             ref={videoRef}
             muted
             playsInline
             preload="none"
-            poster={VIDEOS.redStrobes.poster}
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "brightness(0.5)" }}
           >
@@ -913,16 +939,22 @@ function ParallaxVideoBreak() {
         style={{ y: smoothVideoY }}
         className="absolute left-0 right-0 h-[160%] -top-[30%]"
       >
-        {shouldLoad ? (
+        {/* Poster image always behind — avoids iOS native play button */}
+        <img
+          src={VIDEOS.davidLohlein.poster}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
+        />
+        {shouldLoad && (
           <video
             ref={breakVidRef}
             autoPlay
             muted
             loop
             playsInline
-            preload="none"
-            poster={VIDEOS.davidLohlein.poster}
-            className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
+            preload="auto"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
             style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
             onCanPlayThrough={() => setVideoLoaded(true)}
             onPlaying={() => setVideoLoaded(true)}
@@ -930,13 +962,6 @@ function ParallaxVideoBreak() {
             <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
             <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
           </video>
-        ) : (
-          <img
-            src={VIDEOS.davidLohlein.poster}
-            alt=""
-            className="w-full h-full object-cover"
-            style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
-          />
         )}
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />

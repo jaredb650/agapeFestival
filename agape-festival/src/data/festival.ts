@@ -354,14 +354,14 @@ export function getStages(): StageInfo[] {
 // ---- PHOTOS ----
 
 export const PHOTOS = [
-  `${BASE_PATH}/assets/photos/1D3A9267.jpg`,
-  `${BASE_PATH}/assets/photos/1D3A9488.jpeg`,
-  `${BASE_PATH}/assets/photos/1D3A9620-2.jpeg`,
-  `${BASE_PATH}/assets/photos/3BF199AD.jpg`,
-  `${BASE_PATH}/assets/photos/AGAPE_D7.jpeg`,
-  `${BASE_PATH}/assets/photos/AGAPE_F5.jpeg`,
-  `${BASE_PATH}/assets/photos/DSC05585.jpeg`,
-  `${BASE_PATH}/assets/photos/DSC05632.jpeg`,
+  `${BASE_PATH}/assets/photos/1D3A9267.webp`,
+  `${BASE_PATH}/assets/photos/1D3A9488.webp`,
+  `${BASE_PATH}/assets/photos/1D3A9620-2.webp`,
+  `${BASE_PATH}/assets/photos/3BF199AD.webp`,
+  `${BASE_PATH}/assets/photos/AGAPE_D7.webp`,
+  `${BASE_PATH}/assets/photos/AGAPE_F5.webp`,
+  `${BASE_PATH}/assets/photos/DSC05585.webp`,
+  `${BASE_PATH}/assets/photos/DSC05632.webp`,
 ];
 
 // ---- VIDEOS ----
@@ -370,16 +370,19 @@ export const VIDEOS = {
   davidLohlein: {
     mp4: `${BASE_PATH}/assets/videos/david_lohlein_4x5.mp4`,
     webm: `${BASE_PATH}/assets/videos/david_lohlein_4x5.webm`,
+    poster: `${BASE_PATH}/assets/videos/poster-david-lohlein.jpg`,
   },
   flyerAnimated: {
     mp4: `${BASE_PATH}/assets/videos/flyer-animated.mp4`,
     webm: `${BASE_PATH}/assets/videos/flyer-animated.webm`,
+    poster: `${BASE_PATH}/assets/videos/poster-flyer.jpg`,
   },
   skullCorridor: {
     mp4: `${BASE_PATH}/assets/videos/skull-corridor.mp4`,
   },
   redStrobes: {
     mp4: `${BASE_PATH}/assets/videos/red-strobes.mp4`,
+    poster: `${BASE_PATH}/assets/videos/poster-red-strobes.jpg`,
   },
 };
 
@@ -394,5 +397,5 @@ export const LOGOS = {
   agapeWhiteSm: `${BASE_PATH}/assets/logos/agape_logo_white_sm.png`,
   agapeIcon: `${BASE_PATH}/assets/logos/agape_icon.png`,
   agapeTxt: `${BASE_PATH}/assets/logos/agape_txtLogo.png`,
-  flyer2d: `${BASE_PATH}/assets/flyer-2d.png`,
+  flyer2d: `${BASE_PATH}/assets/flyer-2d.webp`,
 };

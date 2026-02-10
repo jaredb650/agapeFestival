@@ -7,11 +7,11 @@
 // ============================================================
 
 import {
-  Suspense,
   useState,
   useRef,
   useMemo,
   useEffect,
+  memo,
   type ReactNode,
 } from "react";
 import {
@@ -22,11 +22,13 @@ import {
   useSpring,
   AnimatePresence,
 } from "framer-motion";
-import { Canvas, useFrame } from "@react-three/fiber";
 import { Orbitron, Outfit } from "next/font/google";
 import localFont from "next/font/local";
 import Image from "next/image";
-import * as THREE from "three";
+import dynamic from "next/dynamic";
+
+// Lazy-load the entire Three.js scene — keeps ~886KB out of the initial bundle
+const ThreeScene = dynamic(() => import("./ThreeScene"), { ssr: false });
 import {
   FESTIVAL,
   COPY,
@@ -43,12 +45,14 @@ import {
 // ---- Fonts ----
 const orbitron = Orbitron({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600"],
+  weight: ["300", "400"],
+  display: "swap",
 });
 
 const chonkyPixels = localFont({
@@ -272,107 +276,19 @@ const NAV_LINKS = [
   { label: "MERCH", href: "#merch" },
 ];
 
-// ============================================================
-// THREE.JS SCENE (used as parallax background behind sections)
-// ============================================================
+// Three.js scene is lazy-loaded from ./ThreeScene.tsx via next/dynamic
 
-function WireframeTorus() {
-  const outerGroup = useRef<THREE.Group>(null);
-  const spinGroup = useRef<THREE.Group>(null);
-
-  useFrame((state, delta) => {
-    if (!spinGroup.current || !outerGroup.current) return;
-    spinGroup.current.rotation.y += delta * 0.05;
-    spinGroup.current.rotation.x += delta * 0.025;
-    outerGroup.current.rotation.x +=
-      (state.pointer.y * 0.08 - outerGroup.current.rotation.x) * 0.02;
-    outerGroup.current.rotation.y +=
-      (state.pointer.x * 0.08 - outerGroup.current.rotation.y) * 0.02;
-  });
-
-  return (
-    <group ref={outerGroup}>
-      <group ref={spinGroup}>
-        <mesh>
-          <torusKnotGeometry args={[2.5, 0.5, 300, 40]} />
-          <meshBasicMaterial
-            color="#ffffff"
-            wireframe
-            transparent
-            opacity={0.18}
-          />
-        </mesh>
-        <mesh scale={1.04}>
-          <torusKnotGeometry args={[2.5, 0.5, 150, 20]} />
-          <meshBasicMaterial
-            color="#888888"
-            wireframe
-            transparent
-            opacity={0.08}
-          />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-function ChromeParticles({ count = 200 }: { count?: number }) {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  const particles = useMemo(() => {
-    return Array.from({ length: count }, () => {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = 3 + Math.random() * 5;
-      return {
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi),
-        speed: 0.08 + Math.random() * 0.25,
-        scale: 0.008 + Math.random() * 0.025,
-        offset: Math.random() * Math.PI * 2,
-      };
-    });
-  }, [count]);
-
-  useFrame(({ clock }) => {
-    if (!meshRef.current) return;
-    const t = clock.getElapsedTime();
-    particles.forEach((p, i) => {
-      dummy.position.set(
-        p.x + Math.sin(t * p.speed + p.offset) * 0.4,
-        p.y + Math.cos(t * p.speed * 0.7 + p.offset) * 0.4,
-        p.z + Math.sin(t * p.speed * 0.4 + p.offset) * 0.3
-      );
-      dummy.scale.setScalar(p.scale);
-      dummy.updateMatrix();
-      meshRef.current!.setMatrixAt(i, dummy.matrix);
-    });
-    meshRef.current.instanceMatrix.needsUpdate = true;
-  });
-
-  return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
-      <sphereGeometry args={[1, 6, 6]} />
-      <meshStandardMaterial metalness={0.9} roughness={0.08} color="#dddddd" />
-    </instancedMesh>
-  );
-}
-
-function ParallaxScene() {
-  return (
-    <>
-      <color attach="background" args={["#000000"]} />
-      <fog attach="fog" args={["#000000", 6, 22]} />
-      <ambientLight intensity={0.25} />
-      <pointLight position={[10, 8, 10]} intensity={2} color="#ffffff" />
-      <pointLight position={[-8, -6, -10]} intensity={0.8} color="#6688cc" />
-      <pointLight position={[3, -7, 8]} intensity={0.5} color="#cc2222" />
-      <WireframeTorus />
-      <ChromeParticles />
-    </>
-  );
+// ---- Utility: keyframe interpolation (used by scroll-bound animations) ----
+function lerp(s: number, keys: number[], vals: number[]): number {
+  if (s <= keys[0]) return vals[0];
+  if (s >= keys[keys.length - 1]) return vals[vals.length - 1];
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (s >= keys[i] && s <= keys[i + 1]) {
+      const t = (s - keys[i]) / (keys[i + 1] - keys[i]);
+      return vals[i] + t * (vals[i + 1] - vals[i]);
+    }
+  }
+  return vals[vals.length - 1];
 }
 
 // ============================================================
@@ -445,7 +361,7 @@ function ParallaxImage({
 
 function MetallicDivider() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+  const isInView = useInView(ref, { once: false, margin: "-40px" });
   return (
     <motion.div
       ref={ref}
@@ -501,7 +417,7 @@ function ChromeBorder({
   );
 }
 
-function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
+const ArtistCard = memo(function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
   const [expanded, setExpanded] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -522,6 +438,7 @@ function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
                   src={artist.imageUrl}
                   alt={artist.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className={`object-cover transition-all duration-700 ease-out ${
                     imgLoaded ? "" : "opacity-0"
                   } ${
@@ -604,7 +521,7 @@ function ArtistCard({ artist, index }: { artist: Artist; index: number }) {
       </ChromeBorder>
     </motion.div>
   );
-}
+});
 
 // About section photo with scroll-locked zoom
 function AboutPhoto() {
@@ -682,6 +599,8 @@ function HeroVideo() {
         muted
         loop
         playsInline
+        preload="metadata"
+        poster={VIDEOS.flyerAnimated.poster}
         className={`w-full h-full object-cover transition-opacity duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}
         style={{ filter: "brightness(0.5) contrast(1.1)" }}
         onCanPlayThrough={() => setLoaded(true)}
@@ -720,6 +639,24 @@ function TicketsSection() {
   const darkRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Lazy-load the video when the track is within 1 viewport distance
+  useEffect(() => {
+    const el = trackRef.current;
+    const vid = videoRef.current;
+    if (!el || !vid) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && vid.preload === "none") {
+          vid.preload = "auto";
+          vid.load();
+        }
+      },
+      { rootMargin: "100% 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Video progress: spans the FULL time the track is on-screen (for playback)
   const { scrollYProgress: videoProgress } = useScroll({
     target: trackRef,
@@ -731,19 +668,6 @@ function TicketsSection() {
     target: trackRef,
     offset: ["start start", "end end"],
   });
-
-  // Helper: interpolate value from keyframe array
-  function lerp(s: number, keys: number[], vals: number[]): number {
-    if (s <= keys[0]) return vals[0];
-    if (s >= keys[keys.length - 1]) return vals[vals.length - 1];
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (s >= keys[i] && s <= keys[i + 1]) {
-        const t = (s - keys[i]) / (keys[i + 1] - keys[i]);
-        return vals[i] + t * (vals[i + 1] - vals[i]);
-      }
-    }
-    return vals[vals.length - 1];
-  }
 
   /* ---- Drive ALL animations imperatively via refs (bypasses useTransform) ---- */
   useEffect(() => {
@@ -788,7 +712,8 @@ function TicketsSection() {
             ref={videoRef}
             muted
             playsInline
-            preload="auto"
+            preload="none"
+            poster={VIDEOS.redStrobes.poster}
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "brightness(0.5)" }}
           >
@@ -909,6 +834,7 @@ function FlyerParallax() {
               alt="ÄGAPE FESTIVAL 2026 — Full Lineup"
               width={600}
               height={1067}
+              sizes="(max-width: 640px) 90vw, (max-width: 1024px) 60vw, 600px"
               className={`w-full h-auto scale-110 transition-opacity duration-700 ${flyerLoaded ? "opacity-100" : "opacity-0"}`}
               onLoad={() => setFlyerLoaded(true)}
             />
@@ -922,7 +848,9 @@ function FlyerParallax() {
 // Parallax video break component
 function ParallaxVideoBreak() {
   const ref = useRef(null);
+  const breakVidRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -931,6 +859,27 @@ function ParallaxVideoBreak() {
   const smoothVideoY = useSpring(videoY, { stiffness: 80, damping: 30 });
   const inViewRef = useRef(null);
   const isInView = useInView(inViewRef, { once: true, margin: "-80px" });
+
+  // Intersection Observer: load video when within 1 viewport, play/pause based on visibility
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          const vid = breakVidRef.current;
+          if (vid && vid.readyState >= 2) vid.play().catch(() => {});
+        } else {
+          const vid = breakVidRef.current;
+          if (vid && !vid.paused) vid.pause();
+        }
+      },
+      { rootMargin: "100% 0px" } // load when within 1 viewport distance
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div ref={ref} className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
@@ -950,19 +899,31 @@ function ParallaxVideoBreak() {
         style={{ y: smoothVideoY }}
         className="absolute left-0 right-0 h-[160%] -top-[30%]"
       >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
-          style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
-          onCanPlayThrough={() => setVideoLoaded(true)}
-          onPlaying={() => setVideoLoaded(true)}
-        >
-          <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
-          <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
-        </video>
+        {shouldLoad ? (
+          <video
+            ref={breakVidRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            poster={VIDEOS.davidLohlein.poster}
+            className={`w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
+            style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
+            onCanPlayThrough={() => setVideoLoaded(true)}
+            onPlaying={() => setVideoLoaded(true)}
+          >
+            <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
+            <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
+          </video>
+        ) : (
+          <img
+            src={VIDEOS.davidLohlein.poster}
+            alt=""
+            className="w-full h-full object-cover"
+            style={{ filter: "grayscale(1) contrast(1.15) brightness(0.4)" }}
+          />
+        )}
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
       <div ref={inViewRef} className="absolute inset-0 flex items-center justify-center">
@@ -1011,29 +972,34 @@ export default function ChromeCathedral() {
 
   useEffect(() => {
     setIsClient(true);
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 60);
+          ticking = false;
+        });
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const stages = getStages();
+  const stages = useMemo(() => getStages(), []);
 
   return (
     <div className={`${outfit.className} min-h-screen bg-black text-white relative`}>
       <style dangerouslySetInnerHTML={{ __html: CHROME_STYLES }} />
 
-      {/* ========== FIXED 3D PARALLAX BACKGROUND ========== */}
+      {/* ========== FIXED 3D PARALLAX BACKGROUND (lazy-loaded) ========== */}
       {isClient && (
         <motion.div
           ref={canvasContainerRef}
           className="fixed inset-0 z-0 pointer-events-none"
           style={{ y: canvasY, opacity: canvasOpacity }}
         >
-          <Suspense fallback={null}>
-            <Canvas camera={{ position: [0, 0, 7], fov: 55 }} dpr={[1, 1.5]}>
-              <ParallaxScene />
-            </Canvas>
-          </Suspense>
+          <ThreeScene />
         </motion.div>
       )}
 
@@ -1229,6 +1195,8 @@ export default function ChromeCathedral() {
                   alt=""
                   width={120}
                   height={120}
+                  priority
+                  sizes="120px"
                   className="w-[60px] sm:w-[80px] md:w-[120px] h-auto"
                 />
               </motion.div>
@@ -1249,8 +1217,9 @@ export default function ChromeCathedral() {
                   alt="ÄGAPE FESTIVAL"
                   width={540}
                   height={540}
-                  className="w-full h-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
                   priority
+                  sizes="(max-width: 640px) 280px, (max-width: 768px) 380px, (max-width: 1024px) 460px, 540px"
+                  className="w-full h-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
                 />
               </motion.div>
             </div>

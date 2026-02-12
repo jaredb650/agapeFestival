@@ -828,7 +828,7 @@ function ParallaxVideoBreak() {
             animate={isInView ? { opacity: 1, clipPath: "inset(0 0% 0 0)" } : {}}
             transition={{ duration: 1.2, delay: 1.3, ease: [0.16, 1, 0.3, 1] as const }}
           >
-            <p className={`${T.display} chrome-text mt-2`}>FOUR STAGES.</p>
+            <p className={`${T.display} chrome-text mt-2`}>MULTIPLE STAGES.</p>
           </motion.div>
         </div>
       </div>
@@ -1406,7 +1406,7 @@ function Lineup() {
               <HeadingLine />
             </motion.div>
             <motion.p variants={fadeInUp} className={`${T.body} text-neutral-600 mt-4`}>
-              {totalArtists} ARTISTS · 2 DAYS · 4 STAGES
+              {totalArtists} ARTISTS · 2 DAYS · MULTIPLE STAGES
             </motion.p>
           </Reveal>
 
@@ -1890,7 +1890,7 @@ export default function Trajectory() {
               "ÄGAPE FESTIVAL 2026",
               "SEPTEMBER 5 + 6",
               "INDUSTRY CITY — BROOKLYN",
-              "2 DAYS — 4 STAGES",
+              "2 DAYS — MULTIPLE STAGES",
               `${totalArtists} ARTISTS`,
             ].map((t, i) => (
               <span key={i} className="flex items-center">
@@ -2019,7 +2019,7 @@ export default function Trajectory() {
                 </motion.div>
                 <motion.div variants={fadeInUp} className="mt-6">
                   <TypewriterReveal
-                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 taking over both rooms for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
+                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 Label taking over both stages for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
                     className={`${T.monoSm} text-neutral-500`}
                     speed={6}
                     delay={200}

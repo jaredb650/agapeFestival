@@ -369,6 +369,9 @@ export const PHOTOS = [
   `${BASE_PATH}/assets/photos/web/AGAPE_F5.jpeg`,
   `${BASE_PATH}/assets/photos/web/DSC05585.jpeg`,
   `${BASE_PATH}/assets/photos/web/DSC05632.jpeg`,
+  `${BASE_PATH}/assets/photos/AGAPE_D38.jpg`,
+  `${BASE_PATH}/assets/photos/AGAPE_D14.jpg`,
+  `${BASE_PATH}/assets/photos/AGAPE_F14.jpg`,
 ];
 
 // ---- VIDEOS ----

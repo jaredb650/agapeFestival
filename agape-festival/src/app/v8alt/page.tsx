@@ -184,51 +184,22 @@ const STYLES = `
   }
 
   @keyframes ticketGlow {
-    0%, 100% { box-shadow: 0 0 0px rgba(139,0,0,0); }
-    50% { box-shadow: 0 0 18px rgba(139,0,0,0.3), 0 0 36px rgba(139,0,0,0.08); }
+    0%, 100% { box-shadow: 0 0 8px rgba(200,0,0,0.3); }
+    50% { box-shadow: 0 0 25px rgba(200,0,0,0.5), 0 0 60px rgba(139,0,0,0.2); }
   }
   @keyframes ticketPulse {
     0%, 82%, 100% { transform: scale(1); }
     88% { transform: scale(1.02); }
     94% { transform: scale(0.998); }
   }
-  /* Rapid randomized flicker — values from Math.random() to avoid visible loops */
-  @keyframes ticketFlicker {
-    0%   { opacity: 0.27; }
-    5%   { opacity: 0.35; }
-    10%  { opacity: 0.24; }
-    15%  { opacity: 0.91; }
-    20%  { opacity: 0.18; }
-    25%  { opacity: 0.84; }
-    30%  { opacity: 0.66; }
-    35%  { opacity: 0.68; }
-    40%  { opacity: 0.27; }
-    45%  { opacity: 0.85; }
-    50%  { opacity: 0.96; }
-    55%  { opacity: 0.09; }
-    60%  { opacity: 0.20; }
-    65%  { opacity: 0.72; }
-    70%  { opacity: 0.53; }
-    75%  { opacity: 0.37; }
-    80%  { opacity: 0.71; }
-    85%  { opacity: 0.70; }
-    90%  { opacity: 0.70; }
-    95%  { opacity: 0.36; }
-    100% { opacity: 0.24; }
+
+  /* Outer wrapper — hover + bounce scale lives here so corners move with button */
+  .ticket-wrap {
+    display: inline-block;
+    transition: transform 0.3s ease;
   }
-  /* Chromatic aberration — subtle red/blue text-shadow shift */
-  @keyframes ticketAberration {
-    0%   { text-shadow: 0.4px 0 1px rgba(255,0,80,0.3), -0.4px 0 1px rgba(0,30,255,0.3); }
-    10%  { text-shadow: 0.0px 0 1px rgba(255,0,80,0.3), -0.0px 0 1px rgba(0,30,255,0.3); }
-    20%  { text-shadow: 1.8px 0 1px rgba(255,0,80,0.3), -1.8px 0 1px rgba(0,30,255,0.3); }
-    30%  { text-shadow: 0.3px 0 1px rgba(255,0,80,0.3), -0.3px 0 1px rgba(0,30,255,0.3); }
-    40%  { text-shadow: 2.1px 0 1px rgba(255,0,80,0.3), -2.1px 0 1px rgba(0,30,255,0.3); }
-    50%  { text-shadow: 0.1px 0 1px rgba(255,0,80,0.3), -0.1px 0 1px rgba(0,30,255,0.3); }
-    60%  { text-shadow: 1.2px 0 1px rgba(255,0,80,0.3), -1.2px 0 1px rgba(0,30,255,0.3); }
-    70%  { text-shadow: 0.5px 0 1px rgba(255,0,80,0.3), -0.5px 0 1px rgba(0,30,255,0.3); }
-    80%  { text-shadow: 2.4px 0 1px rgba(255,0,80,0.3), -2.4px 0 1px rgba(0,30,255,0.3); }
-    90%  { text-shadow: 0.1px 0 1px rgba(255,0,80,0.3), -0.1px 0 1px rgba(0,30,255,0.3); }
-    100% { text-shadow: 1.6px 0 1px rgba(255,0,80,0.3), -1.6px 0 1px rgba(0,30,255,0.3); }
+  .ticket-wrap:hover {
+    transform: scale(1.05);
   }
 
   .ticket-btn {
@@ -236,31 +207,17 @@ const STYLES = `
     overflow: hidden;
     animation: ticketGlow 4s ease-in-out infinite, ticketPulse 7s ease-in-out infinite;
   }
-  .ticket-btn span {
-    animation: ticketAberration 2s infinite;
-  }
-  /* CRT scanlines — static horizontal lines + vertical RGB sub-pixel columns */
+  /* CRT scanlines — softened for readability */
   .ticket-btn::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.15) 50%),
-      linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
+      linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.08) 50%),
+      linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
     background-size: 100% 2px, 3px 100%;
     pointer-events: none;
     z-index: 1;
-  }
-  /* Rapid flicker overlay */
-  .ticket-btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(18,16,16,0.1);
-    opacity: 0;
-    animation: ticketFlicker 0.15s infinite;
-    pointer-events: none;
-    z-index: 2;
   }
 
   /* Scroll-lock attention pulse on ticket button */
@@ -346,13 +303,14 @@ function Frame({
   className?: string;
   accent?: boolean;
 }) {
-  const c = accent ? "border-[#8b0000]/40" : "border-white/[0.06]";
+  const c = accent ? "border-[#ff2a2a]/60" : "border-white/[0.06]";
+  const size = accent ? "w-4 h-4" : "w-3 h-3";
   return (
     <div className={`relative ${className}`}>
-      <div className={`absolute top-0 left-0 w-3 h-3 border-t border-l ${c} pointer-events-none z-10`} />
-      <div className={`absolute top-0 right-0 w-3 h-3 border-t border-r ${c} pointer-events-none z-10`} />
-      <div className={`absolute bottom-0 left-0 w-3 h-3 border-b border-l ${c} pointer-events-none z-10`} />
-      <div className={`absolute bottom-0 right-0 w-3 h-3 border-b border-r ${c} pointer-events-none z-10`} />
+      <div className={`absolute -top-px -left-px ${size} border-t border-l ${c} pointer-events-none z-10`} />
+      <div className={`absolute -top-px -right-px ${size} border-t border-r ${c} pointer-events-none z-10`} />
+      <div className={`absolute -bottom-px -left-px ${size} border-b border-l ${c} pointer-events-none z-10`} />
+      <div className={`absolute -bottom-px -right-px ${size} border-b border-r ${c} pointer-events-none z-10`} />
       {children}
     </div>
   );
@@ -1481,7 +1439,7 @@ export default function Trajectory() {
 
   const heroRef = useRef<HTMLElement>(null);
   const ticketsSectionRef = useRef<HTMLElement>(null);
-  const ticketBtnRef = useRef<HTMLAnchorElement>(null);
+  const ticketBtnRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll();
   const canvasY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
@@ -1683,18 +1641,20 @@ export default function Trajectory() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <Frame accent>
-                        <a
-                          href={FESTIVAL.ticketUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ticket-btn block bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-300 px-8 sm:px-10 py-2 whitespace-nowrap"
-                        >
-                          <span className={`${T.label} text-neutral-200 hover:text-white transition-colors duration-300`}>
-                            GET TICKETS
-                          </span>
-                        </a>
-                      </Frame>
+                      <div className="ticket-wrap">
+                        <Frame accent>
+                          <a
+                            href={FESTIVAL.ticketUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ticket-btn block bg-[#8b0000] hover:bg-[#a00000] transition-all duration-300 px-10 sm:px-12 py-2.5 whitespace-nowrap"
+                          >
+                            <span className={`${orbitron.className} text-[11px] tracking-[0.3em] font-semibold text-white transition-colors duration-300`}>
+                              GET TICKETS
+                            </span>
+                          </a>
+                        </Frame>
+                      </div>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -1849,21 +1809,23 @@ export default function Trajectory() {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 6.4 }}
+              transition={{ duration: 0.8, delay: 4 }}
               className="mt-14"
             >
-              <Frame accent className="inline-block">
-                <a
-                  href={FESTIVAL.ticketUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ticket-btn block px-10 py-4 bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-500 group"
-                >
-                  <span className={`${T.label} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
-                    GET TICKETS
-                  </span>
-                </a>
-              </Frame>
+              <div className="ticket-wrap">
+                <Frame accent className="inline-block">
+                  <a
+                    href={FESTIVAL.ticketUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ticket-btn block px-16 py-5 bg-[#8b0000] hover:bg-[#a00000] transition-all duration-300 group"
+                  >
+                    <span className={`${orbitron.className} text-[13px] tracking-[0.3em] font-semibold text-white transition-colors duration-300`}>
+                      GET TICKETS
+                    </span>
+                  </a>
+                </Frame>
+              </div>
             </motion.div>
           </div>
         </section>
@@ -1938,18 +1900,20 @@ export default function Trajectory() {
                   />
                 </motion.div>
                 <motion.div variants={fadeInUp} className="mt-8">
-                  <Frame accent className="inline-block">
-                    <a
-                      href={FESTIVAL.ticketUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ticket-btn block px-8 py-3 bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-300"
-                    >
-                      <span className={`${T.label} text-neutral-300 hover:text-white transition-colors duration-300`}>
-                        SECURE YOUR SPOT →
-                      </span>
-                    </a>
-                  </Frame>
+                  <div className="ticket-wrap">
+                    <Frame accent className="inline-block">
+                      <a
+                        href={FESTIVAL.ticketUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ticket-btn block px-12 py-4 bg-[#8b0000] hover:bg-[#a00000] transition-all duration-300"
+                      >
+                        <span className={`${orbitron.className} text-[13px] tracking-[0.3em] font-semibold text-white transition-colors duration-300`}>
+                          SECURE YOUR SPOT →
+                        </span>
+                      </a>
+                    </Frame>
+                  </div>
                 </motion.div>
               </Reveal>
             </div>
@@ -1997,20 +1961,21 @@ export default function Trajectory() {
                       speed={15}
                     />
                   </motion.div>
-                  <motion.div variants={fadeInUp} className="mt-12">
-                    <Frame accent className="inline-block">
-                      <a
-                        ref={ticketBtnRef}
-                        href={FESTIVAL.ticketUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ticket-btn block px-12 py-5 bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-300 group"
-                      >
-                        <span className={`${T.label} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
-                          GET TICKETS →
-                        </span>
-                      </a>
-                    </Frame>
+                  <motion.div variants={fadeInUp} className="mt-12 w-full sm:w-auto">
+                    <div ref={ticketBtnRef} className="ticket-wrap block sm:inline-block">
+                      <Frame accent className="block sm:inline-block">
+                        <a
+                          href={FESTIVAL.ticketUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ticket-btn block px-16 py-6 bg-[#8b0000] hover:bg-[#a00000] transition-all duration-300 group text-center"
+                        >
+                          <span className={`${orbitron.className} text-[15px] sm:text-[16px] tracking-[0.3em] font-bold text-white transition-colors duration-300`}>
+                            GET TICKETS →
+                          </span>
+                        </a>
+                      </Frame>
+                    </div>
                   </motion.div>
                 </div>
               </Frame>

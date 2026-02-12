@@ -2221,7 +2221,11 @@ export default function Trajectory() {
                       <a
                         key={link.label}
                         href={link.href}
-                        {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const el = document.querySelector(link.href);
+                          if (el) el.scrollIntoView({ behavior: "smooth" });
+                        }}
                         className={`${T.bodySm} text-neutral-600 hover:text-white transition-colors duration-300`}
                       >
                         {link.label}

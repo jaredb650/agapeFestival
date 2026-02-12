@@ -1462,8 +1462,10 @@ function Lineup() {
 // ---- Nav Links — all site sections for the dropdown menu ----
 const NAV_LINKS = [
   { label: "TOP", href: "#hero" },
-  { label: "ABOUT", href: "#about" },
   { label: "LINEUP", href: "#artists" },
+  { label: "TICKETS", href: "#tickets" },
+  { label: "ABOUT", href: "#about" },
+  { label: "THE JOURNEY", href: "#journey" },
   { label: "PARTNERS", href: "#partners" },
 ];
 
@@ -1565,7 +1567,15 @@ export default function Trajectory() {
             className="fixed top-0 left-0 right-0 z-50 bg-transparent"
           >
             <div className={`max-w-[1400px] mx-auto ${S.px} py-5 flex items-center justify-between`}>
-              <a href="#hero" className="flex items-center gap-3 group">
+              <a
+                href="#hero"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.querySelector("#hero");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="flex items-center gap-3 group"
+              >
                 <Image
                   src={LOGOS.agapeWhite}
                   alt=""
@@ -1623,9 +1633,12 @@ export default function Trajectory() {
                           href={link.href}
                           onClick={(e) => {
                             e.preventDefault();
+                            const target = link.href;
                             setMenuOpen(false);
-                            const el = document.querySelector(link.href);
-                            if (el) el.scrollIntoView({ behavior: "smooth" });
+                            setTimeout(() => {
+                              const el = document.querySelector(target);
+                              if (el) el.scrollIntoView({ behavior: "smooth" });
+                            }, 350);
                           }}
                           className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300`}
                         >
@@ -1954,7 +1967,7 @@ export default function Trajectory() {
         <SectionLine />
 
         {/* ===== TICKETS CTA ("SECURE YOUR ENTRY") ===== */}
-        <section ref={ticketsSectionRef} className={`relative ${S.section} overflow-hidden`}>
+        <section id="tickets" ref={ticketsSectionRef} className={`relative ${S.section} overflow-hidden`}>
           <video
             autoPlay
             muted
@@ -2070,7 +2083,7 @@ export default function Trajectory() {
         <SectionLine />
 
         {/* ===== TIMELINE / THE JOURNEY ===== */}
-        <section className={`pt-28 sm:pt-36 pb-4 sm:pb-6 ${S.px} bg-black/70 overflow-hidden`}>
+        <section id="journey" className={`pt-28 sm:pt-36 pb-4 sm:pb-6 ${S.px} bg-black/70 overflow-hidden`}>
           <div className="max-w-[1400px] mx-auto">
             <Reveal>
               <motion.div variants={fadeInUp}>
@@ -2090,26 +2103,19 @@ export default function Trajectory() {
 
         {/* ===== DEDICATION ===== */}
         <section className={`pt-6 pb-20 sm:pt-8 sm:pb-28 ${S.px} bg-black/70`}>
-          <Reveal>
-            <motion.p
-              variants={fadeInUp}
-              className={`${T.monoSm} text-neutral-500 text-center max-w-2xl mx-auto leading-relaxed italic`}
-            >
-              To our community: it&apos;s been an honor to have you follow us on this journey
-              and watch you grow alongside us over the years. This event is dedicated to all
-              those who&apos;ve worked with us, supported us, believed in us, and to anyone
-              who&apos;s ever donated their presence at one of our events. To share these moments
-              with you all has made this project something truly special. None of it happens
-              without you guys. So this one&apos;s for you. Hope you enjoy it. This is just
-              the beginning.
-            </motion.p>
-            <motion.p
-              variants={fadeInUp}
-              className={`${T.monoSm} text-neutral-400 text-center mt-6`}
-            >
-              — The ÄGAPĒ Team
-            </motion.p>
-          </Reveal>
+          <div className="max-w-2xl mx-auto text-center">
+            <TypewriterReveal
+              text="To our community: it's been an honor to have you follow us on this journey and watch you grow alongside us over the years. This event is dedicated to all those who've worked with us, supported us, believed in us, and to anyone who's ever donated their presence at one of our events. To share these moments with you all has made this project something truly special. None of it happens without you guys. So this one's for you. Hope you enjoy it. This is just the beginning."
+              className={`${T.monoSm} text-neutral-500 leading-relaxed italic`}
+              speed={18}
+            />
+            <TypewriterReveal
+              text="— The ÄGAPĒ Team"
+              className={`${T.monoSm} text-neutral-400 mt-6`}
+              speed={40}
+              delay={9000}
+            />
+          </div>
         </section>
 
         <SectionLine />

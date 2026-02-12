@@ -615,7 +615,7 @@ function AboutPhoto() {
         <div className="aspect-[3/4] lg:aspect-auto lg:h-full overflow-hidden relative min-h-[400px]">
           <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
             <Image
-              src={`${BASE_PATH}/assets/photos/About.jpeg`}
+              src={`${BASE_PATH}/assets/photos/about.jpeg`}
               alt="ÄGAPĒ event"
               fill
               className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}

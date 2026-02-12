@@ -1167,7 +1167,7 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
         <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
           {/* Chain GIF background — visible on hover */}
           <img
-            src="/assets/videos/chains_red.gif"
+            src={`${BASE_PATH}/assets/videos/chains_red.gif`}
             alt=""
             aria-hidden
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
@@ -1406,7 +1406,7 @@ function B2B2BModal({ onClose }: { onClose: () => void }) {
       >
         {/* Chain GIF background — animated in with modal */}
         <motion.img
-          src="/assets/videos/chains_red.gif"
+          src={`${BASE_PATH}/assets/videos/chains_red.gif`}
           alt=""
           aria-hidden
           initial={{ opacity: 0 }}

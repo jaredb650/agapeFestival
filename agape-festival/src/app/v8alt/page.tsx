@@ -1423,7 +1423,6 @@ const NAV_LINKS = [
   { label: "LINEUP", href: "#artists" },
   { label: "TICKETS", href: "#tickets" },
   { label: "ABOUT", href: "#about" },
-  { label: "THE JOURNEY", href: "#journey" },
   { label: "PARTNERS", href: "#partners" },
 ];
 
@@ -1542,7 +1541,7 @@ export default function Trajectory() {
                   className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
                 />
               </a>
-              <div className="flex items-center gap-10">
+              <div className="flex items-center gap-4 sm:gap-10">
                 {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
                   <a
                     key={link.label}
@@ -1552,7 +1551,7 @@ export default function Trajectory() {
                       const el = document.querySelector(link.href);
                       if (el) el.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className={`${T.label} text-neutral-600 hover:text-white transition-colors duration-300`}
+                    className={`${orbitron.className} text-[8px] sm:text-[10px] tracking-[0.3em] sm:tracking-[0.35em] text-neutral-600 hover:text-white transition-colors duration-300`}
                   >
                     {link.label}
                   </a>
@@ -1726,7 +1725,7 @@ export default function Trajectory() {
             >
               <Frame className="inline-block">
                 <p className={`${T.bodySm} text-neutral-500 px-4 py-1.5`}>
-                  BROOKLYN, NEW YORK
+                  BROOKLYN &nbsp; NEW YORK
                 </p>
               </Frame>
             </motion.div>

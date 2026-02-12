@@ -2019,7 +2019,7 @@ export default function Trajectory() {
                 </motion.div>
                 <motion.div variants={fadeInUp} className="mt-6">
                   <TypewriterReveal
-                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 Label taking over both stages for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
+                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 Label Group taking over both stages for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
                     className={`${T.monoSm} text-neutral-500`}
                     speed={6}
                     delay={200}

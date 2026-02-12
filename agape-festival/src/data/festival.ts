@@ -93,7 +93,7 @@ export const PARTNERS: BrandPartner[] = [
     website: "https://agapemusic.us/",
   },
   {
-    name: "44",
+    name: "44 Label Group",
     logoUrl: `${BASE_PATH}/assets/logos/44-logo-white.png`,
   },
   {
@@ -243,7 +243,7 @@ export const ARTISTS: Artist[] = [
     name: "Aiden",
     day: 2,
     stage: "outdoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Aiden"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/aiden/press-kit/aiden-headshot.jpeg`,
@@ -254,7 +254,7 @@ export const ARTISTS: Artist[] = [
     name: "Kobosil",
     day: 2,
     stage: "outdoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Kobosil"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.png`,
@@ -264,7 +264,7 @@ export const ARTISTS: Artist[] = [
     name: "David Löhlein",
     day: 2,
     stage: "outdoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("David Löhlein"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/david-lohlein/placeholder/david-lohlein.jpg`,
@@ -273,7 +273,7 @@ export const ARTISTS: Artist[] = [
     name: "Future.666",
     day: 2,
     stage: "outdoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Future.666"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/future666/press-kit/future666-headshot.jpg`,
@@ -285,7 +285,7 @@ export const ARTISTS: Artist[] = [
     name: "Clara Cuve",
     day: 2,
     stage: "indoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Clara Cuve"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/clara-cuve/press-kit/claracuve-headshot.png`,
@@ -295,7 +295,7 @@ export const ARTISTS: Artist[] = [
     name: "Kobosil",
     day: 2,
     stage: "indoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Kobosil"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.png`,
@@ -305,7 +305,7 @@ export const ARTISTS: Artist[] = [
     name: "Somewhen",
     day: 2,
     stage: "indoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Somewhen"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/somewhen/press-kit/somewhen-headshot.JPG`,
@@ -315,7 +315,7 @@ export const ARTISTS: Artist[] = [
     name: "Ueberrest",
     day: 2,
     stage: "indoor",
-    stageHost: "44",
+    stageHost: "44 Label Group",
     bio: placeholderBio("Ueberrest"),
     isPlaceholderBio: true,
     imageUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-headshot.png`,
@@ -345,18 +345,26 @@ export function getStages(): StageInfo[] {
       day: 2,
       dayLabel: "Day 2 — Sunday",
       stage: "outdoor",
-      host: "44",
+      host: "44 Label Group",
       artists: ARTISTS.filter((a) => a.day === 2 && a.stage === "outdoor"),
     },
     {
       day: 2,
       dayLabel: "Day 2 — Sunday",
       stage: "indoor",
-      host: "44",
+      host: "44 Label Group",
       artists: ARTISTS.filter((a) => a.day === 2 && a.stage === "indoor"),
     },
   ];
 }
+
+// ---- STAGE HOST LOGOS (for navbar swap) ----
+
+export const STAGE_LOGOS: Record<string, string> = {
+  "Hot Meal": `${BASE_PATH}/assets/logos/hotmeal-logo-white.png`,
+  "Face 2 Face": `${BASE_PATH}/assets/logos/f2f-logo-white.png`,
+  "44 Label Group": `${BASE_PATH}/assets/logos/44-logo-white.png`,
+};
 
 // ---- PHOTOS ----
 

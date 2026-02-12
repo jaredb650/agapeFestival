@@ -42,6 +42,7 @@ import {
   PARTNERS,
   ARTISTS,
   getStages,
+  STAGE_LOGOS,
   PHOTOS,
   VIDEOS,
   LOGOS,
@@ -1344,7 +1345,7 @@ function Lineup() {
             const renderItems = buildRenderItems(stage.artists);
             const isDay2Indoor = stage.day === 2 && stage.stage === "indoor";
             return (
-              <div key={`${stage.day}-${stage.stage}`} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
+              <div key={`${stage.day}-${stage.stage}`} id={`stage-${stage.day}-${stage.stage}`} data-host={stage.host} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
                 {stageIdx > 0 && <div className="mb-12"><SectionLine /></div>}
                 <Reveal>
                   <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-8">
@@ -1434,6 +1435,7 @@ export default function Trajectory() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [overTickets, setOverTickets] = useState(false);
+  const [activeStageHost, setActiveStageHost] = useState<string | null>(null);
   const [topNavReady, setTopNavReady] = useState(false);
 
   const heroRef = useRef<HTMLElement>(null);
@@ -1463,6 +1465,24 @@ export default function Trajectory() {
         const sectionHeight = rect.height;
         setOverTickets(sectionHeight > 0 && visibleHeight / sectionHeight > 0.8);
       }
+      // Swap navbar logo to stage host brand when scrolling through lineup
+      const stageIds = ["stage-1-outdoor", "stage-1-indoor", "stage-2-outdoor", "stage-2-indoor"];
+      let bestHost: string | null = null;
+      let bestRatio = 0;
+      for (const id of stageIds) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        const vTop = Math.max(r.top, 0);
+        const vBot = Math.min(r.bottom, window.innerHeight);
+        const vis = Math.max(0, vBot - vTop);
+        const ratio = r.height > 0 ? vis / r.height : 0;
+        if (ratio > bestRatio) {
+          bestRatio = ratio;
+          bestHost = el.getAttribute("data-host");
+        }
+      }
+      setActiveStageHost(bestRatio > 0.3 ? bestHost : null);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -1611,7 +1631,7 @@ export default function Trajectory() {
             {/* Main floating bar: [LOGO] ——— [GET TICKETS] ——— [HAMBURGER] */}
             <Frame>
               <div className="bg-black/85 backdrop-blur-xl border border-white/[0.06] flex items-center justify-between py-2.5 px-3 sm:px-4">
-                {/* Left — ÄGAPĒ logo */}
+                {/* Left — Logo (swaps to stage host brand when scrolling lineup) */}
                 <a
                   href="#hero"
                   onClick={(e) => {
@@ -1621,13 +1641,41 @@ export default function Trajectory() {
                   }}
                   className="p-2.5 group"
                 >
-                  <Image
-                    src={LOGOS.agapeWhite}
-                    alt="ÄGAPĒ"
-                    width={16}
-                    height={16}
-                    className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
-                  />
+                  <AnimatePresence mode="wait">
+                    {activeStageHost && STAGE_LOGOS[activeStageHost] ? (
+                      <motion.div
+                        key={activeStageHost}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Image
+                          src={STAGE_LOGOS[activeStageHost]}
+                          alt={activeStageHost}
+                          width={80}
+                          height={40}
+                          className={`opacity-70 group-hover:opacity-100 transition-opacity duration-300 w-auto object-contain ${activeStageHost === "Face 2 Face" ? "h-5" : "h-4"}`}
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="agape"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Image
+                          src={LOGOS.agapeWhite}
+                          alt="ÄGAPĒ"
+                          width={16}
+                          height={16}
+                          className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </a>
 
                 {/* Center — Buy Tickets button (hides over tickets section) */}
@@ -1892,7 +1940,7 @@ export default function Trajectory() {
                 </motion.div>
                 <motion.div variants={fadeInUp} className="mt-6">
                   <TypewriterReveal
-                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 Label taking over both stages for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
+                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 Label Group taking over both stages for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
                     className={`${T.monoSm} text-neutral-500`}
                     speed={6}
                     delay={200}

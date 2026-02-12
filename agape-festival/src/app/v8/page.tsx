@@ -19,6 +19,7 @@ import {
   useRef,
   useMemo,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import {
@@ -47,6 +48,11 @@ import {
   BASE_PATH,
   type Artist,
 } from "@/data/festival";
+import dynamic from "next/dynamic";
+
+const GlitchLogo = dynamic(() => import("@/components/GlitchLogo"), {
+  ssr: false,
+});
 
 // ---- Fonts ----
 const orbitron = Orbitron({
@@ -88,7 +94,7 @@ const T = {
   /** Small body text — footer, subtitles */
   bodySm: `${outfit.className} text-[11px] tracking-[0.15em]`,
   /** Large accent — about main statement */
-  monoLg: `${chonkyPixels.className} text-xl sm:text-2xl md:text-3xl leading-relaxed tracking-[0.04em]`,
+  monoLg: `${chonkyPixels.className} text-lg sm:text-xl md:text-2xl leading-relaxed tracking-[0.04em]`,
   /** Medium accent — hero date, flyer main copy */
   mono: `${chonkyPixels.className} text-base sm:text-lg leading-[1.9] tracking-[0.04em]`,
   /** Small accent — descriptions, bios, taglines */
@@ -166,6 +172,99 @@ const STYLES = `
   @keyframes mysteryGlow {
     0%, 100% { text-shadow: 0 0 20px rgba(139,0,0,0.3); }
     50% { text-shadow: 0 0 40px rgba(139,0,0,0.6), 0 0 80px rgba(139,0,0,0.2); }
+  }
+
+  @keyframes ticketGlow {
+    0%, 100% { box-shadow: 0 0 0px rgba(139,0,0,0); }
+    50% { box-shadow: 0 0 18px rgba(139,0,0,0.3), 0 0 36px rgba(139,0,0,0.08); }
+  }
+  @keyframes ticketPulse {
+    0%, 82%, 100% { transform: scale(1); }
+    88% { transform: scale(1.02); }
+    94% { transform: scale(0.998); }
+  }
+  /* Rapid randomized flicker — values from Math.random() to avoid visible loops */
+  @keyframes ticketFlicker {
+    0%   { opacity: 0.27; }
+    5%   { opacity: 0.35; }
+    10%  { opacity: 0.24; }
+    15%  { opacity: 0.91; }
+    20%  { opacity: 0.18; }
+    25%  { opacity: 0.84; }
+    30%  { opacity: 0.66; }
+    35%  { opacity: 0.68; }
+    40%  { opacity: 0.27; }
+    45%  { opacity: 0.85; }
+    50%  { opacity: 0.96; }
+    55%  { opacity: 0.09; }
+    60%  { opacity: 0.20; }
+    65%  { opacity: 0.72; }
+    70%  { opacity: 0.53; }
+    75%  { opacity: 0.37; }
+    80%  { opacity: 0.71; }
+    85%  { opacity: 0.70; }
+    90%  { opacity: 0.70; }
+    95%  { opacity: 0.36; }
+    100% { opacity: 0.24; }
+  }
+  /* Chromatic aberration — subtle red/blue text-shadow shift */
+  @keyframes ticketAberration {
+    0%   { text-shadow: 0.4px 0 1px rgba(255,0,80,0.3), -0.4px 0 1px rgba(0,30,255,0.3); }
+    10%  { text-shadow: 0.0px 0 1px rgba(255,0,80,0.3), -0.0px 0 1px rgba(0,30,255,0.3); }
+    20%  { text-shadow: 1.8px 0 1px rgba(255,0,80,0.3), -1.8px 0 1px rgba(0,30,255,0.3); }
+    30%  { text-shadow: 0.3px 0 1px rgba(255,0,80,0.3), -0.3px 0 1px rgba(0,30,255,0.3); }
+    40%  { text-shadow: 2.1px 0 1px rgba(255,0,80,0.3), -2.1px 0 1px rgba(0,30,255,0.3); }
+    50%  { text-shadow: 0.1px 0 1px rgba(255,0,80,0.3), -0.1px 0 1px rgba(0,30,255,0.3); }
+    60%  { text-shadow: 1.2px 0 1px rgba(255,0,80,0.3), -1.2px 0 1px rgba(0,30,255,0.3); }
+    70%  { text-shadow: 0.5px 0 1px rgba(255,0,80,0.3), -0.5px 0 1px rgba(0,30,255,0.3); }
+    80%  { text-shadow: 2.4px 0 1px rgba(255,0,80,0.3), -2.4px 0 1px rgba(0,30,255,0.3); }
+    90%  { text-shadow: 0.1px 0 1px rgba(255,0,80,0.3), -0.1px 0 1px rgba(0,30,255,0.3); }
+    100% { text-shadow: 1.6px 0 1px rgba(255,0,80,0.3), -1.6px 0 1px rgba(0,30,255,0.3); }
+  }
+
+  .ticket-btn {
+    position: relative;
+    overflow: hidden;
+    animation: ticketGlow 4s ease-in-out infinite, ticketPulse 7s ease-in-out infinite;
+  }
+  .ticket-btn span {
+    animation: ticketAberration 2s infinite;
+  }
+  /* CRT scanlines — static horizontal lines + vertical RGB sub-pixel columns */
+  .ticket-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.15) 50%),
+      linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* Rapid flicker overlay */
+  .ticket-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(18,16,16,0.1);
+    opacity: 0;
+    animation: ticketFlicker 0.15s infinite;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Scroll-lock attention pulse on ticket button */
+  @keyframes ticketAttention {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.08); }
+    30% { transform: scale(0.97); }
+    45% { transform: scale(1.05); }
+    60% { transform: scale(0.99); }
+    75% { transform: scale(1.03); }
+  }
+  .ticket-attention {
+    animation: ticketAttention 0.8s ease-in-out 2;
   }
 `;
 
@@ -510,13 +609,13 @@ function AboutPhoto() {
       initial={{ opacity: 0 }}
       animate={isInView ? { opacity: 1 } : {}}
       transition={{ duration: 0.7 }}
-      className="order-1 lg:order-2"
+      className="order-1 lg:order-2 h-full"
     >
-      <Frame>
-        <div className="aspect-[3/4] overflow-hidden relative">
+      <Frame className="h-full">
+        <div className="aspect-[3/4] lg:aspect-auto lg:h-full overflow-hidden relative min-h-[400px]">
           <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
             <Image
-              src={PHOTOS[6]}
+              src={`${BASE_PATH}/assets/photos/About.jpeg`}
               alt="ÄGAPĒ event"
               fill
               className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
@@ -527,6 +626,128 @@ function AboutPhoto() {
         </div>
       </Frame>
     </motion.div>
+  );
+}
+
+// ---- Apple-style Coverflow Carousel ----
+function CoverflowCarousel({ photos }: { photos: string[] }) {
+  const [active, setActive] = useState(0);
+  const total = photos.length;
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragStart = useRef<{ x: number; t: number } | null>(null);
+
+  const go = useCallback(
+    (dir: 1 | -1) => setActive((p) => Math.max(0, Math.min(total - 1, p + dir))),
+    [total]
+  );
+
+  // Keyboard nav
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go]);
+
+  // Swipe / drag
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragStart.current = { x: e.clientX, t: Date.now() };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!dragStart.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dt = Date.now() - dragStart.current.t;
+    // Require 40px or fast flick (velocity > 0.3px/ms)
+    if (Math.abs(dx) > 40 || (Math.abs(dx) > 15 && dt < 200)) {
+      go(dx < 0 ? 1 : -1);
+    }
+    dragStart.current = null;
+  };
+
+  return (
+    <div className="relative select-none">
+      {/* Carousel track */}
+      <div
+        ref={trackRef}
+        className="relative flex items-center justify-center overflow-hidden"
+        style={{ height: "clamp(280px, 45vw, 520px)", perspective: "1200px" }}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+      >
+        {photos.map((photo, i) => {
+          const offset = i - active;
+          const absOffset = Math.abs(offset);
+          const isVisible = absOffset <= 2;
+
+          if (!isVisible) return null;
+
+          // Position, scale, rotation, opacity per offset
+          const translateX = offset * 32; // % of container
+          const translateZ = -absOffset * 120;
+          const rotateY = offset * -25;
+          const scale = 1 - absOffset * 0.15;
+          const opacity = 1 - absOffset * 0.3;
+          const zIndex = total - absOffset;
+
+          return (
+            <motion.div
+              key={photo}
+              animate={{
+                x: `${translateX}%`,
+                z: translateZ,
+                rotateY,
+                scale,
+                opacity,
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              style={{
+                position: "absolute",
+                width: "clamp(260px, 50%, 560px)",
+                zIndex,
+                transformStyle: "preserve-3d",
+              }}
+              className="cursor-pointer"
+              onClick={() => {
+                if (offset < 0) go(-1);
+                else if (offset > 0) go(1);
+              }}
+            >
+              <Frame>
+                <div className="aspect-[4/3] relative overflow-hidden">
+                  <Image
+                    src={photo}
+                    alt={`ÄGAPĒ event ${i + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 80vw, 50vw"
+                  />
+                  {/* Reflection-style gradient at bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+              </Frame>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Dots / indicators */}
+      <div className="flex justify-center gap-2 mt-8">
+        {photos.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+              i === active
+                ? "bg-white/60 w-4"
+                : "bg-white/15 hover:bg-white/30"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -623,32 +844,32 @@ const MILESTONES = [
   {
     year: "2021",
     title: "THE BEGINNING",
-    text: "First ÄGAPĒ gathering in a Brooklyn warehouse. 40 people, one room, pure energy. The seed of something bigger.",
+    text: "A warehouse somewhere in Brooklyn. No grand strategy. Just music that pushed boundaries and a room where people could lose themselves.",
   },
   {
     year: "2022",
-    title: "BUILDING THE SOUND",
-    text: "Monthly events take root across NYC. A community forms around uncompromising hard techno. 200+ regulars become family.",
+    title: "THE EARLY DAYS",
+    text: "Simple shows. Focused. The kind of nights where you look around and realize everyone's there for the same reason.",
   },
   {
     year: "2023",
-    title: "GOING UNDERGROUND",
-    text: "First multi-room event. The Face 2 Face partnership begins. 500 capacity — sold out in hours.",
+    title: "THE COMMUNITY",
+    text: "More people found their way in. The gatherings became regular. Familiar faces turned into something tangible.",
   },
   {
     year: "2024",
-    title: "BREAKING THROUGH",
-    text: "First international artist bookings. Collaboration with 44 Label Group. Events surpass 1,000 attendees.",
+    title: "THE EXPANSION",
+    text: "New spaces, new formats, different rooms. Artists we respected joined in. Collaborations happened organically. The sound evolved; the crowd evolved with it.",
   },
   {
     year: "2025",
     title: "THE MOVEMENT",
-    text: "Sold-out warehouses become the norm. NYC's hardest techno community earns national recognition.",
+    text: "Nothing happened overnight. It just built, slowly and with fierce intention.",
   },
   {
     year: "2026",
     title: "THE FESTIVAL",
-    text: "ÄGAPĒ FESTIVAL. Industry City, Brooklyn. 2 days. 4 stages. 22 artists. The culmination. The peak. And peaking is what we do.",
+    text: "Industry City, Brooklyn. Two days. One indoor stage. One outdoor stage. From noon til dawn. The culmination of everything we've built.",
     isFinal: true,
   },
 ] as const;
@@ -786,12 +1007,31 @@ function Timeline() {
 // ---- Artist Card (restored from original grid, with modal click) ----
 function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) => void }) {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hovering, setHovering] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (artist.videoUrl && videoRef.current) {
+      setHovering(true);
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  };
+  const handleMouseLeave = () => {
+    if (artist.videoUrl && videoRef.current) {
+      setHovering(false);
+      videoRef.current.pause();
+    }
+  };
+
   return (
     <motion.div
       variants={fadeInUp}
       onClick={() => onClick(artist)}
       className="cursor-pointer group"
       whileHover={{ y: -4, transition: { duration: 0.3 } }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Frame>
         <div className="bg-[#060606]">
@@ -812,6 +1052,19 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 <span className={`${T.label} text-white/10`}>—</span>
               </div>
             )}
+            {artist.videoUrl && (
+              <video
+                ref={videoRef}
+                src={artist.videoUrl}
+                muted
+                loop
+                playsInline
+                preload="none"
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                  hovering ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            )}
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
           </div>
           <div className="px-4 py-3 flex items-center justify-between border-t border-white/[0.06]">
@@ -819,9 +1072,15 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
               {artist.name}
             </h3>
             {artist.note && (
-              <span className={`${T.detail} ${artist.note === "F2F" ? "text-[#8b0000]" : "text-neutral-500"} shrink-0`}>
-                {artist.note}
-              </span>
+              <Frame accent={artist.note === "F2F"}>
+                <span className={`${T.detail} block px-2 py-0.5 text-white ${
+                  artist.note === "F2F"
+                    ? "bg-[#8b0000]/15"
+                    : "bg-white/[0.04]"
+                } shrink-0`}>
+                  {artist.note}
+                </span>
+              </Frame>
             )}
           </div>
         </div>
@@ -833,10 +1092,29 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
 // ---- Single inline card (no motion wrapper — used inside PairedCard) ----
 function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) => void }) {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hovering, setHovering] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (artist.videoUrl && videoRef.current) {
+      setHovering(true);
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  };
+  const handleMouseLeave = () => {
+    if (artist.videoUrl && videoRef.current) {
+      setHovering(false);
+      videoRef.current.pause();
+    }
+  };
+
   return (
     <div
       onClick={() => onClick(artist)}
       className="cursor-pointer group"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Frame>
         <div className="bg-[#060606]">
@@ -856,6 +1134,19 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className={`${T.label} text-white/10`}>—</span>
               </div>
+            )}
+            {artist.videoUrl && (
+              <video
+                ref={videoRef}
+                src={artist.videoUrl}
+                muted
+                loop
+                playsInline
+                preload="none"
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                  hovering ? "opacity-100" : "opacity-0"
+                }`}
+              />
             )}
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
           </div>
@@ -888,13 +1179,17 @@ function PairedCard({
       <InlineCard artist={artistB} onClick={onClick} />
       {/* Bridging tag on the divider */}
       <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 z-10 flex items-center pointer-events-none">
-        <span
-          className={`${orbitron.className} bg-black/90 px-2 py-1.5 text-[10px] sm:text-xs font-bold tracking-[0.12em] whitespace-nowrap ${
-            tag === "F2F" ? "text-[#8b0000]" : "text-white/60"
-          }`}
-        >
-          {tag}
-        </span>
+        <Frame accent={tag === "F2F"}>
+          <span
+            className={`${orbitron.className} block px-2.5 py-1.5 text-[10px] sm:text-xs font-bold tracking-[0.12em] whitespace-nowrap ${
+              tag === "F2F"
+                ? "bg-[#8b0000]/40 text-white"
+                : "bg-white/[0.06] backdrop-blur-sm text-white"
+            }`}
+          >
+            {tag}
+          </span>
+        </Frame>
       </div>
     </motion.div>
   );
@@ -973,7 +1268,18 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
           CLOSE ×
         </button>
 
-        {artist.imageUrl && (
+        {artist.videoUrl ? (
+          <div className="aspect-[16/9] relative overflow-hidden bg-black">
+            <video
+              src={artist.videoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : artist.imageUrl ? (
           <div className="aspect-[16/9] relative overflow-hidden">
             <Image
               src={artist.imageUrl}
@@ -983,15 +1289,21 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
               sizes="90vw"
             />
           </div>
-        )}
+        ) : null}
 
         <div className="p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-4">
             <h3 className={`${T.heading} text-white text-xl sm:text-2xl`}>{artist.name}</h3>
             {artist.note && (
-              <span className={`${T.detail} ${artist.note === "F2F" ? "text-[#8b0000]" : "text-neutral-500"}`}>
-                {artist.note}
-              </span>
+              <Frame accent={artist.note === "F2F"}>
+                <span className={`${T.detail} block px-2 py-0.5 text-white ${
+                  artist.note === "F2F"
+                    ? "bg-[#8b0000]/15"
+                    : "bg-white/[0.04]"
+                }`}>
+                  {artist.note}
+                </span>
+              </Frame>
             )}
           </div>
           <p className={`${T.monoSm} text-neutral-500`}>{artist.bio}</p>
@@ -1175,11 +1487,12 @@ function Lineup() {
 }
 
 
-// ---- Nav Links (numbered) ----
+// ---- Nav Links — all site sections for the dropdown menu ----
 const NAV_LINKS = [
-  { num: "01", label: "ABOUT", href: "#about" },
-  { num: "02", label: "LINEUP", href: "#artists" },
-  { num: "03", label: "TICKETS", href: FESTIVAL.ticketUrl, external: true },
+  { label: "TOP", href: "#hero" },
+  { label: "ABOUT", href: "#about" },
+  { label: "LINEUP", href: "#artists" },
+  { label: "PARTNERS", href: "#partners" },
 ];
 
 // ============================================================
@@ -1188,7 +1501,13 @@ const NAV_LINKS = [
 export default function Trajectory() {
   const [isClient, setIsClient] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
+  const [overTickets, setOverTickets] = useState(false);
+  const [topNavReady, setTopNavReady] = useState(false);
+
+  const heroRef = useRef<HTMLElement>(null);
+  const ticketsSectionRef = useRef<HTMLElement>(null);
+  const ticketBtnRef = useRef<HTMLAnchorElement>(null);
 
   const { scrollYProgress } = useScroll();
   const canvasY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
@@ -1196,9 +1515,50 @@ export default function Trajectory() {
 
   useEffect(() => {
     setIsClient(true);
-    const fn = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", fn, { passive: true });
-    return () => window.removeEventListener("scroll", fn);
+    const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
+
+    const onScroll = () => {
+      // Show navbar after scrolling past hero
+      if (heroRef.current) {
+        const heroBottom = heroRef.current.getBoundingClientRect().bottom;
+        setPastHero(heroBottom < 100);
+      }
+      // Hide buy button when >50% of tickets section is in viewport
+      if (ticketsSectionRef.current) {
+        const rect = ticketsSectionRef.current.getBoundingClientRect();
+        const visibleTop = Math.max(rect.top, 0);
+        const visibleBottom = Math.min(rect.bottom, window.innerHeight);
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+        const sectionHeight = rect.height;
+        setOverTickets(sectionHeight > 0 && visibleHeight / sectionHeight > 0.8);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(topNavTimer);
+    };
+  }, []);
+
+  // Bounce the ticket button every time it enters the viewport
+  useEffect(() => {
+    const btn = ticketBtnRef.current;
+    if (!btn) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          btn.classList.add("ticket-attention");
+        } else {
+          btn.classList.remove("ticket-attention");
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(btn);
+    return () => observer.disconnect();
   }, []);
 
   const stages = getStages();
@@ -1222,92 +1582,176 @@ export default function Trajectory() {
         </motion.div>
       )}
 
-      {/* ===== NAVIGATION ===== */}
-      <motion.nav
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 6.8, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "bg-black/80 backdrop-blur-xl border-b border-white/[0.06]"
-            : "bg-transparent"
-        }`}
-      >
-        <div className={`max-w-[1400px] mx-auto ${S.px} py-5 flex items-center justify-between`}>
-          <a href="#hero" className="flex items-center gap-3 group">
-            <Image
-              src={LOGOS.agapeIcon}
-              alt=""
-              width={18}
-              height={18}
-              className="opacity-50 group-hover:opacity-100 transition-opacity duration-300 invert"
-            />
-            <span className={`${T.label} text-neutral-600 group-hover:text-white transition-colors duration-300`}>
-              ÄGAPĒ
-            </span>
-          </a>
-
-          {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-10">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className={`${T.label} text-neutral-600 hover:text-white transition-colors duration-300 relative after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[1px] after:bg-white/20 hover:after:w-full after:transition-all after:duration-300`}
-              >
-                <span className="text-[#8b0000]/50 mr-1.5 text-[9px]">{link.num}</span>
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden flex flex-col gap-[5px] p-2"
-            aria-label="Toggle menu"
+      {/* ===== TOP NAV — visible during hero, slides up out of frame ===== */}
+      <AnimatePresence>
+        {topNavReady && !pastHero && (
+          <motion.nav
+            initial={{ y: -60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -60, opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed top-0 left-0 right-0 z-50 bg-transparent"
           >
-            <span className={`block w-5 h-[1px] bg-neutral-500 transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[3px]" : ""}`} />
-            <span className={`block w-5 h-[1px] bg-neutral-500 transition-all duration-300 ${menuOpen ? "opacity-0 scale-0" : ""}`} />
-            <span className={`block w-5 h-[1px] bg-neutral-500 transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[3px]" : ""}`} />
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden overflow-hidden bg-black/95 backdrop-blur-xl border-t border-white/[0.06]"
-            >
-              <div className="flex flex-col items-center gap-7 py-10">
-                {NAV_LINKS.map((link) => (
+            <div className={`max-w-[1400px] mx-auto ${S.px} py-5 flex items-center justify-between`}>
+              <a href="#hero" className="flex items-center gap-3 group">
+                <Image
+                  src={LOGOS.agapeWhite}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+                />
+              </a>
+              <div className="flex items-center gap-10">
+                {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
                   <a
                     key={link.label}
                     href={link.href}
-                    {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                    onClick={() => setMenuOpen(false)}
-                    className={`${T.label} text-neutral-600 hover:text-white transition-colors`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const el = document.querySelector(link.href);
+                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className={`${T.label} text-neutral-600 hover:text-white transition-colors duration-300`}
                   >
-                    <span className="text-[#8b0000]/50 mr-2">{link.num}</span>
                     {link.label}
                   </a>
                 ))}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+
+      {/* ===== FLOATING BOTTOM NAVIGATION ===== */}
+      <AnimatePresence>
+        {pastHero && (
+          <motion.nav
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-5 left-4 right-4 sm:left-6 sm:right-6 lg:left-10 lg:right-10 z-50"
+          >
+            {/* Dropup menu — expands upward, anchored to right side */}
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden mb-2 flex justify-end"
+                >
+                  <Frame>
+                    <div className="bg-black/90 backdrop-blur-xl border border-white/[0.06] flex flex-col items-center gap-5 py-6 px-14">
+                      {NAV_LINKS.map((link) => (
+                        <a
+                          key={link.label}
+                          href={link.href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setMenuOpen(false);
+                            const el = document.querySelector(link.href);
+                            if (el) el.scrollIntoView({ behavior: "smooth" });
+                          }}
+                          className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300`}
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  </Frame>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Main floating bar: [LOGO] ——— [GET TICKETS] ——— [HAMBURGER] */}
+            <Frame>
+              <div className="bg-black/85 backdrop-blur-xl border border-white/[0.06] flex items-center justify-between py-2.5 px-3 sm:px-4">
+                {/* Left — ÄGAPĒ logo */}
+                <a
+                  href="#hero"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const el = document.querySelector("#hero");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="p-2.5 group"
+                >
+                  <Image
+                    src={LOGOS.agapeWhite}
+                    alt="ÄGAPĒ"
+                    width={16}
+                    height={16}
+                    className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+                  />
+                </a>
+
+                {/* Center — Buy Tickets button (hides over tickets section) */}
+                <AnimatePresence mode="wait">
+                  {!overTickets ? (
+                    <motion.div
+                      key="tickets-btn"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <Frame accent>
+                        <a
+                          href={FESTIVAL.ticketUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ticket-btn block bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-300 px-8 sm:px-10 py-2 whitespace-nowrap"
+                        >
+                          <span className={`${T.label} text-neutral-200 hover:text-white transition-colors duration-300`}>
+                            GET TICKETS
+                          </span>
+                        </a>
+                      </Frame>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="tickets-hidden"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="py-2"
+                    >
+                      <Image
+                        src={LOGOS.festivalWhiteTransparent}
+                        alt="ÄGAPĒ FESTIVAL"
+                        width={60}
+                        height={32}
+                        className="opacity-20 h-5 w-auto"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Right — Hamburger menu */}
+                <button
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="flex flex-col gap-[4px] p-2.5"
+                  aria-label="Toggle menu"
+                >
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 ${menuOpen ? "opacity-0 scale-0" : ""}`} />
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
+                </button>
+              </div>
+            </Frame>
+          </motion.nav>
+        )}
+      </AnimatePresence>
 
       {/* All content above the 3D background */}
       <div className="relative z-10">
 
         {/* ===== HERO — CINEMATIC INTRO ===== */}
-        <section id="hero" className="relative h-screen w-full overflow-hidden bg-black">
+        <section ref={heroRef} id="hero" className="relative h-screen w-full overflow-hidden bg-black">
           <HeroVideo />
 
           <motion.div
@@ -1373,14 +1817,13 @@ export default function Trajectory() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.2, delay: 3.4, ease: [0.25, 0.46, 0.45, 0.94] as const }}
-                className="w-[280px] sm:w-[380px] md:w-[460px] lg:w-[540px]"
               >
                 <Image
                   src={LOGOS.festivalWhiteTransparent}
                   alt="ÄGAPĒ FESTIVAL"
                   width={540}
                   height={540}
-                  className="w-full h-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                  className="w-[280px] sm:w-[380px] md:w-[460px] lg:w-[540px] h-auto"
                   priority
                 />
               </motion.div>
@@ -1429,7 +1872,7 @@ export default function Trajectory() {
                   href={FESTIVAL.ticketUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block px-10 py-4 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 transition-all duration-500 group"
+                  className="ticket-btn block px-10 py-4 bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-500 group"
                 >
                   <span className={`${T.label} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
                     GET TICKETS
@@ -1441,10 +1884,10 @@ export default function Trajectory() {
         </section>
 
         {/* ===== MARQUEE TICKER ===== */}
-        <div className="py-4 border-y border-white/[0.06] bg-black/60 backdrop-blur-md">
+        <div className="-mt-px py-4 border-y border-white/[0.06] bg-black/60 backdrop-blur-md">
           <Marquee speed={25}>
             {[
-              "ÄGAPĒ FESTIVAL 2026",
+              "ÄGAPE FESTIVAL 2026",
               "SEPTEMBER 5 + 6",
               "INDUSTRY CITY — BROOKLYN",
               "2 DAYS — 4 STAGES",
@@ -1452,13 +1895,11 @@ export default function Trajectory() {
             ].map((t, i) => (
               <span key={i} className="flex items-center">
                 <span className={`${T.label} text-neutral-600 mx-8`}>{t}</span>
-                <span className="text-neutral-700 mx-2">&#x25C6;</span>
+                <img src={LOGOS.agapeWhiteSm} alt="" className="h-5 w-5 mx-2 opacity-40 object-contain" />
               </span>
             ))}
           </Marquee>
         </div>
-
-        <SectionLine />
 
         {/* ===== TIMELINE / THE JOURNEY ===== */}
         <section className={`${S.section} ${S.px} bg-black/70 overflow-hidden`}>
@@ -1488,7 +1929,7 @@ export default function Trajectory() {
               </motion.div>
             </Reveal>
 
-            <div className={`relative grid grid-cols-1 lg:grid-cols-2 ${S.contentGap} mt-10 items-start`}>
+            <div className={`relative grid grid-cols-1 lg:grid-cols-2 ${S.contentGap} mt-10 items-stretch`}>
               {/* Vertical line between columns — line motif */}
               <div
                 className="absolute left-1/2 top-0 bottom-0 w-[1px] -translate-x-1/2 hidden lg:block pointer-events-none"
@@ -1578,7 +2019,7 @@ export default function Trajectory() {
                 </motion.div>
                 <motion.div variants={fadeInUp} className="mt-6">
                   <TypewriterReveal
-                    text="Day one brings the raw power of the ÄGAPĒ and Face 2 Face stages. Day two escalates with 44 taking over both rooms for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
+                    text="Day one brings the raw power of the Hot Meal and Face 2 Face stages. Day two escalates with 44 taking over both rooms for a relentless closing chapter. Expect bold sound design, elevated production, and an atmosphere built on genuine connection."
                     className={`${T.monoSm} text-neutral-500`}
                     speed={6}
                     delay={200}
@@ -1590,7 +2031,7 @@ export default function Trajectory() {
                       href={FESTIVAL.ticketUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block px-8 py-3 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 transition-all duration-300"
+                      className="ticket-btn block px-8 py-3 bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-300"
                     >
                       <span className={`${T.label} text-neutral-300 hover:text-white transition-colors duration-300`}>
                         SECURE YOUR SPOT →
@@ -1606,7 +2047,7 @@ export default function Trajectory() {
         <SectionLine />
 
         {/* ===== TICKETS CTA ===== */}
-        <section className={`relative ${S.section} overflow-hidden`}>
+        <section ref={ticketsSectionRef} className={`relative ${S.section} overflow-hidden`}>
           <video
             autoPlay
             muted
@@ -1639,10 +2080,11 @@ export default function Trajectory() {
                   <motion.div variants={fadeInUp} className="mt-12">
                     <Frame accent className="inline-block">
                       <a
+                        ref={ticketBtnRef}
                         href={FESTIVAL.ticketUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block px-12 py-5 bg-[#8b0000]/10 hover:bg-[#8b0000]/20 transition-all duration-300 group"
+                        className="ticket-btn block px-12 py-5 bg-[#8b0000]/25 hover:bg-[#8b0000]/40 transition-all duration-300 group"
                       >
                         <span className={`${T.label} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
                           GET TICKETS →
@@ -1678,23 +2120,7 @@ export default function Trajectory() {
               </motion.div>
             </Reveal>
 
-            <StaggerGrid className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${S.gridGap}`}>
-              {PHOTOS.slice(0, 6).map((photo, i) => (
-                <motion.div key={photo} variants={fadeInUp}>
-                  <Frame className="group">
-                    <div className="aspect-[4/3] relative overflow-hidden">
-                      <Image
-                        src={photo}
-                        alt={`ÄGAPĒ event ${i + 1}`}
-                        fill
-                        className="object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    </div>
-                  </Frame>
-                </motion.div>
-              ))}
-            </StaggerGrid>
+            <CoverflowCarousel photos={PHOTOS} />
           </div>
         </section>
 
@@ -1750,14 +2176,14 @@ export default function Trajectory() {
         <div className="py-4 border-y border-white/[0.06] bg-black/60">
           <Marquee speed={35}>
             {[
-              "ÄGAPĒ FESTIVAL",
+              "ÄGAPE FESTIVAL",
               "ELEVATED PRODUCTION",
               "BOLD SOUND DESIGN",
               "GENUINE INCLUSIVE ATMOSPHERE",
             ].map((t, i) => (
               <span key={i} className="flex items-center">
                 <span className={`${T.label} text-neutral-700 mx-8`}>{t}</span>
-                <span className="text-neutral-700 mx-2">&#x25C6;</span>
+                <img src={LOGOS.agapeWhiteSm} alt="" className="h-5 w-5 mx-2 opacity-40 object-contain" />
               </span>
             ))}
           </Marquee>

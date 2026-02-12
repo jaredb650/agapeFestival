@@ -13,6 +13,7 @@ export interface Artist {
   bio: string;
   isPlaceholderBio: boolean;
   imageUrl: string | null;
+  videoUrl?: string;
   note?: string; // e.g. "B2B", "F2F"
 }
 
@@ -61,11 +62,11 @@ export const FESTIVAL = {
 
 export const COPY = {
   about:
-    "From raw, intimate warehouse sessions to full-scale, high-energy raves, ÄGAPĒ delivers elevated production, bold sound design, and a genuine, inclusive atmosphere.",
+    "ÄGAPĒ started in a warehouse somewhere in Brooklyn. No grand strategy — just nights that felt memorable, music that pushed boundaries, and a room where people could lose themselves. The early shows were simple and focused. Over time, more people found their way in. The gatherings became regular. Familiar faces turned into a tangible community. Nothing happened overnight. It just built, slowly and with fierce intention.",
   aboutExtended:
-    "Born in New York City, ÄGAPĒ has become a cornerstone of the underground techno scene. What started as intimate warehouse gatherings has evolved into one of the most respected hard techno brands on the East Coast. With ÄGAPĒ FESTIVAL, we bring that energy to its largest scale yet — two days of unrelenting sound across indoor and outdoor stages at Industry City, Brooklyn.",
+    "Now we're bringing that same spirit into something new. ÄGAPĒ Festival is beyond mere scale — it's about dwelling in an environment shaped by the people who built us up. A full weekend together in a communal plane, the kind we've been building toward for half a decade. ÄGAPĒ welcomes you to the movement.",
   merchComingSoon: "Merch dropping soon. Stay tuned.",
-  origin: "New York Based",
+  origin: "Brooklyn, New York",
 } as const;
 
 // ---- SOCIAL LINKS ----
@@ -121,42 +122,42 @@ const placeholderBio = (name: string) =>
   `${name} is a force in the global hard techno scene, known for relentless energy and commanding performances. [Placeholder — awaiting EPK]`;
 
 export const ARTISTS: Artist[] = [
-  // DAY 1 — OUTDOOR (Agape)
+  // DAY 1 — OUTDOOR (Hot Meal)
   {
     name: "Ollie Lishman",
     day: 1,
     stage: "outdoor",
-    stageHost: "ÄGAPĒ",
+    stageHost: "Hot Meal",
     bio: placeholderBio("Ollie Lishman"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/ollie-lishman.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/ollie-lishman/press-kit/Hot%20Meal%20Records1126.jpg`,
   },
   {
     name: "FUMI",
     day: 1,
     stage: "outdoor",
-    stageHost: "ÄGAPĒ",
+    stageHost: "Hot Meal",
     bio: placeholderBio("FUMI"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/fumi.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/fumi/press-kit/retouch_fumi_07.jpg`,
   },
   {
     name: "Mischluft",
     day: 1,
     stage: "outdoor",
-    stageHost: "ÄGAPĒ",
+    stageHost: "Hot Meal",
     bio: placeholderBio("Mischluft"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/mischluft.png`,
+    imageUrl: `${BASE_PATH}/assets/artists/mischluft/press-kit/Mischluft_59.jpg`,
   },
   {
     name: "Bad Boombox",
     day: 1,
     stage: "outdoor",
-    stageHost: "ÄGAPĒ",
+    stageHost: "Hot Meal",
     bio: placeholderBio("Bad Boombox"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/bad-boombox.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/bad-boombox/press-kit/_DSC8435.jpeg`,
   },
 
   // DAY 1 — INDOOR (Face 2 Face)
@@ -167,7 +168,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Cloudy"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/cloudy.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/cloudy/press-kit/PressShotNEW.jpeg`,
   },
   {
     name: "Serafina",
@@ -176,7 +177,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Serafina"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/serafina.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/serafina/press-kit/f59238bc-5a52-43c2-8488-6d4049a019e1.JPG`,
     note: "F2F",
   },
   {
@@ -186,7 +187,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Adrian Mills"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/adrian-mills.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/adrian-mills/press-kit/Adri%C3%A1n_Mills-191.jpg`,
   },
   {
     name: "Hector Oaks",
@@ -195,7 +196,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Hector Oaks"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/hector-oaks.webp`,
+    imageUrl: `${BASE_PATH}/assets/artists/hector-oaks/press-kit/PRESS%20H%C3%89CTOR%208.jpg`,
     note: "F2F",
   },
   {
@@ -205,7 +206,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Odymel"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/odymel.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/odymel/press-kit/Highres_Odymel_ByMayliSterkendries--7.jpg`,
   },
   {
     name: "Emilija",
@@ -214,7 +215,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Emilija"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/emilija.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/emilija/press-kit/EMILIJA_6.jpeg`,
     note: "F2F",
   },
   {
@@ -224,7 +225,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Fenrick"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/fenrick.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/fenrick/press-kit/FENRICK-PRESSKIT.RAPHAEL.CHENE-18%20(1).jpg`,
   },
   {
     name: "Supergloss",
@@ -233,7 +234,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "Face 2 Face",
     bio: placeholderBio("Supergloss"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/supergloss.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/supergloss/press-kit/Supergloss10%20(1).jpg`,
     note: "F2F",
   },
 
@@ -245,7 +246,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Aiden"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/aiden.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/aiden/press-kit/aiden-headshot.jpeg`,
+    videoUrl: `${BASE_PATH}/assets/artists/aiden/press-kit/aiden-video.mp4`,
     note: "B2B",
   },
   {
@@ -255,7 +257,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Kobosil"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/kobosil.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.png`,
+    videoUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-clip.mp4`,
   },
   {
     name: "David Löhlein",
@@ -264,7 +267,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("David Löhlein"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/david-lohlein.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/david-lohlein/placeholder/david-lohlein.jpg`,
   },
   {
     name: "Future.666",
@@ -273,7 +276,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Future.666"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/future666.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/future666/press-kit/future666-headshot.jpg`,
+    videoUrl: `${BASE_PATH}/assets/artists/future666/press-kit/future666-video.mp4`,
   },
 
   // DAY 2 — INDOOR (44)
@@ -284,7 +288,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Clara Cuve"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/clara-cuve.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/clara-cuve/press-kit/claracuve-headshot.png`,
+    videoUrl: `${BASE_PATH}/assets/artists/clara-cuve/press-kit/Clara_Closing_01.mp4`,
   },
   {
     name: "Kobosil",
@@ -293,7 +298,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Kobosil"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/kobosil.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.png`,
+    videoUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-clip.mp4`,
   },
   {
     name: "Somewhen",
@@ -302,7 +308,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Somewhen"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/somewhen.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/somewhen/press-kit/somewhen-headshot.JPG`,
+    videoUrl: `${BASE_PATH}/assets/artists/somewhen/press-kit/somewhen-video.mp4`,
   },
   {
     name: "Ueberrest",
@@ -311,7 +318,8 @@ export const ARTISTS: Artist[] = [
     stageHost: "44",
     bio: placeholderBio("Ueberrest"),
     isPlaceholderBio: true,
-    imageUrl: `${BASE_PATH}/assets/artists/ueberrest.jpg`,
+    imageUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-headshot.png`,
+    videoUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-video.mp4`,
   },
 ];
 
@@ -323,7 +331,7 @@ export function getStages(): StageInfo[] {
       day: 1,
       dayLabel: "Day 1 — Saturday",
       stage: "outdoor",
-      host: "ÄGAPĒ",
+      host: "Hot Meal",
       artists: ARTISTS.filter((a) => a.day === 1 && a.stage === "outdoor"),
     },
     {

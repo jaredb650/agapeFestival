@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BASE_PATH } from "@/data/festival";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -6,7 +7,7 @@ export const metadata: Metadata = {
   description:
     "From raw, intimate warehouse sessions to full-scale, high-energy raves. September 5+6, 2026 — Industry City, Brooklyn.",
   icons: {
-    icon: "/assets/logos/agape_favicon.png",
+    icon: `${BASE_PATH}/assets/logos/agape_favicon.png`,
   },
 };
 

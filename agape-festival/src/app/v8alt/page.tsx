@@ -14,6 +14,7 @@
 // ============================================================
 
 import {
+  Component,
   Suspense,
   useState,
   useRef,
@@ -232,6 +233,15 @@ const STYLES = `
   }
   .ticket-attention {
     animation: ticketAttention 0.8s ease-in-out 2;
+  }
+
+  @keyframes expandHint {
+    0%, 100% { transform: translateY(0); color: rgb(115,115,115); }
+    40% { transform: translateY(-6px); color: rgb(200,200,200); }
+    70% { transform: translateY(1px); color: rgb(160,160,160); }
+  }
+  .expand-hint {
+    animation: expandHint 0.7s ease-in-out 2 0.5s both;
   }
 `;
 
@@ -541,6 +551,20 @@ function ChromeParticles({ count = 200 }: { count?: number }) {
       <meshStandardMaterial metalness={0.9} roughness={0.08} color="#dddddd" />
     </instancedMesh>
   );
+}
+
+// ---- WebGL Error Boundary — renders nothing on GPU/context failure ----
+class CanvasErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
 }
 
 function ParallaxScene() {
@@ -991,6 +1015,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 loop
                 playsInline
                 preload="none"
+                poster={artist.imageUrl || undefined}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   hovering ? "opacity-100" : "opacity-0"
                 }`}
@@ -1074,6 +1099,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 loop
                 playsInline
                 preload="none"
+                poster={artist.imageUrl || undefined}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   hovering ? "opacity-100" : "opacity-0"
                 }`}
@@ -1128,14 +1154,24 @@ function PairedCard({
 
 // ---- B2B2B Mystery Element — full-width at bottom of grid ----
 function B2B2BMystery({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <motion.div
       variants={fadeInUp}
       className="col-span-2 lg:col-span-4 cursor-pointer group"
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <Frame>
         <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
+          {/* Chain GIF background — visible on hover */}
+          <img
+            src="/assets/videos/chains_red.gif"
+            alt=""
+            aria-hidden
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
+          />
           {/* Animated noise background */}
           <div
             className="absolute inset-0 opacity-[0.04]"
@@ -1167,13 +1203,43 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
 }
 
 // ---- Artist Detail Modal ----
+const BIO_TRUNCATE_LEN = 180;
+
 function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void }) {
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
+  const [infoHeight, setInfoHeight] = useState(0);
+
+  const bioIsLong = artist.bio.length > BIO_TRUNCATE_LEN;
+  const truncatedBio = bioIsLong
+    ? artist.bio.slice(0, BIO_TRUNCATE_LEN).replace(/\s+\S*$/, "") + "..."
+    : artist.bio;
+
+  const handleCollapse = () => setBioExpanded(false);
+
+  // Measure the collapsed info section so expanded panel starts at exact same height
+  useEffect(() => {
+    if (infoRef.current) {
+      setInfoHeight(infoRef.current.offsetHeight);
+    }
+  }, [truncatedBio]);
+
   // Close on Escape
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
+
+  // Check if video is already ready on mount
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid && vid.readyState >= 3) setVideoLoaded(true);
+  }, []);
 
   return (
     <motion.div
@@ -1189,25 +1255,40 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.97 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
-        className="relative w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.06]"
+        className="relative w-[90vw] max-w-2xl max-h-[85vh] overflow-hidden bg-[#0a0a0a] border border-white/[0.06]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className={`absolute top-4 right-4 z-10 ${T.label} text-neutral-500 hover:text-white transition-colors`}
+          className={`absolute top-4 right-4 z-30 ${T.label} text-neutral-500 hover:text-white transition-colors`}
         >
           CLOSE ×
         </button>
 
+        {/* Video / image area */}
         {artist.videoUrl ? (
           <div className="aspect-[16/9] relative overflow-hidden bg-black">
+            {artist.imageUrl && (
+              <Image
+                src={artist.imageUrl}
+                alt={artist.name}
+                fill
+                className={`object-cover transition-opacity duration-500 ${videoLoaded ? "opacity-0" : "opacity-70"}`}
+                sizes="90vw"
+              />
+            )}
             <video
+              ref={videoRef}
               src={artist.videoUrl}
               autoPlay
               loop
               muted
               playsInline
-              className="w-full h-full object-cover"
+              preload="metadata"
+              poster={artist.imageUrl || undefined}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? "opacity-100" : "opacity-0"}`}
+              onCanPlayThrough={() => setVideoLoaded(true)}
+              onPlaying={() => setVideoLoaded(true)}
             />
           </div>
         ) : artist.imageUrl ? (
@@ -1222,7 +1303,21 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
           </div>
         ) : null}
 
-        <div className="p-6 sm:p-8">
+        {/* Info area — collapsed: expand chevron + name + truncated bio */}
+        <div ref={infoRef} className="p-6 sm:p-8">
+          {/* Expand chevron — centered, text under chevron */}
+          {bioIsLong && !bioExpanded && (
+            <button
+              onClick={() => setBioExpanded(true)}
+              className="expand-hint flex flex-col items-center w-full mb-4 text-neutral-600 hover:text-neutral-400 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M5 13L10 8L15 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className={`${T.detail} text-[9px] mt-1`}>EXPAND</span>
+            </button>
+          )}
+
           <div className="flex items-center gap-3 mb-4">
             <h3 className={`${T.heading} text-white text-xl sm:text-2xl`}>{artist.name}</h3>
             {artist.note && (
@@ -1237,8 +1332,48 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
               </Frame>
             )}
           </div>
-          <p className={`${T.monoSm} text-neutral-500`}>{artist.bio}</p>
+          <p className={`${T.monoSm} text-neutral-500`}>{truncatedBio}</p>
         </div>
+
+        {/* Expanded bio — slides up from info section, collapses instantly */}
+        {bioExpanded && (
+          <motion.div
+            initial={{ height: infoHeight || "35%" }}
+            animate={{ height: "100%" }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute bottom-0 left-0 right-0 z-20 bg-black/80 backdrop-blur-xl flex flex-col overflow-hidden"
+          >
+            {/* Collapse chevron */}
+            <button
+              onClick={handleCollapse}
+              className="flex-shrink-0 flex flex-col items-center w-full pt-6 pb-2 text-neutral-600 hover:text-neutral-400 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M5 8L10 13L15 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className={`${T.detail} text-[9px] mt-1`}>COLLAPSE</span>
+            </button>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-6 sm:px-8 pb-8">
+              <div className="flex items-center gap-3 mb-6">
+                <h3 className={`${T.heading} text-white text-xl sm:text-2xl`}>{artist.name}</h3>
+                {artist.note && (
+                  <Frame accent={artist.note === "F2F"}>
+                    <span className={`${T.detail} block px-2 py-0.5 text-white ${
+                      artist.note === "F2F"
+                        ? "bg-[#8b0000]/15"
+                        : "bg-white/[0.04]"
+                    }`}>
+                      {artist.note}
+                    </span>
+                  </Frame>
+                )}
+              </div>
+              <p className={`${T.monoSm} text-neutral-400 leading-relaxed`}>{artist.bio}</p>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </motion.div>
   );
@@ -1269,18 +1404,30 @@ function B2B2BModal({ onClose }: { onClose: () => void }) {
         className="relative w-[90vw] max-w-lg bg-[#0a0a0a] border border-white/[0.06] p-8 sm:p-12 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className={`absolute top-4 right-4 z-10 ${T.label} text-neutral-500 hover:text-white transition-colors`}
-        >
-          CLOSE ×
-        </button>
-        <p className={`${orbitron.className} text-5xl font-bold text-[#8b0000]/40 mb-4`}>B2B2B</p>
-        <p className={`${T.label} text-[#8b0000]/50 mb-3`}>???</p>
-        <p className={`${T.monoSm} text-neutral-500`}>
-          Three artists. One decks setup. The closing act of ÄGAPĒ FESTIVAL has not yet been announced.
-          Stay tuned.
-        </p>
+        {/* Chain GIF background — animated in with modal */}
+        <motion.img
+          src="/assets/videos/chains_red.gif"
+          alt=""
+          aria-hidden
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.06 }}
+          transition={{ duration: 1.5, delay: 0.3 }}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        />
+        <div className="relative z-[1]">
+          <button
+            onClick={onClose}
+            className={`absolute top-0 right-0 z-10 ${T.label} text-neutral-500 hover:text-white transition-colors`}
+          >
+            CLOSE ×
+          </button>
+          <p className={`${orbitron.className} text-5xl font-bold text-[#8b0000]/40 mb-4`}>B2B2B</p>
+          <p className={`${T.label} text-[#8b0000]/50 mb-3`}>???</p>
+          <p className={`${T.monoSm} text-neutral-500`}>
+            Three artists. One decks setup. The closing act of ÄGAPĒ FESTIVAL has not yet been announced.
+            Stay tuned.
+          </p>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -1449,45 +1596,54 @@ export default function Trajectory() {
   useEffect(() => {
     setIsClient(true);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
+    let rafId = 0;
 
     const onScroll = () => {
-      // Show navbar after scrolling past hero
-      if (heroRef.current) {
-        const heroBottom = heroRef.current.getBoundingClientRect().bottom;
-        setPastHero(heroBottom < 100);
-      }
-      // Hide buy button when >50% of tickets section is in viewport
-      if (ticketsSectionRef.current) {
-        const rect = ticketsSectionRef.current.getBoundingClientRect();
-        const visibleTop = Math.max(rect.top, 0);
-        const visibleBottom = Math.min(rect.bottom, window.innerHeight);
-        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-        const sectionHeight = rect.height;
-        setOverTickets(sectionHeight > 0 && visibleHeight / sectionHeight > 0.8);
-      }
-      // Swap navbar logo to stage host brand when scrolling through lineup
-      const stageIds = ["stage-1-outdoor", "stage-1-indoor", "stage-2-outdoor", "stage-2-indoor"];
-      let bestHost: string | null = null;
-      let bestRatio = 0;
-      for (const id of stageIds) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        const r = el.getBoundingClientRect();
-        const vTop = Math.max(r.top, 0);
-        const vBot = Math.min(r.bottom, window.innerHeight);
-        const vis = Math.max(0, vBot - vTop);
-        const ratio = r.height > 0 ? vis / r.height : 0;
-        if (ratio > bestRatio) {
-          bestRatio = ratio;
-          bestHost = el.getAttribute("data-host");
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        // Show navbar after scrolling past hero
+        if (heroRef.current) {
+          const heroBottom = heroRef.current.getBoundingClientRect().bottom;
+          setPastHero(heroBottom < 100);
         }
-      }
-      setActiveStageHost(bestRatio > 0.3 ? bestHost : null);
+        // Hide buy button when >50% of tickets section is in viewport
+        if (ticketsSectionRef.current) {
+          const rect = ticketsSectionRef.current.getBoundingClientRect();
+          const visibleTop = Math.max(rect.top, 0);
+          const visibleBottom = Math.min(rect.bottom, window.innerHeight);
+          const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+          const sectionHeight = rect.height;
+          setOverTickets(sectionHeight > 0 && visibleHeight / sectionHeight > 0.8);
+        }
+        // Swap navbar logo to stage host brand when scrolling through lineup
+        // Use viewport-fill ratio (vis / viewportHeight) instead of section ratio
+        // so tall mobile sections (2-col grid) still trigger reliably
+        const stageIds = ["stage-1-outdoor", "stage-1-indoor", "stage-2-outdoor", "stage-2-indoor"];
+        const vh = window.innerHeight;
+        let bestHost: string | null = null;
+        let bestVis = 0;
+        for (const id of stageIds) {
+          const el = document.getElementById(id);
+          if (!el) continue;
+          const r = el.getBoundingClientRect();
+          const vTop = Math.max(r.top, 0);
+          const vBot = Math.min(r.bottom, vh);
+          const vis = Math.max(0, vBot - vTop);
+          if (vis > bestVis) {
+            bestVis = vis;
+            bestHost = el.getAttribute("data-host");
+          }
+        }
+        // Show host logo when a stage section fills ≥20% of viewport
+        setActiveStageHost(bestVis > vh * 0.2 ? bestHost : null);
+      });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafId);
       clearTimeout(topNavTimer);
     };
   }, []);
@@ -1525,11 +1681,13 @@ export default function Trajectory() {
           className="fixed inset-0 z-0 pointer-events-none"
           style={{ y: canvasY, opacity: canvasOpacity }}
         >
-          <Suspense fallback={null}>
-            <Canvas camera={{ position: [0, 0, 7], fov: 55 }} dpr={[1, 1.5]}>
-              <ParallaxScene />
-            </Canvas>
-          </Suspense>
+          <CanvasErrorBoundary>
+            <Suspense fallback={null}>
+              <Canvas camera={{ position: [0, 0, 7], fov: 55 }} dpr={[1, 1.5]}>
+                <ParallaxScene />
+              </Canvas>
+            </Suspense>
+          </CanvasErrorBoundary>
         </motion.div>
       )}
 
@@ -1630,7 +1788,7 @@ export default function Trajectory() {
 
             {/* Main floating bar: [LOGO] ——— [GET TICKETS] ——— [HAMBURGER] */}
             <Frame>
-              <div className="bg-black/85 backdrop-blur-xl border border-white/[0.06] flex items-center justify-between py-2.5 px-3 sm:px-4">
+              <div className="bg-black/85 backdrop-blur-xl border border-white/[0.06] relative flex items-center justify-between py-2.5 px-3 sm:px-4">
                 {/* Left — Logo (swaps to stage host brand when scrolling lineup) */}
                 <a
                   href="#hero"
@@ -1639,94 +1797,83 @@ export default function Trajectory() {
                     const el = document.querySelector("#hero");
                     if (el) el.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="p-2.5 group"
+                  className="p-2.5 group relative h-10 w-20 flex items-center z-10"
                 >
+                  {/* All logos pre-rendered and crossfaded — no mount/unmount delay */}
+                  <div className="relative h-5 w-full">
+                    {/* Default Agape logo */}
+                    <Image
+                      src={LOGOS.agapeWhite}
+                      alt="ÄGAPĒ"
+                      width={16}
+                      height={16}
+                      className={`absolute left-0 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${!activeStageHost ? "opacity-50 group-hover:opacity-100" : "opacity-0 pointer-events-none"}`}
+                    />
+                    {/* Stage host logos — always mounted, toggled via opacity */}
+                    {Object.entries(STAGE_LOGOS).map(([host, src]) => (
+                      <Image
+                        key={host}
+                        src={src}
+                        alt={host}
+                        width={80}
+                        height={40}
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-auto object-contain transition-opacity duration-200 ${host === "Face 2 Face" ? "h-5" : "h-4"} ${activeStageHost === host ? "opacity-70 group-hover:opacity-100" : "opacity-0 pointer-events-none"}`}
+                      />
+                    ))}
+                  </div>
+                </a>
+
+                {/* Center — Buy Tickets / Festival logo (absolutely centered, out of flex flow) */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <AnimatePresence mode="wait">
-                    {activeStageHost && STAGE_LOGOS[activeStageHost] ? (
+                    {!overTickets ? (
                       <motion.div
-                        key={activeStageHost}
-                        initial={{ opacity: 0, scale: 0.8 }}
+                        key="tickets-btn"
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.2 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="pointer-events-auto"
                       >
-                        <Image
-                          src={STAGE_LOGOS[activeStageHost]}
-                          alt={activeStageHost}
-                          width={80}
-                          height={40}
-                          className={`opacity-70 group-hover:opacity-100 transition-opacity duration-300 w-auto object-contain ${activeStageHost === "Face 2 Face" ? "h-5" : "h-4"}`}
-                        />
+                        <div className="ticket-wrap">
+                          <Frame accent>
+                            <a
+                              href={FESTIVAL.ticketUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ticket-btn flex items-center justify-center bg-[#8b0000] hover:bg-[#a00000] transition-all duration-300 px-10 sm:px-12 h-[38px] whitespace-nowrap"
+                            >
+                              <span className={`${orbitron.className} text-[11px] tracking-[0.3em] font-semibold text-white transition-colors duration-300 translate-y-[0.5px]`}>
+                                GET TICKETS
+                              </span>
+                            </a>
+                          </Frame>
+                        </div>
                       </motion.div>
                     ) : (
                       <motion.div
-                        key="agape"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.2 }}
+                        key="tickets-hidden"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
                       >
                         <Image
-                          src={LOGOS.agapeWhite}
-                          alt="ÄGAPĒ"
-                          width={16}
-                          height={16}
-                          className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
+                          src={LOGOS.festivalWhiteTransparent}
+                          alt="ÄGAPĒ FESTIVAL"
+                          width={60}
+                          height={32}
+                          className="opacity-20 h-5 w-auto"
                         />
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </a>
-
-                {/* Center — Buy Tickets button (hides over tickets section) */}
-                <AnimatePresence mode="wait">
-                  {!overTickets ? (
-                    <motion.div
-                      key="tickets-btn"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <div className="ticket-wrap">
-                        <Frame accent>
-                          <a
-                            href={FESTIVAL.ticketUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ticket-btn block bg-[#8b0000] hover:bg-[#a00000] transition-all duration-300 px-10 sm:px-12 py-2.5 whitespace-nowrap"
-                          >
-                            <span className={`${orbitron.className} text-[11px] tracking-[0.3em] font-semibold text-white transition-colors duration-300`}>
-                              GET TICKETS
-                            </span>
-                          </a>
-                        </Frame>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="tickets-hidden"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                      className="py-2"
-                    >
-                      <Image
-                        src={LOGOS.festivalWhiteTransparent}
-                        alt="ÄGAPĒ FESTIVAL"
-                        width={60}
-                        height={32}
-                        className="opacity-20 h-5 w-auto"
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                </div>
 
                 {/* Right — Hamburger menu */}
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="flex flex-col gap-[4px] p-2.5"
+                  className="flex flex-col gap-[4px] p-2.5 z-10"
                   aria-label="Toggle menu"
                 >
                   <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />

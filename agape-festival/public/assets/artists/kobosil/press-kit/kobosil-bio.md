@@ -1,0 +1,3 @@
+Kobosil is a Berlin-based DJ, producer, and founder 44 Label Group, known for blending underground energy with raw emotional depth. Born and raised in Berlin’s working-class Neukölln district, he grew up surrounded by the city’s post-reunification techno movement, which shaped his sound and artistic identity.
+
+Kobosil made his debut in 2013 with releases on Ostgut Ton, the label associated with Berghain, where he later became a resident DJ. His music combines heavy, industrial techno with melodic and emotional undertones, creating a powerful contrast that mirrors Berlin’s dark yet vibrant spirit.

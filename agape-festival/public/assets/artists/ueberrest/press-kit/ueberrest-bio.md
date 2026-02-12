@@ -1,0 +1,5 @@
+UEBERREST is a rising force in European industrial hard techno, blending deep atmospheric elements with high-pressure techno energy. His music blends religious impact with tireless rhythm, thus pushing a dark but structured form of hard techno that feels and sounds grand and powerful. Unlike many artists who are purely based on distorted aggression, UEBERREST is supported by a strong conceptual identity, thus managing to weave texture, rhythm and tension together in a long-form progression.
+
+Before gaining wider acceptance in the hard techno scene, he made his name in underground places all over Germany and Central Europe. His productions are characterized by emotional depth and raw intensity, with slow-burning breaks and powerful drops that precisely land on heavy sound systems. As a performer, UEBERREST emanates a strong presence from the booth, interweaving intricate narration with very powerful energy.
+
+With increasing backing from the European warehouse circuit and smaller labels that are promoting darker techno, UEBERREST is asserting his position as one of the most original artists of the up-and-coming hard techno producer’s generation.

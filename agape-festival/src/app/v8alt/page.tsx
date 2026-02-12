@@ -1015,7 +1015,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 loop
                 playsInline
                 preload="none"
-                poster={artist.imageUrl || undefined}
+
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   hovering ? "opacity-100" : "opacity-0"
                 }`}
@@ -1099,7 +1099,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 loop
                 playsInline
                 preload="none"
-                poster={artist.imageUrl || undefined}
+
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   hovering ? "opacity-100" : "opacity-0"
                 }`}

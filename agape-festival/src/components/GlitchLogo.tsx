@@ -172,9 +172,10 @@ function GlitchLogoMesh({
   });
 
   // Aspect-correct plane — fill the viewport
+  const img = texture.image as HTMLImageElement | undefined;
   const imgAspect =
-    texture.image && texture.image.width
-      ? texture.image.width / texture.image.height
+    img && img.width
+      ? img.width / img.height
       : 1;
 
   const { viewport } = useThree();

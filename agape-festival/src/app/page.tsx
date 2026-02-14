@@ -243,6 +243,7 @@ const STYLES = `
   .expand-hint {
     animation: expandHint 0.7s ease-in-out 2 0.5s both;
   }
+
 `;
 
 // ---- Animation Variants ----
@@ -2423,9 +2424,32 @@ export default function Trajectory() {
 
             <MetallicDivider />
 
+            <div className="flex flex-col items-center justify-center mb-4 gap-2">
+              <span className={`${T.detail} text-neutral-700`}>SITE DESIGN BY MEKA</span>
+              <a href="https://www.instagram.com/_x.meka.x_/" target="_blank" rel="noopener noreferrer">
+                <motion.img
+                  src="/assets/logos/meka-icon.png"
+                  alt="MEKA"
+                  className="w-16 h-16 cursor-pointer"
+                  initial={{ opacity: 0, filter: "brightness(1)" }}
+                  whileInView={{
+                    opacity: [0, 0.7, 0.5, 0.4],
+                    filter: [
+                      "brightness(1)",
+                      "brightness(2) drop-shadow(0 0 12px rgba(255,255,255,0.4))",
+                      "brightness(1.3) drop-shadow(0 0 6px rgba(255,255,255,0.2))",
+                      "brightness(1) drop-shadow(0 0 0px transparent)",
+                    ],
+                  }}
+                  viewport={{ once: true }}
+                  whileHover={{ opacity: 0.8, filter: "brightness(1.8) drop-shadow(0 0 10px rgba(255,255,255,0.3))" }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                />
+              </a>
+            </div>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
               <p className={`${T.detail} text-neutral-700`}>
-                © {FESTIVAL.year} {FESTIVAL.name}. ALL RIGHTS RESERVED.
+                © {FESTIVAL.year} ÄGAPE FESTIVAL. ALL RIGHTS RESERVED.
               </p>
               <p className={`${T.detail} text-neutral-700`}>
                 BROOKLYN, NEW YORK

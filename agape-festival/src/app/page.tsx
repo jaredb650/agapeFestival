@@ -2283,7 +2283,7 @@ export default function Trajectory() {
         <section id="partners" className={`${S.compact} ${S.px} bg-black/70`}>
           <Reveal replay>
             <motion.div variants={fadeInUp}>
-              <Label num="05" text="PARTNERS" />
+              <Label num="04" text="PARTNERS" />
             </motion.div>
             <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600 ${S.labelGap} ${S.headingGap}`}>
               PRESENTED BY

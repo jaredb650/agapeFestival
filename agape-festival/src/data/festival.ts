@@ -2,8 +2,8 @@
 // ÄGAPĒ FESTIVAL 2026 — Single source of truth for all content
 // ============================================================
 
-// Base path for GitHub Pages deployment — empty in dev, /agapeFestival in prod
-export const BASE_PATH = process.env.NODE_ENV === "production" ? "/agapeFestival" : "";
+// Base path — empty for custom domain root deployment
+export const BASE_PATH = "";
 
 export interface Artist {
   name: string;

@@ -609,7 +609,7 @@ function AboutPhoto() {
           <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
             <Image
               src={`${BASE_PATH}/assets/photos/about.jpeg`}
-              alt="ÄGAPĒ event"
+              alt="Crowd at a previous ÄGAPĒ warehouse event in Brooklyn"
               fill
               className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -625,6 +625,27 @@ function AboutPhoto() {
 // ---- Film Strips ----
 // Two rows of photos scrolling in opposite directions like strips of film.
 // Full color, hover zoom, click to open modal.
+
+const GALLERY_ALTS: Record<string, string> = {
+  "1D3A9267": "Crowd dancing at ÄGAPĒ Brooklyn techno event",
+  "1D3A9488": "DJ performing at ÄGAPĒ warehouse party",
+  "1D3A9620": "Audience at ÄGAPĒ event with red stage lighting",
+  "3BF199AD": "Ravers at ÄGAPĒ Brooklyn underground techno night",
+  "AGAPE_D7": "Dancefloor energy at ÄGAPĒ Brooklyn event",
+  "AGAPE_F5": "Live performance at ÄGAPĒ techno event",
+  "DSC05585": "Atmospheric lighting at ÄGAPĒ warehouse event",
+  "DSC05632": "Partygoers at ÄGAPĒ Brooklyn techno night",
+  "AGAPE_D38": "Strobe lights at ÄGAPĒ underground event in Brooklyn",
+  "AGAPE_D14": "DJ booth at ÄGAPĒ warehouse party in Brooklyn",
+  "AGAPE_F14": "Crowd shot at ÄGAPĒ Brooklyn techno festival",
+};
+
+function getPhotoAlt(src: string): string {
+  for (const [key, alt] of Object.entries(GALLERY_ALTS)) {
+    if (src.includes(key)) return alt;
+  }
+  return "ÄGAPĒ Brooklyn techno event";
+}
 
 function FilmStrips({ photos }: { photos: string[] }) {
   const mid = Math.ceil(photos.length / 2);
@@ -655,7 +676,7 @@ function FilmStrips({ photos }: { photos: string[] }) {
                 >
                   <Image
                     src={photo}
-                    alt={`ÄGAPĒ event`}
+                    alt={getPhotoAlt(photo)}
                     fill
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                     sizes="30vw"
@@ -688,7 +709,7 @@ function FilmStrips({ photos }: { photos: string[] }) {
             >
               <Image
                 src={lightbox}
-                alt="ÄGAPĒ event"
+                alt={getPhotoAlt(lightbox)}
                 fill
                 className="object-contain"
                 sizes="90vw"
@@ -995,7 +1016,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
             {artist.imageUrl ? (
               <Image
                 src={artist.imageUrl}
-                alt={artist.name}
+                alt={`${artist.name} — ÄGAPĒ Festival 2026 artist`}
                 fill
                 className={`object-cover transition-all duration-700 ease-out ${
                   imgLoaded ? "opacity-70 group-hover:opacity-100" : "opacity-0"
@@ -1079,7 +1100,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
             {artist.imageUrl ? (
               <Image
                 src={artist.imageUrl}
-                alt={artist.name}
+                alt={`${artist.name} — ÄGAPĒ Festival 2026 artist`}
                 fill
                 className={`object-cover transition-all duration-700 ease-out ${
                   imgLoaded ? "opacity-70 group-hover:opacity-100" : "opacity-0"
@@ -1272,7 +1293,7 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
             {artist.imageUrl && (
               <Image
                 src={artist.imageUrl}
-                alt={artist.name}
+                alt={`${artist.name} — ÄGAPĒ Festival 2026 artist`}
                 fill
                 className={`object-cover transition-opacity duration-500 ${videoLoaded ? "opacity-0" : "opacity-70"}`}
                 sizes="90vw"
@@ -1296,7 +1317,7 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
           <div className="aspect-[16/9] relative overflow-hidden">
             <Image
               src={artist.imageUrl}
-              alt={artist.name}
+              alt={`${artist.name} — ÄGAPĒ Festival 2026 artist`}
               fill
               className="object-cover"
               sizes="90vw"
@@ -1714,7 +1735,7 @@ export default function Trajectory() {
               >
                 <Image
                   src={LOGOS.agapeWhite}
-                  alt=""
+                  alt="ÄGAPĒ Festival logo"
                   width={18}
                   height={18}
                   className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
@@ -1805,7 +1826,7 @@ export default function Trajectory() {
                     {/* Default Agape logo */}
                     <Image
                       src={LOGOS.agapeWhite}
-                      alt="ÄGAPĒ"
+                      alt="ÄGAPĒ Festival logo"
                       width={16}
                       height={16}
                       className={`absolute left-0 top-1/2 -translate-y-1/2 transition-opacity duration-200 ${!activeStageHost ? "opacity-50 group-hover:opacity-100" : "opacity-0 pointer-events-none"}`}
@@ -1815,7 +1836,7 @@ export default function Trajectory() {
                       <Image
                         key={host}
                         src={src}
-                        alt={host}
+                        alt={`${host} logo`}
                         width={80}
                         height={40}
                         className={`absolute left-0 top-1/2 -translate-y-1/2 w-auto object-contain transition-opacity duration-200 ${host === "Face 2 Face" ? "h-5" : "h-4"} ${activeStageHost === host ? "opacity-70 group-hover:opacity-100" : "opacity-0 pointer-events-none"}`}
@@ -1861,7 +1882,7 @@ export default function Trajectory() {
                       >
                         <Image
                           src={LOGOS.festivalWhiteTransparent}
-                          alt="ÄGAPĒ FESTIVAL"
+                          alt="ÄGAPĒ Festival logo"
                           width={60}
                           height={32}
                           className="opacity-20 h-5 w-auto"
@@ -1892,6 +1913,7 @@ export default function Trajectory() {
 
         {/* ===== HERO — CINEMATIC INTRO ===== */}
         <section ref={heroRef} id="hero" className="relative h-screen w-full overflow-hidden bg-black">
+          <h1 className="sr-only">ÄGAPĒ Festival 2026 — Brooklyn Techno Festival, September 5-6 at Industry City</h1>
           <HeroVideo />
 
           <motion.div
@@ -1945,7 +1967,7 @@ export default function Trajectory() {
               >
                 <Image
                   src={LOGOS.agapeWhiteSm}
-                  alt=""
+                  alt="ÄGAPĒ logo"
                   width={120}
                   height={120}
                   className="w-[60px] sm:w-[80px] md:w-[120px] h-auto"
@@ -1960,7 +1982,7 @@ export default function Trajectory() {
               >
                 <Image
                   src={LOGOS.festivalWhiteTransparent}
-                  alt="ÄGAPĒ FESTIVAL"
+                  alt="ÄGAPĒ Festival 2026 logo"
                   width={540}
                   height={540}
                   className="w-[280px] sm:w-[380px] md:w-[460px] lg:w-[540px] h-auto"
@@ -2060,7 +2082,7 @@ export default function Trajectory() {
                   <Frame>
                     <Image
                       src={`${BASE_PATH}/assets/1000x1778.avif`}
-                      alt="ÄGAPĒ FESTIVAL 2026 — Full Lineup"
+                      alt="ÄGAPĒ Festival 2026 full lineup poster — Sept 5-6, Industry City, Brooklyn"
                       width={600}
                       height={1067}
                       className="w-full h-auto"
@@ -2309,7 +2331,7 @@ export default function Trajectory() {
                     >
                       <Image
                         src={partner.logoUrl}
-                        alt={partner.name}
+                        alt={`${partner.name} logo`}
                         width={120}
                         height={45}
                         className="opacity-50 group-hover:opacity-90 transition-all duration-700 grayscale group-hover:grayscale-0 object-contain max-h-[50px] w-auto"
@@ -2353,7 +2375,7 @@ export default function Trajectory() {
               <div className="flex flex-col items-center md:items-start gap-3">
                 <Image
                   src={LOGOS.festivalWhiteTransparent}
-                  alt={FESTIVAL.name}
+                  alt="ÄGAPĒ Festival logo"
                   width={586}
                   height={310}
                   className="opacity-15 w-[120px] h-auto"
@@ -2429,7 +2451,7 @@ export default function Trajectory() {
               <a href="https://www.instagram.com/_x.meka.x_/" target="_blank" rel="noopener noreferrer">
                 <motion.img
                   src="/assets/logos/meka-icon.png"
-                  alt="MEKA"
+                  alt="MEKA design studio logo"
                   className="w-16 h-16 cursor-pointer"
                   initial={{ opacity: 0, filter: "brightness(1)" }}
                   whileInView={{

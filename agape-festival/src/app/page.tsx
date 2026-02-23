@@ -986,6 +986,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
   const [imgLoaded, setImgLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovering, setHovering] = useState(false);
+  const isMystery = artist.name === "???";
 
   const handleMouseEnter = () => {
     if (artist.videoUrl && videoRef.current) {
@@ -993,11 +994,17 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
     }
+    if (isMystery) {
+      setHovering(true);
+    }
   };
   const handleMouseLeave = () => {
     if (artist.videoUrl && videoRef.current) {
       setHovering(false);
       videoRef.current.pause();
+    }
+    if (isMystery) {
+      setHovering(false);
     }
   };
 
@@ -1013,6 +1020,26 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
       <Frame>
         <div className="bg-[#060606]">
           <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
+            {/* Mystery artist chains background */}
+            {isMystery && (
+              <img
+                src={`${BASE_PATH}/assets/videos/chains_red.gif`}
+                alt=""
+                aria-hidden
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
+              />
+            )}
+            {/* Noise background for mystery artist */}
+            {isMystery && (
+              <div
+                className="absolute inset-0 opacity-[0.04]"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+                  backgroundSize: "200px 200px",
+                  animation: "mysteryPulse 4s ease-in-out infinite",
+                }}
+              />
+            )}
             {artist.imageUrl ? (
               <Image
                 src={artist.imageUrl}
@@ -1026,7 +1053,9 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`${T.label} text-white/10`}>—</span>
+                <span className={`${orbitron.className} text-4xl font-black tracking-[0.15em] ${isMystery ? "text-[#8b0000]/30 group-hover:text-[#8b0000]/50" : "text-white/10"} transition-colors duration-500`}>
+                  {isMystery ? "???" : "—"}
+                </span>
               </div>
             )}
             {artist.videoUrl && (
@@ -1043,6 +1072,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 }`}
               />
             )}
+            {isMystery && <div className="absolute inset-0 border border-[#8b0000]/10 group-hover:border-[#8b0000]/30 transition-colors duration-500" />}
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
           </div>
           <div className="px-4 py-3 flex items-center justify-between border-t border-white/[0.06]">
@@ -1322,6 +1352,27 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
               className="object-cover"
               sizes="90vw"
             />
+          </div>
+        ) : artist.name === "???" ? (
+          <div className="aspect-[16/9] relative overflow-hidden bg-black flex items-center justify-center">
+            <motion.img
+              src={`${BASE_PATH}/assets/videos/chains_red.gif`}
+              alt=""
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.06 }}
+              transition={{ duration: 1.5, delay: 0.3 }}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+            <div
+              className="absolute inset-0 opacity-[0.04]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+                backgroundSize: "200px 200px",
+                animation: "mysteryPulse 4s ease-in-out infinite",
+              }}
+            />
+            <p className={`${orbitron.className} relative z-10 text-6xl font-bold text-[#8b0000]/40`}>???</p>
           </div>
         ) : null}
 

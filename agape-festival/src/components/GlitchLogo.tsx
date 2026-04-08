@@ -119,11 +119,19 @@ function GlitchLogoMesh({
     [texture, dataTexture]
   );
 
+  // Track whether the texture has any non-zero displacement
+  const isActive = useRef(false);
+
   // Per-frame: paint mouse velocity into DataTexture + decay
   // Interpolates between prev and current position so fast swipes leave a trail
   useFrame(() => {
-    const data = dataTexture.image.data as Float32Array;
     const m = mouse.current;
+    const hasMotion = Math.abs(m.vX) > 0.0001 || Math.abs(m.vY) > 0.0001;
+
+    // Skip expensive work when nothing is happening
+    if (!hasMotion && !isActive.current) return;
+
+    const data = dataTexture.image.data as Float32Array;
 
     // Interpolation: split fast movements into small steps
     const dx = m.x - m.prevX;
@@ -157,12 +165,16 @@ function GlitchLogoMesh({
       }
     }
 
-    // Decay all values toward zero
+    // Decay all values toward zero — track if anything is still non-zero
+    let maxVal = 0;
     for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
       const idx = i * 4;
       data[idx] *= DECAY;
       data[idx + 1] *= DECAY;
+      const v = Math.abs(data[idx]) + Math.abs(data[idx + 1]);
+      if (v > maxVal) maxVal = v;
     }
+    isActive.current = maxVal > 0.01;
 
     // Dampen velocity when mouse is stationary
     m.vX *= 0.9;

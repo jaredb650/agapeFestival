@@ -60,16 +60,21 @@ const GlitchLogo = dynamic(() => import("@/components/GlitchLogo"), {
 const orbitron = Orbitron({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
 });
 const outfit = Outfit({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500", "600"],
+  display: "swap",
 });
 const chonkyPixels = localFont({
-  src: "../../public/assets/fonts/ChonkyPixels.ttf",
+  src: "../../public/assets/fonts/ChonkyPixels.woff2",
   display: "swap",
   variable: "--font-chonky",
 });
+
+// Shared SVG noise background — used across mystery artist cards
+const NOISE_BG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`;
 
 // ============================================================
 // DESIGN TOKENS
@@ -783,6 +788,7 @@ function ParallaxVideoBreak() {
           muted
           loop
           playsInline
+          preload="none"
           className="w-full h-full object-cover"
           style={{ filter: "grayscale(1) contrast(1.15) brightness(0.35)" }}
         >
@@ -1022,10 +1028,14 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
           <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
             {/* Mystery artist chains background */}
             {isMystery && (
-              <img
-                src={`${BASE_PATH}/assets/videos/chains_red.gif`}
-                alt=""
+              <video
+                src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
+                autoPlay
+                muted
+                loop
+                playsInline
                 aria-hidden
+                preload="none"
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
               />
             )}
@@ -1034,7 +1044,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
               <div
                 className="absolute inset-0 opacity-[0.04]"
                 style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+                  backgroundImage: NOISE_BG,
                   backgroundSize: "200px 200px",
                   animation: "mysteryPulse 4s ease-in-out infinite",
                 }}
@@ -1148,10 +1158,14 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
           <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
             {/* Mystery artist chains background */}
             {isMystery && (
-              <img
-                src={`${BASE_PATH}/assets/videos/chains_red.gif`}
-                alt=""
+              <video
+                src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
+                autoPlay
+                muted
+                loop
+                playsInline
                 aria-hidden
+                preload="none"
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
               />
             )}
@@ -1160,7 +1174,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
               <div
                 className="absolute inset-0 opacity-[0.04]"
                 style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+                  backgroundImage: NOISE_BG,
                   backgroundSize: "200px 200px",
                   animation: "mysteryPulse 4s ease-in-out infinite",
                 }}
@@ -1272,17 +1286,21 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
       <Frame>
         <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
           {/* Chain GIF background — visible on hover */}
-          <img
-            src={`${BASE_PATH}/assets/videos/chains_red.gif`}
-            alt=""
+          <video
+            src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
+            autoPlay
+            muted
+            loop
+            playsInline
             aria-hidden
+            preload="none"
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
           />
           {/* Animated noise background */}
           <div
             className="absolute inset-0 opacity-[0.04]"
             style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+              backgroundImage: NOISE_BG,
               backgroundSize: "200px 200px",
               animation: "mysteryPulse 4s ease-in-out infinite",
             }}
@@ -1409,10 +1427,14 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
           </div>
         ) : artist.name === "???" ? (
           <div className="aspect-[16/9] relative overflow-hidden bg-black flex items-center justify-center">
-            <motion.img
-              src={`${BASE_PATH}/assets/videos/chains_red.gif`}
-              alt=""
+            <motion.video
+              src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
+              autoPlay
+              muted
+              loop
+              playsInline
               aria-hidden
+              preload="none"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.06 }}
               transition={{ duration: 1.5, delay: 0.3 }}
@@ -1421,7 +1443,7 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
             <div
               className="absolute inset-0 opacity-[0.04]"
               style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+                backgroundImage: NOISE_BG,
                 backgroundSize: "200px 200px",
                 animation: "mysteryPulse 4s ease-in-out infinite",
               }}
@@ -1532,10 +1554,14 @@ function B2B2BModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Chain GIF background — animated in with modal */}
-        <motion.img
-          src={`${BASE_PATH}/assets/videos/chains_red.gif`}
-          alt=""
+        <motion.video
+          src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
+          autoPlay
+          muted
+          loop
+          playsInline
           aria-hidden
+          preload="none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.06 }}
           transition={{ duration: 1.5, delay: 0.3 }}
@@ -2259,6 +2285,7 @@ export default function Trajectory() {
             muted
             loop
             playsInline
+            preload="none"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ filter: "brightness(0.15) saturate(0.4)" }}
           >
@@ -2555,7 +2582,7 @@ export default function Trajectory() {
               <span className={`${T.detail} text-neutral-700`}>SITE DESIGN BY MEKA</span>
               <a href="https://www.instagram.com/_x.meka.x_/" target="_blank" rel="noopener noreferrer">
                 <motion.img
-                  src="/assets/logos/meka-icon.png"
+                  src="/assets/logos/meka-icon.webp"
                   alt="MEKA design studio logo"
                   className="w-16 h-16 cursor-pointer"
                   initial={{ opacity: 0, filter: "brightness(1)" }}

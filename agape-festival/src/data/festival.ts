@@ -273,7 +273,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44 Label Group",
     bio: "Kobosil is a Berlin-based DJ, producer, and founder of 44 Label Group, known for blending underground energy with raw emotional depth. Born and raised in Berlin\u2019s working-class Neuk\u00f6lln district, he grew up surrounded by the city\u2019s post-reunification techno movement, which shaped his sound and artistic identity. Kobosil made his debut in 2013 with releases on Ostgut Ton, the label associated with Berghain, where he later became a resident DJ. His music combines heavy, industrial techno with melodic and emotional undertones, creating a powerful contrast that mirrors Berlin\u2019s dark yet vibrant spirit.",
     isPlaceholderBio: false,
-    imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.png`,
+    imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.jpg`,
     videoUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-clip.mp4`,
     note: "B2B",
   },
@@ -306,7 +306,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44 Label Group",
     bio: "Clara Cuv\u00e9 does not relinquish pace nor energy. Her roots go back to classical piano in which she was trained since the age of four. Clara's deep love of music naturally lead her to begin accumulating a record collection throughout the years, which she deploys during her energetic sets ranging from fast and groovy Techno to Breakbeat, Jungle and Hardcore, always focusing on groove and dynamics. After becoming part of the Munich label Stock5 and their monthly event series at Rote Sonne, she made her way to Berlin where she became a resident at the infamous event series Mess that takes place at OHM and started touring all over the world. Since then she has been DJing at clubs and festivals across the globe with regular appearances at Awakenings, Melt!, Blackworks, EXHALE, Pollerwiesen and Teletech to name a few.",
     isPlaceholderBio: false,
-    imageUrl: `${BASE_PATH}/assets/artists/clara-cuve/press-kit/claracuve-headshot.png`,
+    imageUrl: `${BASE_PATH}/assets/artists/clara-cuve/press-kit/claracuve-headshot.jpg`,
     videoUrl: `${BASE_PATH}/assets/artists/clara-cuve/press-kit/Clara_Closing_01.mp4`,
   },
   {
@@ -316,7 +316,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44 Label Group",
     bio: "Kobosil is a Berlin-based DJ, producer, and founder of 44 Label Group, known for blending underground energy with raw emotional depth. Born and raised in Berlin\u2019s working-class Neuk\u00f6lln district, he grew up surrounded by the city\u2019s post-reunification techno movement, which shaped his sound and artistic identity. Kobosil made his debut in 2013 with releases on Ostgut Ton, the label associated with Berghain, where he later became a resident DJ. His music combines heavy, industrial techno with melodic and emotional undertones, creating a powerful contrast that mirrors Berlin\u2019s dark yet vibrant spirit.",
     isPlaceholderBio: false,
-    imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.png`,
+    imageUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-headshot.jpg`,
     videoUrl: `${BASE_PATH}/assets/artists/kobosil/press-kit/kobosil-clip.mp4`,
   },
   {
@@ -336,7 +336,7 @@ export const ARTISTS: Artist[] = [
     stageHost: "44 Label Group",
     bio: "UEBERREST is a rising force in European industrial hard techno, blending deep atmospheric elements with high-pressure techno energy. His music blends religious impact with tireless rhythm, thus pushing a dark but structured form of hard techno that feels and sounds grand and powerful. Unlike many artists who are purely based on distorted aggression, UEBERREST is supported by a strong conceptual identity, thus managing to weave texture, rhythm and tension together in a long-form progression. Before gaining wider acceptance in the hard techno scene, he made his name in underground places all over Germany and Central Europe. His productions are characterized by emotional depth and raw intensity, with slow-burning breaks and powerful drops that precisely land on heavy sound systems. As a performer, UEBERREST emanates a strong presence from the booth, interweaving intricate narration with very powerful energy. With increasing backing from the European warehouse circuit and smaller labels that are promoting darker techno, UEBERREST is asserting his position as one of the most original artists of the up-and-coming hard techno producer\u2019s generation.",
     isPlaceholderBio: false,
-    imageUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-headshot.png`,
+    imageUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-headshot.jpg`,
     videoUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-video.mp4`,
   },
 ];

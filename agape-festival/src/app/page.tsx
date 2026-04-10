@@ -50,21 +50,15 @@ import {
   BASE_PATH,
   type Artist,
 } from "@/data/festival";
-import dynamic from "next/dynamic";
-
-const GlitchLogo = dynamic(() => import("@/components/GlitchLogo"), {
-  ssr: false,
-});
-
 // ---- Fonts ----
 const orbitron = Orbitron({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "700", "900"],
   display: "swap",
 });
 const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600"],
+  weight: ["300", "400"],
   display: "swap",
 });
 const chonkyPixels = localFont({
@@ -138,118 +132,7 @@ const S = {
 // Red bg: only /10 (default) and /20 (hover)
 // Border: border-white/[0.06] everywhere
 
-// ---- CSS (shimmer + marquee + cursor blink) ----
-const STYLES = `
-  html { scroll-behavior: smooth; }
-
-  @keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-  }
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  @keyframes cursorBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
-
-  @keyframes filmScrollLeft {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  @keyframes filmScrollRight {
-    0% { transform: translateX(-50%); }
-    100% { transform: translateX(0); }
-  }
-
-  .chrome-text {
-    background: linear-gradient(90deg, #444, #aaa, #fff, #aaa, #444);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 6s linear infinite;
-  }
-  .chrome-text-slow {
-    background: linear-gradient(90deg, #333, #888, #ddd, #888, #333);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: shimmer 10s linear infinite;
-  }
-
-  @keyframes mysteryPulse {
-    0%, 100% { opacity: 0.03; }
-    50% { opacity: 0.08; }
-  }
-  @keyframes mysteryGlow {
-    0%, 100% { text-shadow: 0 0 20px rgba(139,0,0,0.3); }
-    50% { text-shadow: 0 0 40px rgba(139,0,0,0.6), 0 0 80px rgba(139,0,0,0.2); }
-  }
-
-  @keyframes ticketGlow {
-    0%, 100% { box-shadow: 0 0 8px rgba(200,0,0,0.3); }
-    50% { box-shadow: 0 0 25px rgba(200,0,0,0.5), 0 0 60px rgba(139,0,0,0.2); }
-  }
-  @keyframes ticketPulse {
-    0%, 82%, 100% { transform: scale(1); }
-    88% { transform: scale(1.02); }
-    94% { transform: scale(0.998); }
-  }
-
-  /* Outer wrapper — hover + bounce scale lives here so corners move with button */
-  .ticket-wrap {
-    display: inline-block;
-    transition: transform 0.3s ease;
-  }
-  .ticket-wrap:hover {
-    transform: scale(1.05);
-  }
-
-  .ticket-btn {
-    position: relative;
-    overflow: hidden;
-    animation: ticketGlow 4s ease-in-out infinite, ticketPulse 7s ease-in-out infinite;
-  }
-  /* CRT scanlines — softened for readability */
-  .ticket-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.08) 50%),
-      linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
-    background-size: 100% 2px, 3px 100%;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  /* Scroll-lock attention pulse on ticket button */
-  @keyframes ticketAttention {
-    0%, 100% { transform: scale(1); }
-    15% { transform: scale(1.08); }
-    30% { transform: scale(0.97); }
-    45% { transform: scale(1.05); }
-    60% { transform: scale(0.99); }
-    75% { transform: scale(1.03); }
-  }
-  .ticket-attention {
-    animation: ticketAttention 0.8s ease-in-out 2;
-  }
-
-  @keyframes expandHint {
-    0%, 100% { transform: translateY(0); color: rgb(115,115,115); }
-    40% { transform: translateY(-6px); color: rgb(200,200,200); }
-    70% { transform: translateY(1px); color: rgb(160,160,160); }
-  }
-  .expand-hint {
-    animation: expandHint 0.7s ease-in-out 2 0.5s both;
-  }
-
-`;
+// Animation keyframes + utility classes moved to src/app/globals.css.
 
 // ---- Animation Variants ----
 const fadeInUp = {
@@ -504,11 +387,12 @@ function WireframeTorus() {
     <group ref={outerGroup}>
       <group ref={spinGroup}>
         <mesh>
-          <torusKnotGeometry args={[2.5, 0.5, 300, 40]} />
+          {/* Halved segments: 300,40 → 150,20. Still reads as a torus knot. */}
+          <torusKnotGeometry args={[2.5, 0.5, 150, 20]} />
           <meshBasicMaterial color="#ffffff" wireframe transparent opacity={0.18} />
         </mesh>
         <mesh scale={1.04}>
-          <torusKnotGeometry args={[2.5, 0.5, 150, 20]} />
+          <torusKnotGeometry args={[2.5, 0.5, 80, 12]} />
           <meshBasicMaterial color="#888888" wireframe transparent opacity={0.08} />
         </mesh>
       </group>
@@ -516,7 +400,7 @@ function WireframeTorus() {
   );
 }
 
-function ChromeParticles({ count = 200 }: { count?: number }) {
+function ChromeParticles({ count = 120 }: { count?: number }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const particles = useMemo(
@@ -613,12 +497,13 @@ function AboutPhoto() {
         <div className="aspect-[3/4] lg:aspect-auto lg:h-full overflow-hidden relative min-h-[400px]">
           <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
             <Image
-              src={`${BASE_PATH}/assets/photos/about.jpeg`}
+              src={`${BASE_PATH}/assets/photos/about.webp`}
               alt="Crowd at a previous ÄGAPĒ warehouse event in Brooklyn"
               fill
               className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
               sizes="(max-width: 1024px) 100vw, 50vw"
               onLoad={() => setLoaded(true)}
+              onError={() => setLoaded(true)}
             />
           </motion.div>
         </div>
@@ -733,14 +618,78 @@ function FilmStrips({ photos }: { photos: string[] }) {
   );
 }
 
+// ---- Tickets Background Video ----
+// Defers mount until in-view and catches autoplay rejection. Section itself
+// already renders the poster as a background-image, so if this never plays
+// the user still sees the red-strobes still.
+function TicketsBackgroundVideo() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const vidRef = useRef<HTMLVideoElement>(null);
+  const [mount, setMount] = useState(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setMount(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!mount) return;
+    const vid = vidRef.current;
+    if (!vid) return;
+    const p = vid.play();
+    if (p !== undefined) p.catch(() => { /* poster background stays */ });
+  }, [mount]);
+
+  return (
+    <div ref={wrapRef} className="absolute inset-0 pointer-events-none">
+      {mount && (
+        <video
+          ref={vidRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={VIDEOS.redStrobes.poster}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "brightness(0.15) saturate(0.4)" }}
+        >
+          <source src={VIDEOS.redStrobes.mp4} type="video/mp4" />
+        </video>
+      )}
+    </div>
+  );
+}
+
 // ---- Hero Video ----
+// Uses poster WebP as an IMMEDIATE background so the hero is never blank
+// (iOS Low Power Mode, slow network, autoplay-blocked browsers). If the video
+// plays, it fades on top of the poster. If it fails, the poster stays.
 function HeroVideo() {
   const [loaded, setLoaded] = useState(false);
   const vidRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const vid = vidRef.current;
-    if (vid && vid.readyState >= 3) setLoaded(true);
+    if (!vid) return;
+    if (vid.readyState >= 3) setLoaded(true);
+    const p = vid.play();
+    if (p !== undefined) {
+      p.catch(() => {
+        // Autoplay blocked (Low Power Mode, etc.) — keep poster showing.
+      });
+    }
   }, []);
 
   return (
@@ -749,6 +698,12 @@ function HeroVideo() {
       animate={{ opacity: 1 }}
       transition={{ duration: 2.5, delay: 4.8, ease: [0.25, 0.46, 0.45, 0.94] as const }}
       className="absolute inset-0"
+      style={{
+        backgroundImage: `url(${VIDEOS.flyerAnimated.poster})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundColor: "#000",
+      }}
     >
       <video
         ref={vidRef}
@@ -756,12 +711,13 @@ function HeroVideo() {
         muted
         loop
         playsInline
+        poster={VIDEOS.flyerAnimated.poster}
         className={`w-full h-full object-cover transition-opacity duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}
         style={{ filter: "brightness(0.5) contrast(1.1)" }}
         onCanPlayThrough={() => setLoaded(true)}
         onPlaying={() => setLoaded(true)}
+        onError={() => setLoaded(false)}
       >
-        <source src={VIDEOS.flyerAnimated.webm} type="video/webm" />
         <source src={VIDEOS.flyerAnimated.mp4} type="video/mp4" />
       </video>
     </motion.div>
@@ -769,8 +725,11 @@ function HeroVideo() {
 }
 
 // ---- Parallax Video Break ----
+// Defers the <video> until the section is near the viewport. Until then, only
+// the poster image is visible — saves ~5.5MB on initial load and keeps the
+// section non-blank on iOS Low Power Mode.
 function ParallaxVideoBreak() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -779,22 +738,58 @@ function ParallaxVideoBreak() {
   const smoothY = useSpring(videoY, { stiffness: 80, damping: 30 });
   const inViewRef = useRef(null);
   const isInView = useInView(inViewRef, { once: true, margin: "-120px" });
+  // Video mount flag — flipped once the section is within 400px of viewport.
+  const [mountVideo, setMountVideo] = useState(false);
+  const vidRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setMountVideo(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!mountVideo) return;
+    const vid = vidRef.current;
+    if (!vid) return;
+    const p = vid.play();
+    if (p !== undefined) p.catch(() => { /* autoplay blocked — poster stays */ });
+  }, [mountVideo]);
 
   return (
     <div ref={ref} className="relative h-[50vh] sm:h-[60vh] overflow-hidden">
-      <motion.div style={{ y: smoothY }} className="absolute left-0 right-0 h-[140%] -top-[20%]">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="none"
-          className="w-full h-full object-cover"
-          style={{ filter: "grayscale(1) contrast(1.15) brightness(0.35)" }}
-        >
-          <source src={VIDEOS.davidLohlein.webm} type="video/webm" />
-          <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
-        </video>
+      <motion.div
+        style={{
+          y: smoothY,
+          backgroundImage: `url(${VIDEOS.davidLohlein.poster})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "grayscale(1) contrast(1.15) brightness(0.35)",
+        }}
+        className="absolute left-0 right-0 h-[140%] -top-[20%]"
+      >
+        {mountVideo && (
+          <video
+            ref={vidRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={VIDEOS.davidLohlein.poster}
+            className="w-full h-full object-cover"
+          >
+            <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
+          </video>
+        )}
       </motion.div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
       <div ref={inViewRef} className="absolute inset-0 flex items-center justify-center">
@@ -1026,17 +1021,16 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
       <Frame>
         <div className="bg-[#060606]">
           <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
-            {/* Mystery artist chains background */}
+            {/* Mystery artist chains background — static poster (works on Low Power Mode) */}
             {isMystery && (
-              <video
-                src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
-                autoPlay
-                muted
-                loop
-                playsInline
+              <div
                 aria-hidden
-                preload="none"
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
+                style={{
+                  backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               />
             )}
             {/* Noise background for mystery artist */}
@@ -1060,6 +1054,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 }`}
                 sizes="(max-width: 640px) 50vw, 25vw"
                 onLoad={() => setImgLoaded(true)}
+                onError={() => setImgLoaded(true)}
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -1088,7 +1083,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 loop
                 playsInline
                 preload="none"
-
+                poster={artist.imageUrl || undefined}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   hovering ? "opacity-100" : "opacity-0"
                 }`}
@@ -1156,17 +1151,16 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
       <Frame>
         <div className="bg-[#060606]">
           <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
-            {/* Mystery artist chains background */}
+            {/* Mystery artist chains background — static poster */}
             {isMystery && (
-              <video
-                src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
-                autoPlay
-                muted
-                loop
-                playsInline
+              <div
                 aria-hidden
-                preload="none"
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
+                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovering ? "opacity-[0.07]" : "opacity-0"}`}
+                style={{
+                  backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               />
             )}
             {/* Noise background for mystery artist */}
@@ -1190,6 +1184,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 }`}
                 sizes="(max-width: 640px) 50vw, 25vw"
                 onLoad={() => setImgLoaded(true)}
+                onError={() => setImgLoaded(true)}
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center z-20">
@@ -1218,7 +1213,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 loop
                 playsInline
                 preload="none"
-
+                poster={artist.imageUrl || undefined}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   hovering ? "opacity-100" : "opacity-0"
                 }`}
@@ -1285,16 +1280,15 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
     >
       <Frame>
         <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
-          {/* Chain GIF background — visible on hover */}
-          <video
-            src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
-            autoPlay
-            muted
-            loop
-            playsInline
+          {/* Chain background — static poster (works on Low Power Mode) */}
+          <div
             aria-hidden
-            preload="none"
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
+            style={{
+              backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
           />
           {/* Animated noise background */}
           <div
@@ -1359,11 +1353,15 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  // Check if video is already ready on mount
+  // Video readiness + autoplay fallback. If autoplay is blocked (iOS Low Power
+  // Mode), videoLoaded stays false and the poster image stays visible.
   useEffect(() => {
     const vid = videoRef.current;
-    if (vid && vid.readyState >= 3) setVideoLoaded(true);
-  }, []);
+    if (!vid) return;
+    if (vid.readyState >= 3) setVideoLoaded(true);
+    const p = vid.play();
+    if (p !== undefined) p.catch(() => { /* poster stays visible */ });
+  }, [artist.videoUrl]);
 
   return (
     <motion.div
@@ -1427,18 +1425,17 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
           </div>
         ) : artist.name === "???" ? (
           <div className="aspect-[16/9] relative overflow-hidden bg-black flex items-center justify-center">
-            <motion.video
-              src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
-              autoPlay
-              muted
-              loop
-              playsInline
+            <motion.div
               aria-hidden
-              preload="none"
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.06 }}
               transition={{ duration: 1.5, delay: 0.3 }}
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              style={{
+                backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
             />
             <div
               className="absolute inset-0 opacity-[0.04]"
@@ -1553,19 +1550,18 @@ function B2B2BModal({ onClose }: { onClose: () => void }) {
         className="relative w-[90vw] max-w-lg bg-[#0a0a0a] border border-white/[0.06] p-8 sm:p-12 text-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Chain GIF background — animated in with modal */}
-        <motion.video
-          src={`${BASE_PATH}/assets/videos/chains_red.mp4`}
-          autoPlay
-          muted
-          loop
-          playsInline
+        {/* Chain background — static poster, animated in with modal */}
+        <motion.div
           aria-hidden
-          preload="none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.06 }}
           transition={{ duration: 1.5, delay: 0.3 }}
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{
+            backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         />
         <div className="relative z-[1]">
           <button
@@ -1732,6 +1728,9 @@ const NAV_LINKS = [
 // ============================================================
 export default function Trajectory() {
   const [isClient, setIsClient] = useState(false);
+  // Heavy 3D canvas: skip entirely on mobile, reduced-motion, or coarse
+  // pointer devices. Decided once on mount to avoid mount/unmount churn.
+  const [enable3D, setEnable3D] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [overTickets, setOverTickets] = useState(false);
@@ -1748,8 +1747,19 @@ export default function Trajectory() {
 
   useEffect(() => {
     setIsClient(true);
+    // Decide once whether the 3D canvas should run at all.
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    setEnable3D(!isMobile && !reducedMotion && !coarsePointer);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
     let rafId = 0;
+
+    // Cache stage DOM refs once instead of re-querying on every scroll tick.
+    const stageIds = ["stage-1-outdoor", "stage-1-indoor", "stage-2-outdoor", "stage-2-indoor"];
+    const stageEls = stageIds
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
 
     const onScroll = () => {
       if (rafId) return;
@@ -1769,16 +1779,12 @@ export default function Trajectory() {
           const sectionHeight = rect.height;
           setOverTickets(sectionHeight > 0 && visibleHeight / sectionHeight > 0.8);
         }
-        // Swap navbar logo to stage host brand when scrolling through lineup
-        // Use viewport-fill ratio (vis / viewportHeight) instead of section ratio
-        // so tall mobile sections (2-col grid) still trigger reliably
-        const stageIds = ["stage-1-outdoor", "stage-1-indoor", "stage-2-outdoor", "stage-2-indoor"];
+        // Swap navbar logo to stage host brand when scrolling through lineup.
+        // Uses viewport-fill ratio so tall mobile sections still trigger.
         const vh = window.innerHeight;
         let bestHost: string | null = null;
         let bestVis = 0;
-        for (const id of stageIds) {
-          const el = document.getElementById(id);
-          if (!el) continue;
+        for (const el of stageEls) {
           const r = el.getBoundingClientRect();
           const vTop = Math.max(r.top, 0);
           const vBot = Math.min(r.bottom, vh);
@@ -1826,17 +1832,25 @@ export default function Trajectory() {
 
   return (
     <div className={`${outfit.className} min-h-screen bg-black text-white relative`}>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      {/* Skip-to-content — keyboard/screen reader only */}
+      <a href="#artists" className="skip-link">Skip to lineup</a>
 
-      {/* ===== FIXED 3D PARALLAX BACKGROUND ===== */}
-      {isClient && (
+      {/* ===== FIXED 3D PARALLAX BACKGROUND =====
+          Gated: desktop + fine pointer + no reduced-motion. Mobile/tablet/
+          reduced-motion/battery-saver users get a static black background. */}
+      {isClient && enable3D && (
         <motion.div
           className="fixed inset-0 z-0 pointer-events-none"
           style={{ y: canvasY, opacity: canvasOpacity }}
         >
           <CanvasErrorBoundary>
             <Suspense fallback={null}>
-              <Canvas camera={{ position: [0, 0, 7], fov: 55 }} dpr={[1, 1.5]}>
+              <Canvas
+                camera={{ position: [0, 0, 7], fov: 55 }}
+                dpr={[1, 1.5]}
+                frameloop="always"
+                gl={{ powerPreference: "low-power", antialias: false }}
+              >
                 <ParallaxScene />
               </Canvas>
             </Suspense>
@@ -2190,7 +2204,7 @@ export default function Trajectory() {
             ].map((t, i) => (
               <span key={i} className="flex items-center">
                 <span className={`${T.label} text-neutral-600 mx-8`}>{t}</span>
-                <img src={LOGOS.agapeWhiteSm} alt="" className="h-5 w-5 mx-2 opacity-40 object-contain" />
+                <img src={LOGOS.agapeWhiteSm} alt="" width={20} height={20} loading="lazy" decoding="async" className="h-5 w-5 mx-2 opacity-40 object-contain" />
               </span>
             ))}
           </Marquee>
@@ -2279,19 +2293,18 @@ export default function Trajectory() {
         <SectionLine />
 
         {/* ===== TICKETS CTA ("SECURE YOUR ENTRY") ===== */}
-        <section id="tickets" ref={ticketsSectionRef} className={`relative ${S.section} overflow-hidden`}>
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="none"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ filter: "brightness(0.15) saturate(0.4)" }}
-          >
-            <source src={VIDEOS.redStrobes.mp4} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-black/50" />
+        <section
+          id="tickets"
+          ref={ticketsSectionRef}
+          className={`relative ${S.section} overflow-hidden`}
+          style={{
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${VIDEOS.redStrobes.poster})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundColor: "#000",
+          }}
+        >
+          <TicketsBackgroundVideo />
 
           <div className={`relative z-10 max-w-[1400px] mx-auto ${S.px}`}>
             <Reveal>
@@ -2491,7 +2504,7 @@ export default function Trajectory() {
             ].map((t, i) => (
               <span key={i} className="flex items-center">
                 <span className={`${T.label} text-neutral-700 mx-8`}>{t}</span>
-                <img src={LOGOS.agapeWhiteSm} alt="" className="h-5 w-5 mx-2 opacity-40 object-contain" />
+                <img src={LOGOS.agapeWhiteSm} alt="" width={20} height={20} loading="lazy" decoding="async" className="h-5 w-5 mx-2 opacity-40 object-contain" />
               </span>
             ))}
           </Marquee>

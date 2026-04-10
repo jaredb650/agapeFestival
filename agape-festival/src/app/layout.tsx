@@ -1,5 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  width: "device-width",
+  initialScale: 1,
+  colorScheme: "dark",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://agape-festival.com"),
@@ -93,6 +100,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Preload hero LCP assets so they start downloading before JS hydrates.
+            flyer-animated.mp4 is the hero video; aFestWhite is the main logo. */}
+        <link
+          rel="preload"
+          as="video"
+          href="/assets/videos/flyer-animated.mp4"
+          type="video/mp4"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/logos/aFestWhite.png"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/videos/posters/flyer-animated.webp"
+          type="image/webp"
+        />
+      </head>
       <body className="antialiased bg-black text-white">
         {children}
         <script

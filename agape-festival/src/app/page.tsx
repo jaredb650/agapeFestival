@@ -1747,11 +1747,11 @@ export default function Trajectory() {
 
   useEffect(() => {
     setIsClient(true);
-    // Decide once whether the 3D canvas should run at all.
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    // 3D canvas runs everywhere except when the user has asked for less motion.
+    // Mobile/coarse pointer is OK — Canvas is already tuned with low-power GL,
+    // reduced torus segments, and 120 particles.
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-    setEnable3D(!isMobile && !reducedMotion && !coarsePointer);
+    setEnable3D(!reducedMotion);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
     let rafId = 0;
 
@@ -1836,8 +1836,8 @@ export default function Trajectory() {
       <a href="#artists" className="skip-link">Skip to lineup</a>
 
       {/* ===== FIXED 3D PARALLAX BACKGROUND =====
-          Gated: desktop + fine pointer + no reduced-motion. Mobile/tablet/
-          reduced-motion/battery-saver users get a static black background. */}
+          Runs on every device except prefers-reduced-motion. Canvas is tuned
+          with low-power GL, half-resolution segments, and antialias off. */}
       {isClient && enable3D && (
         <motion.div
           className="fixed inset-0 z-0 pointer-events-none"

@@ -38,6 +38,12 @@ export interface SocialLink {
   handle: string;
 }
 
+export interface TicketTier {
+  name: string;
+  description: string;
+  tag?: string;
+}
+
 // ---- FESTIVAL INFO ----
 
 export const FESTIVAL = {
@@ -53,6 +59,8 @@ export const FESTIVAL = {
     location: "Brooklyn, NYC",
     full: "Industry City, Brooklyn, NYC",
   },
+  hours: "12PM — 6AM",
+  ticketsFrom: "$105",
   ticketUrl: "https://posh.vip/e/gap-festival-1",
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",
@@ -68,6 +76,34 @@ export const COPY = {
   merchComingSoon: "Merch dropping soon. Stay tuned.",
   origin: "Brooklyn, New York",
 } as const;
+
+// ---- TICKET TIERS ----
+
+export const TICKET_TIERS: TicketTier[] = [
+  {
+    name: "BUNDLE",
+    description:
+      "Two-day access — both September 5 and 6. One wristband covers both days.",
+    tag: "Best value.",
+  },
+  {
+    name: "SINGLE DAY GA",
+    description:
+      "Either September 5 or September 6. Includes both stages for that day.",
+  },
+  {
+    name: "VIP",
+    description:
+      "Available as a two-day or single-day option. Includes GA access plus a dedicated VIP area and amenities.",
+    tag: "Backstage not included.",
+  },
+  {
+    name: "BACKSTAGE",
+    description:
+      "Full backstage access. Two-day or single-day. Includes VIP area and amenities.",
+    tag: "Extremely limited.",
+  },
+];
 
 // ---- SOCIAL LINKS ----
 

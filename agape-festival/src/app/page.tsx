@@ -42,6 +42,7 @@ import {
   SOCIALS,
   PARTNERS,
   ARTISTS,
+  TICKET_TIERS,
   getStages,
   STAGE_LOGOS,
   PHOTOS,
@@ -2633,6 +2634,13 @@ export default function Trajectory() {
                 trigger={true}
                 delay={5500}
               />
+              <TypewriterReveal
+                text={`DOORS ${FESTIVAL.hours}`}
+                className={`${T.detail} text-neutral-600 text-center mt-1`}
+                speed={25}
+                trigger={true}
+                delay={6300}
+              />
             </motion.div>
 
             {/* 7. CTA */}
@@ -2791,7 +2799,73 @@ export default function Trajectory() {
                       speed={15}
                     />
                   </motion.div>
-                  <motion.div variants={fadeInUp} className="mt-12 w-full sm:w-auto">
+                  <motion.p
+                    variants={fadeInUp}
+                    className={`${T.detail} text-neutral-600 mt-3`}
+                  >
+                    DOORS {FESTIVAL.hours}
+                  </motion.p>
+
+                  {/* TICKET TIERS EXPLAINER — sits between the date/hours
+                      line and the GET TICKETS button so buyers know what
+                      they're picking before they click through to posh. */}
+                  <motion.div
+                    variants={fadeInUp}
+                    className="mt-12 max-w-xl mx-auto text-left"
+                  >
+                    <p
+                      className={`${T.label} text-neutral-600 text-center mb-6`}
+                    >
+                      <span className="text-[#8b0000]/50">—</span>
+                      <span className="mx-2">—</span>
+                      TICKET TYPES
+                    </p>
+                    <div className="divide-y divide-white/[0.06]">
+                      {TICKET_TIERS.map((tier, i) => (
+                        <div
+                          key={tier.name}
+                          className="flex gap-4 sm:gap-5 py-4 sm:py-5"
+                        >
+                          <span
+                            className={`${T.detail} text-[#8b0000]/60 flex-shrink-0 pt-[3px]`}
+                          >
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`${orbitron.className} text-[12px] sm:text-[13px] font-bold tracking-[0.1em] text-white`}
+                            >
+                              {tier.name}
+                            </p>
+                            <p
+                              className={`${T.monoSm} text-neutral-500 mt-2`}
+                            >
+                              {tier.description}
+                              {tier.tag && (
+                                <span className="text-neutral-300">
+                                  {" "}
+                                  {tier.tag}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {/* Price anchor — sits directly above the CTA so the
+                      price context is read in the same glance as the button. */}
+                  <motion.p
+                    variants={fadeInUp}
+                    className={`${orbitron.className} text-xs sm:text-sm tracking-[0.3em] text-neutral-400 mt-12 mb-3`}
+                  >
+                    FROM{" "}
+                    <span className="text-white font-bold tracking-[0.15em]">
+                      {FESTIVAL.ticketsFrom}
+                    </span>
+                  </motion.p>
+                  <motion.div variants={fadeInUp} className="w-full sm:w-auto">
                     <div ref={ticketBtnRef} className="ticket-wrap block sm:inline-block">
                       <Frame accent className="block sm:inline-block">
                         <a
@@ -2807,6 +2881,30 @@ export default function Trajectory() {
                       </Frame>
                     </div>
                   </motion.div>
+
+                  {/* Promo code — secondary conversion nudge.
+                      Sized between the button and fine-print so it
+                      reads as an incentive without competing with the CTA. */}
+                  <motion.p
+                    variants={fadeInUp}
+                    className={`${orbitron.className} text-[11px] sm:text-xs tracking-[0.25em] text-neutral-400 mt-7`}
+                  >
+                    USE CODE{" "}
+                    <span className="text-[#cc2222] font-bold tracking-[0.3em]">
+                      AGAPE
+                    </span>{" "}
+                    FOR 15% OFF
+                  </motion.p>
+
+                  {/* Logistics fine-print — age limit + refund/transfer policy */}
+                  <motion.p
+                    variants={fadeInUp}
+                    className={`${T.detail} text-neutral-600 mt-4`}
+                  >
+                    21+ EVENT
+                    <span className="mx-3 opacity-50">·</span>
+                    NON-REFUNDABLE BUT TRANSFERABLE
+                  </motion.p>
                 </div>
               </Frame>
             </Reveal>

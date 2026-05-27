@@ -1766,14 +1766,25 @@ const FAQ_ITEMS: FaqEntry[] = [
     a: "Valid government-issued ID (21+ event), your ticket QR code or confirmation email, and comfortable shoes. No professional cameras or outside drinks.",
   },
   {
+    q: "Will there be lockers?",
+    a: "Yes. Locker rentals will be available on site both days for a small fee. We recommend booking in advance as they are limited. Details on how to reserve yours will be shared closer to the event date.",
+  },
+  {
     q: "How do I get there?",
     a: (
       <>
         Industry City is accessible by subway, car and rideshare. Full directions and a map link are in the{" "}
-        {/* TODO Phase 2: wrap in <a href="#getting-here"> once Getting Here section ships */}
-        <span className="underline underline-offset-4 decoration-white/20 text-neutral-400">
+        <a
+          href="#getting-here"
+          onClick={(e) => {
+            e.preventDefault();
+            const el = document.querySelector("#getting-here");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="underline underline-offset-4 decoration-white/30 text-neutral-300 hover:text-white hover:decoration-white transition-colors"
+        >
           Getting Here section below
-        </span>
+        </a>
         .
       </>
     ),
@@ -1907,12 +1918,221 @@ function Faq() {
   );
 }
 
+// ============================================================
+// GETTING HERE Section
+// All transit facts sourced from industrycity.com/visit + MTA.
+// No invented details — Google Maps embed is the authoritative
+// routing source for users.
+// ============================================================
+function SubwayBullet({
+  line,
+  color,
+  textColor = "#fff",
+}: {
+  line: string;
+  color: string;
+  textColor?: string;
+}) {
+  return (
+    <span
+      className="inline-flex items-center justify-center w-9 h-9 rounded-full text-base font-bold"
+      style={{
+        backgroundColor: color,
+        color: textColor,
+        fontFamily: "Helvetica, Arial, sans-serif",
+      }}
+      aria-label={`${line} train`}
+    >
+      {line}
+    </span>
+  );
+}
+
+function GettingHere() {
+  // Universal Google Maps directions deeplink — opens native app on mobile,
+  // Maps in browser on desktop. Routing is Google's, not ours.
+  const mapsDirectionsUrl =
+    "https://www.google.com/maps/dir/?api=1&destination=220+36th+St+Brooklyn+NY+11232";
+  // No-API-key embed. Inverted to fit the dark aesthetic.
+  const mapEmbedUrl =
+    "https://maps.google.com/maps?q=220+36th+St+Brooklyn+NY+11232&output=embed";
+
+  return (
+    <section
+      id="getting-here"
+      className={`${S.section} ${S.px} bg-black/70 scroll-mt-20`}
+    >
+      <div className="max-w-[1400px] mx-auto">
+        {/* Header */}
+        <Reveal>
+          <motion.div variants={fadeInUp}>
+            <Label num="04" text="GETTING HERE" />
+          </motion.div>
+          <motion.h2
+            variants={fadeInUp}
+            className={`${T.heading} chrome-text ${S.labelGap}`}
+          >
+            FIND YOUR WAY IN
+          </motion.h2>
+          <motion.div variants={fadeInUp}>
+            <HeadingLine />
+          </motion.div>
+          <motion.p
+            variants={fadeInUp}
+            className={`${T.monoSm} text-neutral-500 max-w-2xl -mt-4 mb-12`}
+          >
+            Industry City sits in Sunset Park, Brooklyn. Easy by subway, car,
+            or rideshare — pick your route and we'll see you at the door.
+          </motion.p>
+        </Reveal>
+
+        {/* Map + Address + Primary CTA */}
+        <Reveal className="max-w-5xl mx-auto">
+          <motion.div variants={fadeInUp}>
+            <Frame>
+              <div className="relative aspect-[4/3] sm:aspect-[16/9] bg-black overflow-hidden">
+                <iframe
+                  src={mapEmbedUrl}
+                  className="absolute inset-0 w-full h-full border-0"
+                  style={{
+                    filter:
+                      "invert(0.92) hue-rotate(180deg) saturate(0.4) contrast(0.9) brightness(0.85)",
+                  }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Industry City — 220 36th Street, Brooklyn, NY"
+                />
+              </div>
+            </Frame>
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+          >
+            <div>
+              <p className={`${T.label} text-neutral-600`}>ADDRESS</p>
+              <p
+                className={`${orbitron.className} text-base sm:text-lg font-bold tracking-[0.04em] text-white mt-2`}
+              >
+                220 36th Street
+              </p>
+              <p className={`${T.monoSm} text-neutral-500 mt-1`}>
+                Brooklyn, NY 11232
+              </p>
+            </div>
+            {/* Dim red — F2F joiner tag styling. Intentionally less bright
+                than the GET TICKETS button so it doesn't compete visually. */}
+            <Frame accent className="inline-block">
+              <a
+                href={mapsDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-8 sm:px-10 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300"
+              >
+                <span
+                  className={`${orbitron.className} text-[12px] sm:text-[13px] tracking-[0.3em] font-semibold text-white`}
+                >
+                  OPEN IN GOOGLE MAPS →
+                </span>
+              </a>
+            </Frame>
+          </motion.div>
+        </Reveal>
+
+        {/* Three transit cards */}
+        <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mt-16 max-w-5xl mx-auto">
+          {/* SUBWAY */}
+          <motion.div variants={fadeInUp}>
+            <Frame className="h-full">
+              <div className="p-6 sm:p-8 h-full bg-black/40 flex flex-col">
+                <p className={`${T.label} text-neutral-600`}>SUBWAY</p>
+                <div className="flex items-center gap-2 mt-5">
+                  <SubwayBullet line="D" color="#FF6319" />
+                  <SubwayBullet line="N" color="#FCCC0A" textColor="#000" />
+                  <SubwayBullet line="R" color="#FCCC0A" textColor="#000" />
+                </div>
+                <p
+                  className={`${orbitron.className} text-sm font-bold tracking-[0.04em] text-white mt-6`}
+                >
+                  36th St Station
+                </p>
+                <p className={`${T.monoSm} text-neutral-500 mt-3`}>
+                  Exit at 3rd Ave / 36th St — about a five-minute walk to the
+                  venue entrance.
+                </p>
+              </div>
+            </Frame>
+          </motion.div>
+
+          {/* DRIVE */}
+          <motion.div variants={fadeInUp}>
+            <Frame className="h-full">
+              <div className="p-6 sm:p-8 h-full bg-black/40 flex flex-col">
+                <p className={`${T.label} text-neutral-600`}>DRIVE</p>
+                <p
+                  className={`${orbitron.className} text-sm font-bold tracking-[0.05em] text-white mt-5`}
+                >
+                  I-278 W (BQE), EXIT 23
+                </p>
+                <p className={`${T.monoSm} text-neutral-500 mt-4`}>
+                  On-site parking available at Lots B + C, entered from 2nd Ave
+                  + 37th St. Advance booking recommended.
+                </p>
+              </div>
+            </Frame>
+          </motion.div>
+
+          {/* RIDESHARE */}
+          <motion.div variants={fadeInUp}>
+            <Frame className="h-full">
+              <div className="p-6 sm:p-8 h-full bg-black/40 flex flex-col">
+                <p className={`${T.label} text-neutral-600`}>RIDESHARE</p>
+                <p
+                  className={`${orbitron.className} text-sm font-bold tracking-[0.05em] text-white mt-5`}
+                >
+                  DROP-OFF
+                </p>
+                <p className={`${T.monoSm} text-neutral-500 mt-4`}>
+                  Set your Uber or Lyft destination to{" "}
+                  <span className="text-neutral-300">
+                    220 36th St, Brooklyn, NY 11232
+                  </span>{" "}
+                  — the main entrance.
+                </p>
+              </div>
+            </Frame>
+          </motion.div>
+        </StaggerGrid>
+
+        {/* Secondary: bus + Citi Bike */}
+        <Reveal className="mt-12">
+          <motion.div
+            variants={fadeInUp}
+            className="max-w-5xl mx-auto text-center"
+          >
+            <p className={`${T.detail} text-neutral-600 leading-relaxed`}>
+              ALSO ACCESSIBLE BY{" "}
+              <span className="text-neutral-400">B35 · B37 · B70 · SIM</span>{" "}
+              BUSES
+              <span className="mx-3 opacity-40">·</span>
+              CITI BIKE STATIONS ON 2ND AVE + 32 / 37 / 39 ST AND 3RD AVE + 36
+              ST
+            </p>
+          </motion.div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 // ---- Nav Links — all site sections for the dropdown menu ----
 const NAV_LINKS = [
   { label: "TOP", href: "#hero" },
   { label: "LINEUP", href: "#artists" },
   { label: "TICKETS", href: "#tickets" },
   { label: "FAQ", href: "#faq" },
+  { label: "GETTING HERE", href: "#getting-here" },
   { label: "ABOUT", href: "#about" },
   { label: "PARTNERS", href: "#partners" },
 ];
@@ -2546,12 +2766,17 @@ export default function Trajectory() {
 
         <SectionLine />
 
+        {/* ===== GETTING HERE ===== */}
+        <GettingHere />
+
+        <SectionLine />
+
         {/* ===== ABOUT + PHOTO ===== */}
         <section id="about" className={`${S.section} ${S.px} bg-black/70`}>
           <div className="max-w-[1400px] mx-auto">
             <Reveal>
               <motion.div variants={fadeInUp}>
-                <Label num="04" text="ABOUT" />
+                <Label num="05" text="ABOUT" />
               </motion.div>
               <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
                 WHO WE ARE
@@ -2650,7 +2875,7 @@ export default function Trajectory() {
         <section id="partners" className={`${S.compact} ${S.px} bg-black/70`}>
           <Reveal replay>
             <motion.div variants={fadeInUp}>
-              <Label num="05" text="PARTNERS" />
+              <Label num="06" text="PARTNERS" />
             </motion.div>
             <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600 ${S.labelGap} ${S.headingGap}`}>
               PRESENTED BY

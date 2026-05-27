@@ -1714,11 +1714,205 @@ function Lineup() {
 }
 
 
+// ============================================================
+// FAQ Section
+// Single-open accordion. Questions in white, answers in muted grey.
+// Numbering and Frame motif match the rest of the site.
+// ============================================================
+interface FaqEntry {
+  q: string;
+  a: ReactNode;
+}
+
+const FAQ_ITEMS: FaqEntry[] = [
+  {
+    q: "What are the festival hours?",
+    a: "Doors open at 12pm noon on both days and run until 6am the following morning.",
+  },
+  {
+    q: "Is there reentry?",
+    a: "Yes. GA ticket holders can exit and reenter throughout the day with their wristband or ticket scan.",
+  },
+  {
+    q: "What is the difference between a single day ticket and a bundle?",
+    a: "Single day tickets give you access to one day of your choice — September 5 or September 6. A 2 day bundle gives you access to both days at a discounted rate.",
+  },
+  {
+    q: "Where is the festival?",
+    a: "Industry City, Brooklyn, NYC. Address: 220 36th St, Brooklyn, NY 11232.",
+  },
+  {
+    q: "What time should I arrive?",
+    a: "Doors open at 12pm. We recommend arriving early to avoid queues, especially on Day 2.",
+  },
+  {
+    q: "Is there an age limit?",
+    a: "Yes. ÄGAPĒ Festival is a 21+ event. Valid government-issued ID is required at entry.",
+  },
+  {
+    q: "What stages are there?",
+    a: "Two stages — one indoor and one outdoor. Day 1 features the Hot Meal outdoor stage and the Face 2 Face indoor stage. Day 2 features 44 Label Group taking over both stages.",
+  },
+  {
+    q: "Can I get a discount on tickets?",
+    a: "Yes — use code AGAPE at checkout for 15% off your tickets.",
+  },
+  {
+    q: "Are tickets refundable?",
+    a: "Tickets are non-refundable but transferable. You can transfer your ticket to someone else if your plans change.",
+  },
+  {
+    q: "What should I bring?",
+    a: "Valid government-issued ID (21+ event), your ticket QR code or confirmation email, and comfortable shoes. No professional cameras or outside drinks.",
+  },
+  {
+    q: "How do I get there?",
+    a: (
+      <>
+        Industry City is accessible by subway, car and rideshare. Full directions and a map link are in the{" "}
+        {/* TODO Phase 2: wrap in <a href="#getting-here"> once Getting Here section ships */}
+        <span className="underline underline-offset-4 decoration-white/20 text-neutral-400">
+          Getting Here section below
+        </span>
+        .
+      </>
+    ),
+  },
+  {
+    q: "Who do I contact for press or partnerships?",
+    a: "Email bookings@agapemusic.us for press, partnership and sponsorship inquiries.",
+  },
+];
+
+function FaqRow({
+  entry,
+  index,
+  isOpen,
+  onToggle,
+}: {
+  entry: FaqEntry;
+  index: number;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const num = String(index + 1).padStart(2, "0");
+  return (
+    <div className="border-b border-white/[0.06] last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="w-full flex items-start justify-between gap-4 sm:gap-6 py-6 sm:py-7 text-left group transition-colors duration-300 hover:bg-white/[0.015]"
+      >
+        <div className="flex items-baseline gap-4 sm:gap-6 min-w-0">
+          <span className={`${T.detail} text-[#8b0000]/60 flex-shrink-0`}>
+            {num}
+          </span>
+          <span
+            className={`${orbitron.className} text-[13px] sm:text-[15px] font-bold tracking-[0.04em] text-white leading-snug`}
+          >
+            {entry.q}
+          </span>
+        </div>
+        <span
+          className={`flex-shrink-0 ml-2 w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-neutral-500 group-hover:text-white transition-all duration-300 ${
+            isOpen ? "rotate-45" : ""
+          }`}
+          aria-hidden="true"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 1.5V14.5M1.5 8H14.5"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="square"
+            />
+          </svg>
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
+            className="overflow-hidden"
+          >
+            <div className="pb-7 sm:pb-8 pl-10 sm:pl-14 pr-6 sm:pr-10">
+              <p className={`${T.monoSm} text-neutral-500`}>{entry.a}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Faq() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  return (
+    <section id="faq" className={`${S.section} ${S.px} bg-black/70`}>
+      <div className="max-w-[1400px] mx-auto">
+        <Reveal>
+          <motion.div variants={fadeInUp}>
+            <Label num="03" text="FAQ" />
+          </motion.div>
+          <motion.h2
+            variants={fadeInUp}
+            className={`${T.heading} chrome-text ${S.labelGap}`}
+          >
+            FREQUENTLY ASKED
+          </motion.h2>
+          <motion.div variants={fadeInUp}>
+            <HeadingLine />
+          </motion.div>
+          <motion.p
+            variants={fadeInUp}
+            className={`${T.monoSm} text-neutral-500 max-w-2xl -mt-4 mb-12`}
+          >
+            Everything you need to know before the gates open. Still have
+            questions?{" "}
+            <a
+              href={`mailto:${FESTIVAL.contactEmail}`}
+              className="text-neutral-300 underline underline-offset-4 decoration-white/20 hover:text-white transition-colors"
+            >
+              {FESTIVAL.contactEmail}
+            </a>
+            .
+          </motion.p>
+        </Reveal>
+
+        <Reveal className="max-w-3xl mx-auto">
+          <motion.div variants={fadeInUp}>
+            <Frame>
+              <div className="px-5 sm:px-10 lg:px-12 bg-black/40">
+                {FAQ_ITEMS.map((entry, i) => (
+                  <FaqRow
+                    key={i}
+                    entry={entry}
+                    index={i}
+                    isOpen={openIndex === i}
+                    onToggle={() =>
+                      setOpenIndex(openIndex === i ? null : i)
+                    }
+                  />
+                ))}
+              </div>
+            </Frame>
+          </motion.div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 // ---- Nav Links — all site sections for the dropdown menu ----
 const NAV_LINKS = [
   { label: "TOP", href: "#hero" },
   { label: "LINEUP", href: "#artists" },
   { label: "TICKETS", href: "#tickets" },
+  { label: "FAQ", href: "#faq" },
   { label: "ABOUT", href: "#about" },
   { label: "PARTNERS", href: "#partners" },
 ];
@@ -2347,12 +2541,17 @@ export default function Trajectory() {
 
         <SectionLine />
 
+        {/* ===== FAQ ===== */}
+        <Faq />
+
+        <SectionLine />
+
         {/* ===== ABOUT + PHOTO ===== */}
         <section id="about" className={`${S.section} ${S.px} bg-black/70`}>
           <div className="max-w-[1400px] mx-auto">
             <Reveal>
               <motion.div variants={fadeInUp}>
-                <Label num="03" text="ABOUT" />
+                <Label num="04" text="ABOUT" />
               </motion.div>
               <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
                 WHO WE ARE
@@ -2451,7 +2650,7 @@ export default function Trajectory() {
         <section id="partners" className={`${S.compact} ${S.px} bg-black/70`}>
           <Reveal replay>
             <motion.div variants={fadeInUp}>
-              <Label num="04" text="PARTNERS" />
+              <Label num="05" text="PARTNERS" />
             </motion.div>
             <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600 ${S.labelGap} ${S.headingGap}`}>
               PRESENTED BY

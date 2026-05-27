@@ -498,7 +498,7 @@ function AboutPhoto() {
           <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
             <Image
               src={`${BASE_PATH}/assets/photos/about.webp`}
-              alt="Crowd at a previous ÄGAPĒ warehouse event in Brooklyn"
+              alt="Moments from previous ÄGAPĒ warehouse events in Brooklyn"
               fill
               className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
               sizes="(max-width: 1024px) 100vw, 50vw"

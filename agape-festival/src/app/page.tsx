@@ -2146,6 +2146,7 @@ export default function Trajectory() {
   // pointer devices. Decided once on mount to avoid mount/unmount churn.
   const [enable3D, setEnable3D] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [topMenuOpen, setTopMenuOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [overTickets, setOverTickets] = useState(false);
   const [activeStageHost, setActiveStageHost] = useState<string | null>(null);
@@ -2300,7 +2301,8 @@ export default function Trajectory() {
                   className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
                 />
               </a>
-              <div className="flex items-center gap-4 sm:gap-10">
+              {/* Desktop: horizontal section labels */}
+              <div className="hidden md:flex items-center gap-4 sm:gap-10">
                 {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
                   <a
                     key={link.label}
@@ -2315,6 +2317,58 @@ export default function Trajectory() {
                     {link.label}
                   </a>
                 ))}
+              </div>
+
+              {/* Mobile: hamburger button + drop-down menu.
+                  Reuses the bottom-nav hamburger styling so it reads as the
+                  same affordance, just placed at the top. */}
+              <div className="md:hidden relative">
+                <button
+                  type="button"
+                  onClick={() => setTopMenuOpen(!topMenuOpen)}
+                  aria-label="Toggle menu"
+                  aria-expanded={topMenuOpen}
+                  className="flex flex-col gap-[4px] p-2.5"
+                >
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${topMenuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 ${topMenuOpen ? "opacity-0 scale-0" : ""}`} />
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${topMenuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {topMenuOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+                      className="absolute top-full right-0 mt-3 overflow-hidden"
+                    >
+                      <Frame>
+                        <div className="bg-black/90 backdrop-blur-xl border border-white/[0.06] flex flex-col items-end gap-5 py-6 px-8 min-w-[180px]">
+                          {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
+                            <a
+                              key={link.label}
+                              href={link.href}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const target = link.href;
+                                setTopMenuOpen(false);
+                                setTimeout(() => {
+                                  const el = document.querySelector(target);
+                                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                                }, 350);
+                              }}
+                              className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300 whitespace-nowrap`}
+                            >
+                              {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      </Frame>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.nav>

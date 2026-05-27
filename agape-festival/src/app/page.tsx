@@ -498,7 +498,7 @@ function AboutPhoto() {
           <motion.div style={{ scale }} className="absolute inset-0 will-change-transform">
             <Image
               src={`${BASE_PATH}/assets/photos/about.webp`}
-              alt="Crowd at a previous ÄGAPĒ warehouse event in Brooklyn"
+              alt="Moments from previous ÄGAPĒ warehouse events in Brooklyn"
               fill
               className={`object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -1714,11 +1714,425 @@ function Lineup() {
 }
 
 
+// ============================================================
+// FAQ Section
+// Single-open accordion. Questions in white, answers in muted grey.
+// Numbering and Frame motif match the rest of the site.
+// ============================================================
+interface FaqEntry {
+  q: string;
+  a: ReactNode;
+}
+
+const FAQ_ITEMS: FaqEntry[] = [
+  {
+    q: "What are the festival hours?",
+    a: "Doors open at 12pm noon on both days and run until 6am the following morning.",
+  },
+  {
+    q: "Is there reentry?",
+    a: "Yes. GA ticket holders can exit and reenter throughout the day with their wristband or ticket scan.",
+  },
+  {
+    q: "What is the difference between a single day ticket and a bundle?",
+    a: "Single day tickets give you access to one day of your choice — September 5 or September 6. A 2 day bundle gives you access to both days at a discounted rate.",
+  },
+  {
+    q: "Where is the festival?",
+    a: "Industry City, Brooklyn, NYC. Address: 220 36th St, Brooklyn, NY 11232.",
+  },
+  {
+    q: "What time should I arrive?",
+    a: "Doors open at 12pm. We recommend arriving early to avoid queues, especially on Day 2.",
+  },
+  {
+    q: "Is there an age limit?",
+    a: "Yes. ÄGAPĒ Festival is a 21+ event. Valid government-issued ID is required at entry.",
+  },
+  {
+    q: "What stages are there?",
+    a: "Two stages — one indoor and one outdoor. Day 1 features the Hot Meal outdoor stage and the Face 2 Face indoor stage. Day 2 features 44 Label Group taking over both stages.",
+  },
+  {
+    q: "Can I get a discount on tickets?",
+    a: "Yes — use code AGAPE at checkout for 15% off your tickets.",
+  },
+  {
+    q: "Are tickets refundable?",
+    a: "Tickets are non-refundable but transferable. You can transfer your ticket to someone else if your plans change.",
+  },
+  {
+    q: "What should I bring?",
+    a: "Valid government-issued ID (21+ event), your ticket QR code or confirmation email, and comfortable shoes. No professional cameras or outside drinks.",
+  },
+  {
+    q: "Will there be lockers?",
+    a: "Yes. Locker rentals will be available on site both days for a small fee. We recommend booking in advance as they are limited. Details on how to reserve yours will be shared closer to the event date.",
+  },
+  {
+    q: "How do I get there?",
+    a: (
+      <>
+        Industry City is accessible by subway, car and rideshare. Full directions and a map link are in the{" "}
+        <a
+          href="#getting-here"
+          onClick={(e) => {
+            e.preventDefault();
+            const el = document.querySelector("#getting-here");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="underline underline-offset-4 decoration-white/30 text-neutral-300 hover:text-white hover:decoration-white transition-colors"
+        >
+          Getting Here section below
+        </a>
+        .
+      </>
+    ),
+  },
+  {
+    q: "Who do I contact for press or partnerships?",
+    a: "Email bookings@agapemusic.us for press, partnership and sponsorship inquiries.",
+  },
+];
+
+function FaqRow({
+  entry,
+  index,
+  isOpen,
+  onToggle,
+}: {
+  entry: FaqEntry;
+  index: number;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const num = String(index + 1).padStart(2, "0");
+  return (
+    <div className="border-b border-white/[0.06] last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="w-full flex items-start justify-between gap-4 sm:gap-6 py-6 sm:py-7 text-left group transition-colors duration-300 hover:bg-white/[0.015]"
+      >
+        <div className="flex items-baseline gap-4 sm:gap-6 min-w-0">
+          <span className={`${T.detail} text-[#8b0000]/60 flex-shrink-0`}>
+            {num}
+          </span>
+          <span
+            className={`${orbitron.className} text-[13px] sm:text-[15px] font-bold tracking-[0.04em] text-white leading-snug`}
+          >
+            {entry.q}
+          </span>
+        </div>
+        <span
+          className={`flex-shrink-0 ml-2 w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-neutral-500 group-hover:text-white transition-all duration-300 ${
+            isOpen ? "rotate-45" : ""
+          }`}
+          aria-hidden="true"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 1.5V14.5M1.5 8H14.5"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="square"
+            />
+          </svg>
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
+            className="overflow-hidden"
+          >
+            <div className="pb-7 sm:pb-8 pl-10 sm:pl-14 pr-6 sm:pr-10">
+              <p className={`${T.monoSm} text-neutral-500`}>{entry.a}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Faq() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  return (
+    <section id="faq" className={`${S.section} ${S.px} bg-black/70`}>
+      <div className="max-w-[1400px] mx-auto">
+        <Reveal>
+          <motion.div variants={fadeInUp}>
+            <Label num="03" text="FAQ" />
+          </motion.div>
+          <motion.h2
+            variants={fadeInUp}
+            className={`${T.heading} chrome-text ${S.labelGap}`}
+          >
+            FREQUENTLY ASKED
+          </motion.h2>
+          <motion.div variants={fadeInUp}>
+            <HeadingLine />
+          </motion.div>
+          <motion.p
+            variants={fadeInUp}
+            className={`${T.monoSm} text-neutral-500 max-w-2xl -mt-4 mb-12`}
+          >
+            Everything you need to know before the gates open. Still have
+            questions?{" "}
+            <a
+              href={`mailto:${FESTIVAL.contactEmail}`}
+              className="text-neutral-300 underline underline-offset-4 decoration-white/20 hover:text-white transition-colors"
+            >
+              {FESTIVAL.contactEmail}
+            </a>
+            .
+          </motion.p>
+        </Reveal>
+
+        <Reveal className="max-w-3xl mx-auto">
+          <motion.div variants={fadeInUp}>
+            <Frame>
+              <div className="px-5 sm:px-10 lg:px-12 bg-black/40">
+                {FAQ_ITEMS.map((entry, i) => (
+                  <FaqRow
+                    key={i}
+                    entry={entry}
+                    index={i}
+                    isOpen={openIndex === i}
+                    onToggle={() =>
+                      setOpenIndex(openIndex === i ? null : i)
+                    }
+                  />
+                ))}
+              </div>
+            </Frame>
+          </motion.div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================
+// GETTING HERE Section
+// All transit facts sourced from industrycity.com/visit + MTA.
+// No invented details — Google Maps embed is the authoritative
+// routing source for users.
+// ============================================================
+function SubwayBullet({
+  line,
+  color,
+  textColor = "#fff",
+}: {
+  line: string;
+  color: string;
+  textColor?: string;
+}) {
+  return (
+    <span
+      className="inline-flex items-center justify-center w-9 h-9 rounded-full text-base font-bold"
+      style={{
+        backgroundColor: color,
+        color: textColor,
+        fontFamily: "Helvetica, Arial, sans-serif",
+      }}
+      aria-label={`${line} train`}
+    >
+      {line}
+    </span>
+  );
+}
+
+function GettingHere() {
+  // Universal Google Maps directions deeplink — opens native app on mobile,
+  // Maps in browser on desktop. Routing is Google's, not ours.
+  const mapsDirectionsUrl =
+    "https://www.google.com/maps/dir/?api=1&destination=220+36th+St+Brooklyn+NY+11232";
+  // No-API-key embed. Inverted to fit the dark aesthetic.
+  const mapEmbedUrl =
+    "https://maps.google.com/maps?q=220+36th+St+Brooklyn+NY+11232&output=embed";
+
+  return (
+    <section
+      id="getting-here"
+      className={`${S.section} ${S.px} bg-black/70 scroll-mt-20`}
+    >
+      <div className="max-w-[1400px] mx-auto">
+        {/* Header */}
+        <Reveal>
+          <motion.div variants={fadeInUp}>
+            <Label num="04" text="GETTING HERE" />
+          </motion.div>
+          <motion.h2
+            variants={fadeInUp}
+            className={`${T.heading} chrome-text ${S.labelGap}`}
+          >
+            FIND YOUR WAY IN
+          </motion.h2>
+          <motion.div variants={fadeInUp}>
+            <HeadingLine />
+          </motion.div>
+          <motion.p
+            variants={fadeInUp}
+            className={`${T.monoSm} text-neutral-500 max-w-2xl -mt-4 mb-12`}
+          >
+            Industry City sits in Sunset Park, Brooklyn. Easy by subway, car,
+            or rideshare — pick your route and we'll see you at the door.
+          </motion.p>
+        </Reveal>
+
+        {/* Map + Address + Primary CTA */}
+        <Reveal className="max-w-5xl mx-auto">
+          <motion.div variants={fadeInUp}>
+            <Frame>
+              <div className="relative aspect-[4/3] sm:aspect-[16/9] bg-black overflow-hidden">
+                <iframe
+                  src={mapEmbedUrl}
+                  className="absolute inset-0 w-full h-full border-0"
+                  style={{
+                    filter:
+                      "invert(0.92) hue-rotate(180deg) saturate(0.4) contrast(0.9) brightness(0.85)",
+                  }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Industry City — 220 36th Street, Brooklyn, NY"
+                />
+              </div>
+            </Frame>
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+          >
+            <div>
+              <p className={`${T.label} text-neutral-600`}>ADDRESS</p>
+              <p
+                className={`${orbitron.className} text-base sm:text-lg font-bold tracking-[0.04em] text-white mt-2`}
+              >
+                220 36th Street
+              </p>
+              <p className={`${T.monoSm} text-neutral-500 mt-1`}>
+                Brooklyn, NY 11232
+              </p>
+            </div>
+            {/* Dim red — F2F joiner tag styling. Intentionally less bright
+                than the GET TICKETS button so it doesn't compete visually. */}
+            <Frame accent className="inline-block">
+              <a
+                href={mapsDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-8 sm:px-10 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300"
+              >
+                <span
+                  className={`${orbitron.className} text-[12px] sm:text-[13px] tracking-[0.3em] font-semibold text-white`}
+                >
+                  OPEN IN GOOGLE MAPS →
+                </span>
+              </a>
+            </Frame>
+          </motion.div>
+        </Reveal>
+
+        {/* Three transit cards */}
+        <StaggerGrid className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 mt-16 max-w-5xl mx-auto">
+          {/* SUBWAY */}
+          <motion.div variants={fadeInUp}>
+            <Frame className="h-full">
+              <div className="p-6 sm:p-8 h-full bg-black/40 flex flex-col">
+                <p className={`${T.label} text-neutral-600`}>SUBWAY</p>
+                <div className="flex items-center gap-2 mt-5">
+                  <SubwayBullet line="D" color="#FF6319" />
+                  <SubwayBullet line="N" color="#FCCC0A" textColor="#000" />
+                  <SubwayBullet line="R" color="#FCCC0A" textColor="#000" />
+                </div>
+                <p
+                  className={`${orbitron.className} text-sm font-bold tracking-[0.04em] text-white mt-6`}
+                >
+                  36th St Station
+                </p>
+                <p className={`${T.monoSm} text-neutral-500 mt-3`}>
+                  Exit at 3rd Ave / 36th St — about a five-minute walk to the
+                  venue entrance.
+                </p>
+              </div>
+            </Frame>
+          </motion.div>
+
+          {/* DRIVE */}
+          <motion.div variants={fadeInUp}>
+            <Frame className="h-full">
+              <div className="p-6 sm:p-8 h-full bg-black/40 flex flex-col">
+                <p className={`${T.label} text-neutral-600`}>DRIVE</p>
+                <p
+                  className={`${orbitron.className} text-sm font-bold tracking-[0.05em] text-white mt-5`}
+                >
+                  I-278 W (BQE), EXIT 23
+                </p>
+                <p className={`${T.monoSm} text-neutral-500 mt-4`}>
+                  On-site parking available at Lots B + C, entered from 2nd Ave
+                  + 37th St. Advance booking recommended.
+                </p>
+              </div>
+            </Frame>
+          </motion.div>
+
+          {/* RIDESHARE */}
+          <motion.div variants={fadeInUp}>
+            <Frame className="h-full">
+              <div className="p-6 sm:p-8 h-full bg-black/40 flex flex-col">
+                <p className={`${T.label} text-neutral-600`}>RIDESHARE</p>
+                <p
+                  className={`${orbitron.className} text-sm font-bold tracking-[0.05em] text-white mt-5`}
+                >
+                  DROP-OFF
+                </p>
+                <p className={`${T.monoSm} text-neutral-500 mt-4`}>
+                  Set your Uber or Lyft destination to{" "}
+                  <span className="text-neutral-300">
+                    220 36th St, Brooklyn, NY 11232
+                  </span>{" "}
+                  — the main entrance.
+                </p>
+              </div>
+            </Frame>
+          </motion.div>
+        </StaggerGrid>
+
+        {/* Secondary: bus + Citi Bike */}
+        <Reveal className="mt-12">
+          <motion.div
+            variants={fadeInUp}
+            className="max-w-5xl mx-auto text-center"
+          >
+            <p className={`${T.detail} text-neutral-600 leading-relaxed`}>
+              ALSO ACCESSIBLE BY{" "}
+              <span className="text-neutral-400">B35 · B37 · B70 · SIM</span>{" "}
+              BUSES
+              <span className="mx-3 opacity-40">·</span>
+              CITI BIKE STATIONS ON 2ND AVE + 32 / 37 / 39 ST AND 3RD AVE + 36
+              ST
+            </p>
+          </motion.div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 // ---- Nav Links — all site sections for the dropdown menu ----
 const NAV_LINKS = [
   { label: "TOP", href: "#hero" },
   { label: "LINEUP", href: "#artists" },
   { label: "TICKETS", href: "#tickets" },
+  { label: "FAQ", href: "#faq" },
+  { label: "GETTING HERE", href: "#getting-here" },
   { label: "ABOUT", href: "#about" },
   { label: "PARTNERS", href: "#partners" },
 ];
@@ -1732,6 +2146,7 @@ export default function Trajectory() {
   // pointer devices. Decided once on mount to avoid mount/unmount churn.
   const [enable3D, setEnable3D] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [topMenuOpen, setTopMenuOpen] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const [overTickets, setOverTickets] = useState(false);
   const [activeStageHost, setActiveStageHost] = useState<string | null>(null);
@@ -1886,7 +2301,8 @@ export default function Trajectory() {
                   className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
                 />
               </a>
-              <div className="flex items-center gap-4 sm:gap-10">
+              {/* Desktop: horizontal section labels */}
+              <div className="hidden md:flex items-center gap-4 sm:gap-10">
                 {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
                   <a
                     key={link.label}
@@ -1901,6 +2317,58 @@ export default function Trajectory() {
                     {link.label}
                   </a>
                 ))}
+              </div>
+
+              {/* Mobile: hamburger button + drop-down menu.
+                  Reuses the bottom-nav hamburger styling so it reads as the
+                  same affordance, just placed at the top. */}
+              <div className="md:hidden relative">
+                <button
+                  type="button"
+                  onClick={() => setTopMenuOpen(!topMenuOpen)}
+                  aria-label="Toggle menu"
+                  aria-expanded={topMenuOpen}
+                  className="flex flex-col gap-[4px] p-2.5"
+                >
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${topMenuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 ${topMenuOpen ? "opacity-0 scale-0" : ""}`} />
+                  <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${topMenuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
+                </button>
+
+                <AnimatePresence>
+                  {topMenuOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+                      className="absolute top-full right-0 mt-3 overflow-hidden"
+                    >
+                      <Frame>
+                        <div className="bg-black/90 backdrop-blur-xl border border-white/[0.06] flex flex-col items-end gap-5 py-6 px-8 min-w-[180px]">
+                          {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
+                            <a
+                              key={link.label}
+                              href={link.href}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const target = link.href;
+                                setTopMenuOpen(false);
+                                setTimeout(() => {
+                                  const el = document.querySelector(target);
+                                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                                }, 350);
+                              }}
+                              className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300 whitespace-nowrap`}
+                            >
+                              {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      </Frame>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </motion.nav>
@@ -2347,12 +2815,22 @@ export default function Trajectory() {
 
         <SectionLine />
 
+        {/* ===== FAQ ===== */}
+        <Faq />
+
+        <SectionLine />
+
+        {/* ===== GETTING HERE ===== */}
+        <GettingHere />
+
+        <SectionLine />
+
         {/* ===== ABOUT + PHOTO ===== */}
         <section id="about" className={`${S.section} ${S.px} bg-black/70`}>
           <div className="max-w-[1400px] mx-auto">
             <Reveal>
               <motion.div variants={fadeInUp}>
-                <Label num="03" text="ABOUT" />
+                <Label num="05" text="ABOUT" />
               </motion.div>
               <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
                 WHO WE ARE
@@ -2451,7 +2929,7 @@ export default function Trajectory() {
         <section id="partners" className={`${S.compact} ${S.px} bg-black/70`}>
           <Reveal replay>
             <motion.div variants={fadeInUp}>
-              <Label num="04" text="PARTNERS" />
+              <Label num="06" text="PARTNERS" />
             </motion.div>
             <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600 ${S.labelGap} ${S.headingGap}`}>
               PRESENTED BY

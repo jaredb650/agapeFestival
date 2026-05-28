@@ -379,6 +379,26 @@ export const ARTISTS: Artist[] = [
     imageUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-headshot.webp`,
     videoUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-video.mp4`,
   },
+  {
+    name: "O.B.I.",
+    day: 2,
+    stage: "indoor",
+    stageHost: "44 Label Group",
+    bio: "O.B.I. is synonymous for unconditional dedication to the harder side of techno. The German DJ and producer looks back at more than two decades of performing his intense techno sets at clubs and festivals all around the globe. His distinctive sound combines hard driving beats, rough industrial rhythms and melodic depth and has evolved ever since the early 2000\u2019s. During the past 20 years O.B.I. has published hundreds of tracks which received much acclaim and support. His 2021 release \u201cGib Mir Alles\u201d took over the scene by storm and foreshadows what is yet to come.",
+    isPlaceholderBio: false,
+    imageUrl: `${BASE_PATH}/assets/artists/obi/press-kit/obi-headshot.webp`,
+    videoUrl: `${BASE_PATH}/assets/artists/obi/press-kit/obi-video.mp4`,
+  },
+  {
+    name: "TRIPTYKH",
+    day: 2,
+    stage: "indoor",
+    stageHost: "44 Label Group",
+    bio: "TRIPTYKH is a Beatport chart-topping Hard Techno artist from the United States, rapidly establishing himself as a leading force in the genre. Within just a year of its inception, the project has become synonymous with Schranz \u2014 a subgenre of Hard Techno \u2014 in the U.S. and is a key player in revitalizing the genre for contemporary audiences worldwide. His meteoric rise has been fueled by electrifying performances and noteworthy gigs at prominent U.S. shows hosted by \u00c4GAP\u0112, 6AM, Voxnox, and headlining European and China tours. TRIPTYKH has supported Klangkuenstler at multiple Outworld shows and has also supported 9x9, Fatima Hajji, and O.B.I. TRIPTYKH\u2019s music is characterized by hard-hitting, mind-melting tracks perfect for top-tier Hard Techno sets. His standout achievements are his two EPs, \u201cUnholy\u201d and \u201cAnomaly\u201d, released under Klangkuenstler\u2019s Outworld imprint, marking Klangkuenstler\u2019s first solo artist release. Both EPs soared to #1 on Beatport\u2019s all-genre EP chart, with all four tracks off \u201cAnomaly\u201d securing the top four spots on the Hard Techno Single Chart and the lead single of \u201cUnholy\u201d \u2014 \u201cBass Keeps Going\u201d \u2014 reaching #2 on the Hard Techno single chart with the rest of the EP hitting the top ten. He has also released music through 9x9\u2019s Hidden Gems, Caravel\u2019s Haku, the Phase 2 compilation, SveTec\u2019s MadMade, Declan James\u2019 Voidware, and Hellbound\u2019s Nullselect. Looking ahead, TRIPTYKH has signed a distribution deal with Symphonic and has plans for more records and the official launch of his imprint. The years 2023 and 2024 have been pivotal for TRIPTYKH, establishing him as a global Hard Techno sensation. As 2025 rolls on, he is poised to expand his reach with headlining tours in India and Australia, more stops across the United States and Europe, solidifying his status as one of the premier Hard Techno acts worldwide.",
+    isPlaceholderBio: false,
+    imageUrl: `${BASE_PATH}/assets/artists/triptykh/press-kit/triptykh-headshot.webp`,
+    videoUrl: `${BASE_PATH}/assets/artists/triptykh/press-kit/triptykh-video.mp4`,
+  },
 ];
 
 // ---- HELPER: Group artists by stage ----

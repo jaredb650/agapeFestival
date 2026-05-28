@@ -1274,7 +1274,7 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
   return (
     <motion.div
       variants={fadeInUp}
-      className="col-span-2 lg:col-span-4 cursor-pointer group"
+      className="col-span-2 lg:col-span-full cursor-pointer group"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -1666,7 +1666,11 @@ function Lineup() {
                   </motion.div>
                 </Reveal>
 
-                <StaggerGrid className={`grid grid-cols-2 lg:grid-cols-4 ${S.gridGap}`}>
+                <StaggerGrid
+                  className={`grid grid-cols-2 ${
+                    isDay2Indoor ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                  } ${S.gridGap}`}
+                >
                   {renderItems.map((item, idx) => {
                     if (item.type === "pair") {
                       return (

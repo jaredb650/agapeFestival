@@ -2702,7 +2702,7 @@ export default function Trajectory() {
                 <motion.div variants={fadeInUp} className="max-w-md">
                   <Frame>
                     <Image
-                      src={`${BASE_PATH}/assets/1000x1778.avif`}
+                      src={`${BASE_PATH}/assets/flyer-still.webp`}
                       alt="ÄGAPĒ Festival 2026 full lineup poster — Sept 5-6, Industry City, Brooklyn"
                       width={600}
                       height={1067}

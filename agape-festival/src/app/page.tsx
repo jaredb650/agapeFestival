@@ -1641,6 +1641,7 @@ function Lineup() {
           {stages.map((stage, stageIdx) => {
             const renderItems = buildRenderItems(stage.artists);
             const isDay2Indoor = stage.day === 2 && stage.stage === "indoor";
+            const isDay2Outdoor = stage.day === 2 && stage.stage === "outdoor";
             return (
               <div key={`${stage.day}-${stage.stage}`} id={`stage-${stage.day}-${stage.stage}`} data-host={stage.host} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
                 {stageIdx > 0 && <div className="mb-12"><SectionLine /></div>}
@@ -1668,7 +1669,7 @@ function Lineup() {
 
                 <StaggerGrid
                   className={`grid grid-cols-2 ${
-                    isDay2Indoor ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                    isDay2Outdoor ? "lg:grid-cols-3" : "lg:grid-cols-4"
                   } ${S.gridGap}`}
                 >
                   {renderItems.map((item, idx) => {

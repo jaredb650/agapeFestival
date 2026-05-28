@@ -1740,7 +1740,7 @@ const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "Where is the festival?",
-    a: "Industry City, Brooklyn, NYC. Address: 220 36th St, Brooklyn, NY 11232.",
+    a: "Industry City, Brooklyn, NYC. Address: 571 2nd Avenue, Brooklyn, NY 11232. Enter through the Courtyard 7/8 gates on 2nd Avenue between 33rd and 34th Streets.",
   },
   {
     q: "What time should I arrive?",
@@ -1953,10 +1953,10 @@ function GettingHere() {
   // Universal Google Maps directions deeplink — opens native app on mobile,
   // Maps in browser on desktop. Routing is Google's, not ours.
   const mapsDirectionsUrl =
-    "https://www.google.com/maps/dir/?api=1&destination=220+36th+St+Brooklyn+NY+11232";
+    "https://www.google.com/maps/dir/?api=1&destination=571+2nd+Avenue+Brooklyn+NY+11232";
   // No-API-key embed. Inverted to fit the dark aesthetic.
   const mapEmbedUrl =
-    "https://maps.google.com/maps?q=220+36th+St+Brooklyn+NY+11232&output=embed";
+    "https://maps.google.com/maps?q=571+2nd+Avenue+Brooklyn+NY+11232&output=embed";
 
   return (
     <section
@@ -2001,7 +2001,7 @@ function GettingHere() {
                   }}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Industry City — 220 36th Street, Brooklyn, NY"
+                  title="Industry City — 571 2nd Avenue, Brooklyn, NY"
                 />
               </div>
             </Frame>
@@ -2016,10 +2016,16 @@ function GettingHere() {
               <p
                 className={`${orbitron.className} text-base sm:text-lg font-bold tracking-[0.04em] text-white mt-2`}
               >
-                220 36th Street
+                {FESTIVAL.venue.address}
               </p>
               <p className={`${T.monoSm} text-neutral-500 mt-1`}>
                 Brooklyn, NY 11232
+              </p>
+              <p
+                className={`${T.detail} text-neutral-400 mt-3 max-w-xs`}
+              >
+                ENTER VIA COURTYARD 7/8 GATES — 2ND AVE BETWEEN 33RD &amp;
+                34TH ST
               </p>
             </div>
             {/* Dim red — F2F joiner tag styling. Intentionally less bright
@@ -2059,8 +2065,8 @@ function GettingHere() {
                   36th St Station
                 </p>
                 <p className={`${T.monoSm} text-neutral-500 mt-3`}>
-                  Exit at 3rd Ave / 36th St — about a five-minute walk to the
-                  venue entrance.
+                  Closest stop to the venue. Use the map link above for live
+                  walking directions to the Courtyard 7/8 gates.
                 </p>
               </div>
             </Frame>
@@ -2077,8 +2083,9 @@ function GettingHere() {
                   I-278 W (BQE), EXIT 23
                 </p>
                 <p className={`${T.monoSm} text-neutral-500 mt-4`}>
-                  On-site parking available at Lots B + C, entered from 2nd Ave
-                  + 37th St. Advance booking recommended.
+                  Industry City&apos;s Lots B + C are entered from 2nd Ave + 37th
+                  St — a few blocks south of the gate. Advance booking
+                  recommended.
                 </p>
               </div>
             </Frame>
@@ -2097,9 +2104,10 @@ function GettingHere() {
                 <p className={`${T.monoSm} text-neutral-500 mt-4`}>
                   Set your Uber or Lyft destination to{" "}
                   <span className="text-neutral-300">
-                    220 36th St, Brooklyn, NY 11232
-                  </span>{" "}
-                  — the main entrance.
+                    {FESTIVAL.venue.addressFull}
+                  </span>
+                  . Drop off at the Courtyard 7/8 gates on 2nd Avenue between
+                  33rd and 34th Streets.
                 </p>
               </div>
             </Frame>
@@ -2117,8 +2125,8 @@ function GettingHere() {
               <span className="text-neutral-400">B35 · B37 · B70 · SIM</span>{" "}
               BUSES
               <span className="mx-3 opacity-40">·</span>
-              CITI BIKE STATIONS ON 2ND AVE + 32 / 37 / 39 ST AND 3RD AVE + 36
-              ST
+              CITI BIKE: 2ND AVE + 32 ST (CLOSEST), PLUS 37 / 39 ST AND 3RD AVE
+              + 36 ST
             </p>
           </motion.div>
         </Reveal>

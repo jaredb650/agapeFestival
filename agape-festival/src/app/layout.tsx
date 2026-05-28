@@ -52,7 +52,7 @@ const jsonLd = {
     name: "Industry City",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "220 36th Street",
+      streetAddress: "571 2nd Avenue",
       addressLocality: "Brooklyn",
       addressRegion: "NY",
       postalCode: "11232",

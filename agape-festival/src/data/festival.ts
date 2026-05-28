@@ -58,6 +58,10 @@ export const FESTIVAL = {
     name: "Industry City",
     location: "Brooklyn, NYC",
     full: "Industry City, Brooklyn, NYC",
+    address: "571 2nd Avenue",
+    addressFull: "571 2nd Avenue, Brooklyn, NY 11232",
+    entrance:
+      "Courtyard 7/8 gates, on 2nd Avenue between 33rd and 34th Streets",
   },
   hours: "12PM — 6AM",
   ticketsFrom: "$105",

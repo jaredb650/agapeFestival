@@ -1649,21 +1649,23 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
               className="mt-8 overflow-hidden"
             >
               {/* Laylo embed (theme=dark + background=0a0a0a colors the widget
-                  body). Its card has rounded corners whose triangles reveal the
-                  iframe's white canvas — which no attribute (allowTransparency is
-                  ignored by modern Chromium) or element bg can override. So we
-                  clip: a rounded overflow-hidden wrapper cuts the white corners,
-                  biased slightly larger than the card radius so the clip reveals
-                  the modal's #0a0a0a (identical) rather than ever leaving white. */}
-              <div className="overflow-hidden rounded-[18px] bg-[#0a0a0a]">
+                  body). The widget card has a light border we can't restyle
+                  (cross-origin). We cover it: an absolutely-positioned overlay
+                  paints a dark inset frame (#0a0a0a, same as the modal) on top of
+                  the iframe's edges, hiding the border. pointer-events-none keeps
+                  the form clickable; the rounded clip handles the outer corners. */}
+              <div className="relative overflow-hidden rounded-[16px] bg-[#0a0a0a] mx-auto w-[248px]">
                 <iframe
                   src={FESTIVAL.laylo.embed}
                   title="Newsletter signup"
-                  width="100%"
-                  height={224}
                   frameBorder="0"
                   scrolling="no"
-                  className="w-full bg-[#0a0a0a]"
+                  className="block w-[248px] h-[252px] bg-[#0a0a0a]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-[16px]"
+                  style={{ boxShadow: "inset 0 0 0 6px #0a0a0a" }}
                 />
               </div>
             </motion.div>

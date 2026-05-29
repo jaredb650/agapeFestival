@@ -380,6 +380,16 @@ export const ARTISTS: Artist[] = [
     videoUrl: `${BASE_PATH}/assets/artists/ueberrest/press-kit/ueberrest-video.mp4`,
   },
   {
+    name: "KAYA",
+    day: 2,
+    stage: "indoor",
+    stageHost: "44 Label Group",
+    bio: "KAYA is a techno artist from Sydney, Australia known for her energising driving rhythms and fast hypnotic grooves. Her DJ sets challenge the unrelenting energy and intensity of hard and fast techno sounds with percussive rhythms. Her ability to blend hypnotic and heavy beats with emotive undertones has forged a powerful connection with crowds, captivating audiences across Australia. KAYA has played for top European techno festivals \u2014 Teletech and HIVE Festival \u2014 and has a residency for a premier Sydney events brand, Lucky Presents. She has shared the stage with artists such as Boris Brejcha, Only Numbers, Basswell, Nicolas Julian, Fantasm, Kobosil, Biia, Kuko, Pretty Pink, Holy Priest, Nastia, SveTec and more, establishing her as a distinctive presence in the Australian techno scene.",
+    isPlaceholderBio: false,
+    imageUrl: `${BASE_PATH}/assets/artists/kaya/press-kit/kaya-headshot.webp`,
+    videoUrl: `${BASE_PATH}/assets/artists/kaya/press-kit/kaya-video.mp4`,
+  },
+  {
     name: "O.B.I.",
     day: 2,
     stage: "outdoor",

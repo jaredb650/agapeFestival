@@ -1268,23 +1268,23 @@ function PairedCard({
   );
 }
 
-// ---- B2B2B Mystery Element — full-width at bottom of grid ----
+// ---- B2B2B Mystery Element — single grid cell, matches artist card shape ----
 function B2B2BMystery({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <motion.div
       variants={fadeInUp}
-      className="col-span-2 lg:col-span-full cursor-pointer group"
+      className="cursor-pointer group"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <Frame>
-        <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
+        <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
           {/* Chain background — static poster (works on Low Power Mode) */}
           <div
             aria-hidden
-            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovered ? "opacity-[0.1]" : "opacity-0"}`}
             style={{
               backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
               backgroundSize: "cover",
@@ -1293,7 +1293,7 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
           />
           {/* Animated noise background */}
           <div
-            className="absolute inset-0 opacity-[0.04]"
+            className="absolute inset-0 opacity-[0.05]"
             style={{
               backgroundImage: NOISE_BG,
               backgroundSize: "200px 200px",
@@ -1301,19 +1301,17 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
             }}
           />
           <div className="absolute inset-0 border border-[#8b0000]/10 group-hover:border-[#8b0000]/30 transition-colors duration-500" />
-          <div className="absolute inset-0 flex items-center justify-center gap-6 sm:gap-10">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
             <p
-              className={`${orbitron.className} text-3xl sm:text-5xl md:text-7xl font-black tracking-[0.15em] text-[#8b0000]/30 group-hover:text-[#8b0000]/50 transition-colors duration-500`}
+              className={`${orbitron.className} text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.15em] text-[#8b0000]/30 group-hover:text-[#8b0000]/50 transition-colors duration-500`}
               style={{ animation: "mysteryGlow 3s ease-in-out infinite" }}
             >
               B2B2B
             </p>
-            <div className="flex flex-col items-center">
-              <p className={`${orbitron.className} text-base sm:text-lg text-neutral-600 tracking-[0.3em]`}>
-                ???
-              </p>
-              <p className={`${T.detail} text-neutral-700 mt-1`}>TO BE REVEALED</p>
-            </div>
+            <p className={`${orbitron.className} text-sm sm:text-base text-neutral-600 tracking-[0.3em]`}>
+              ???
+            </p>
+            <p className={`${T.detail} text-neutral-700 mt-1`}>TO BE REVEALED</p>
           </div>
         </div>
       </Frame>
@@ -1641,7 +1639,10 @@ function Lineup() {
           {stages.map((stage, stageIdx) => {
             const renderItems = buildRenderItems(stage.artists);
             const isDay2Indoor = stage.day === 2 && stage.stage === "indoor";
-            const isDay2Outdoor = stage.day === 2 && stage.stage === "outdoor";
+            // Day 2 stages both use 3-col grid (6+ artists with mixed
+            // pair/solo cells benefit from the bigger card treatment;
+            // also avoids the orphan-card problem at odd counts).
+            const useThreeColGrid = stage.day === 2;
             return (
               <div key={`${stage.day}-${stage.stage}`} id={`stage-${stage.day}-${stage.stage}`} data-host={stage.host} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
                 {stageIdx > 0 && <div className="mb-12"><SectionLine /></div>}
@@ -1669,7 +1670,7 @@ function Lineup() {
 
                 <StaggerGrid
                   className={`grid grid-cols-2 ${
-                    isDay2Outdoor ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                    useThreeColGrid ? "lg:grid-cols-3" : "lg:grid-cols-4"
                   } ${S.gridGap}`}
                 >
                   {renderItems.map((item, idx) => {

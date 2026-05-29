@@ -85,6 +85,7 @@ const jsonLd = {
     { "@type": "Person", name: "Clara Cuvé" },
     { "@type": "Person", name: "Somewhen" },
     { "@type": "MusicGroup", name: "Ueberrest" },
+    { "@type": "Person", name: "KAYA" },
     { "@type": "Person", name: "O.B.I." },
     { "@type": "Person", name: "TRIPTYKH" },
   ],

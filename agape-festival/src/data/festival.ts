@@ -74,11 +74,12 @@ export const FESTIVAL = {
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",
   // Laylo newsletter. `url` is the public profile; `embed` is the in-iframe
-  // signup form. Theme/color params styled to match the dark site + accent red.
+  // signup form. theme=dark renders a black form (client set the account to
+  // dark). NOTE: do NOT add background=transparent — it forces the light
+  // minimal variant and overrides the dark theme.
   laylo: {
     url: "https://laylo.com/agapenyc",
-    embed:
-      "https://laylo.com/agapenyc/profile/embed?theme=dark&background=transparent&customColor=8b0000",
+    embed: "https://laylo.com/agapenyc/profile/embed?theme=dark",
   },
 } as const;
 

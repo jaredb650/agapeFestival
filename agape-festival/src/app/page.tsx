@@ -1648,20 +1648,17 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
               className="mt-8 overflow-hidden"
             >
-              {/* Laylo's embed ignores theme=dark, so we present it as a
-                  deliberate clean white signup panel rather than fighting it. */}
-              <div className="bg-white rounded-xl px-4 pt-4 pb-2">
-                <iframe
-                  src={FESTIVAL.laylo.embed}
-                  title="Newsletter signup"
-                  width="100%"
-                  height={230}
-                  frameBorder="0"
-                  scrolling="no"
-                  allowTransparency
-                  className="w-full"
-                />
-              </div>
+              {/* Laylo embed renders dark (client set theme=dark), so it sits
+                  directly on the dark modal with no wrapper. */}
+              <iframe
+                src={FESTIVAL.laylo.embed}
+                title="Newsletter signup"
+                width="100%"
+                height={224}
+                frameBorder="0"
+                scrolling="no"
+                className="w-full"
+              />
             </motion.div>
           )}
         </AnimatePresence>

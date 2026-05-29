@@ -1648,8 +1648,9 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
               className="mt-8 overflow-hidden"
             >
-              {/* Laylo embed renders dark (client set theme=dark), so it sits
-                  directly on the dark modal with no wrapper. */}
+              {/* Laylo embed renders dark (client set theme=dark). The iframe's
+                  default background is white and can peek through, so we paint it
+                  the same #0a0a0a as the modal so it stays invisible. */}
               <iframe
                 src={FESTIVAL.laylo.embed}
                 title="Newsletter signup"
@@ -1657,7 +1658,7 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
                 height={224}
                 frameBorder="0"
                 scrolling="no"
-                className="w-full"
+                className="w-full bg-[#0a0a0a]"
               />
             </motion.div>
           )}

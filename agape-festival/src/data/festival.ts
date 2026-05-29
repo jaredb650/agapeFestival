@@ -68,6 +68,13 @@ export const FESTIVAL = {
   ticketUrl: "https://posh.vip/e/gap-festival-1",
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",
+  // Laylo newsletter. `url` is the public profile; `embed` is the in-iframe
+  // signup form. Theme/color params styled to match the dark site + accent red.
+  laylo: {
+    url: "https://laylo.com/agapenyc",
+    embed:
+      "https://laylo.com/agapenyc/profile/embed?theme=dark&background=transparent&customColor=8b0000",
+  },
 } as const;
 
 // ---- BRAND COPY ----
@@ -79,6 +86,12 @@ export const COPY = {
     "Now we're bringing that same spirit into something new. ÄGAPĒ Festival is beyond mere scale — it's about dwelling in an environment shaped by the people who built us up. A full weekend together in a communal plane, the kind we've been building toward for half a decade. ÄGAPĒ welcomes you to the movement.",
   merchComingSoon: "Merch dropping soon. Stay tuned.",
   origin: "Brooklyn, New York",
+  newsletter: {
+    eyebrow: "STAY IN THE LOOP",
+    title: "JOIN THE MOVEMENT",
+    body: "Get lineup drops, set times, and early access to tickets straight to your phone. No spam — just the moments that matter.",
+    cta: "SIGN UP FOR UPDATES",
+  },
 } as const;
 
 // ---- TICKET TIERS ----

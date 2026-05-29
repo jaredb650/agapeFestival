@@ -1581,6 +1581,95 @@ function B2B2BModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ---- Newsletter Modal (Laylo) ----
+// Two-step: our branded pitch first (full styling control), then the Laylo
+// signup iframe reveals in place on click — keeps the fan on-site. The iframe
+// is Laylo's UI (themed dark + accent red as far as their params allow), so it
+// only appears after intent, when its styling matters least.
+function NewsletterModal({ onClose }: { onClose: () => void }) {
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-md p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.97 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
+        className="relative w-[90vw] max-w-lg max-h-[88vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.06] p-8 sm:p-12 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className={`absolute top-4 right-4 z-10 ${T.label} text-neutral-500 hover:text-white transition-colors`}
+        >
+          CLOSE ×
+        </button>
+
+        <p className={`${T.label} text-[#8b0000] mb-4`}>{COPY.newsletter.eyebrow}</p>
+        <h2 className={`${T.heading} text-neutral-200 mb-5`}>{COPY.newsletter.title}</h2>
+        <p className={`${T.monoSm} text-neutral-500 mx-auto max-w-sm`}>
+          {COPY.newsletter.body}
+        </p>
+
+        <AnimatePresence initial={false} mode="wait">
+          {!showForm ? (
+            <motion.button
+              key="cta"
+              type="button"
+              onClick={() => setShowForm(true)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className={`${T.label} text-white mt-8 inline-block px-8 sm:px-10 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300`}
+            >
+              {COPY.newsletter.cta}
+            </motion.button>
+          ) : (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+              className="mt-8 overflow-hidden"
+            >
+              {/* Laylo's embed ignores theme=dark, so we present it as a
+                  deliberate clean white signup panel rather than fighting it. */}
+              <div className="bg-white rounded-xl px-4 pt-4 pb-2">
+                <iframe
+                  src={FESTIVAL.laylo.embed}
+                  title="Newsletter signup"
+                  width="100%"
+                  height={230}
+                  frameBorder="0"
+                  scrolling="no"
+                  allowTransparency
+                  className="w-full"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ---- Helper: group artists into render items (solo, paired, b2b2b) ----
 type RenderItem =
   | { type: "solo"; artist: Artist }
@@ -2197,6 +2286,7 @@ export default function Trajectory() {
   const [overTickets, setOverTickets] = useState(false);
   const [activeStageHost, setActiveStageHost] = useState<string | null>(null);
   const [topNavReady, setTopNavReady] = useState(false);
+  const [showNewsletter, setShowNewsletter] = useState(false);
 
   const heroRef = useRef<HTMLElement>(null);
   const ticketsSectionRef = useRef<HTMLElement>(null);
@@ -2214,6 +2304,17 @@ export default function Trajectory() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setEnable3D(!reducedMotion);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
+
+    // Newsletter pop-up: auto-open ~2s after load, but only once per visitor.
+    // The footer "NEWSLETTER" link reopens it manually regardless of this flag.
+    let newsletterTimer: ReturnType<typeof setTimeout> | undefined;
+    if (!localStorage.getItem("agape_newsletter_seen")) {
+      newsletterTimer = setTimeout(() => {
+        setShowNewsletter(true);
+        localStorage.setItem("agape_newsletter_seen", "1");
+      }, 2000);
+    }
+
     let rafId = 0;
 
     // Cache stage DOM refs once instead of re-querying on every scroll tick.
@@ -2265,6 +2366,7 @@ export default function Trajectory() {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(rafId);
       clearTimeout(topNavTimer);
+      if (newsletterTimer) clearTimeout(newsletterTimer);
     };
   }, []);
 
@@ -3181,6 +3283,13 @@ export default function Trajectory() {
                         {link.label}
                       </a>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setShowNewsletter(true)}
+                      className={`${T.bodySm} text-neutral-600 hover:text-white transition-colors duration-300`}
+                    >
+                      NEWSLETTER
+                    </button>
                   </div>
                 </div>
                 <div className="text-center">
@@ -3253,6 +3362,14 @@ export default function Trajectory() {
             </div>
           </div>
         </footer>
+
+        {/* Newsletter pop-up (Laylo) — auto-opens once per visitor, reopened
+            via the footer NEWSLETTER link */}
+        <AnimatePresence>
+          {showNewsletter && (
+            <NewsletterModal onClose={() => setShowNewsletter(false)} />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

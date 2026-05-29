@@ -2305,15 +2305,9 @@ export default function Trajectory() {
     setEnable3D(!reducedMotion);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
 
-    // Newsletter pop-up: auto-open ~2s after load, but only once per visitor.
-    // The footer "NEWSLETTER" link reopens it manually regardless of this flag.
-    let newsletterTimer: ReturnType<typeof setTimeout> | undefined;
-    if (!localStorage.getItem("agape_newsletter_seen")) {
-      newsletterTimer = setTimeout(() => {
-        setShowNewsletter(true);
-        localStorage.setItem("agape_newsletter_seen", "1");
-      }, 2000);
-    }
+    // Newsletter pop-up: auto-open ~2s after every page load, so a reload
+    // re-triggers it. The footer "NEWSLETTER" link also opens it manually.
+    const newsletterTimer = setTimeout(() => setShowNewsletter(true), 2000);
 
     let rafId = 0;
 
@@ -2366,7 +2360,7 @@ export default function Trajectory() {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(rafId);
       clearTimeout(topNavTimer);
-      if (newsletterTimer) clearTimeout(newsletterTimer);
+      clearTimeout(newsletterTimer);
     };
   }, []);
 

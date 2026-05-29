@@ -1268,23 +1268,23 @@ function PairedCard({
   );
 }
 
-// ---- B2B2B Mystery Element — full-width at bottom of grid ----
+// ---- B2B2B Mystery Element — single grid cell, matches artist card shape ----
 function B2B2BMystery({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   return (
     <motion.div
       variants={fadeInUp}
-      className="col-span-2 lg:col-span-4 cursor-pointer group"
+      className="cursor-pointer group"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <Frame>
-        <div className="relative h-36 sm:h-44 overflow-hidden bg-[#050505]">
+        <div className="aspect-[4/3] relative overflow-hidden bg-[#050505]">
           {/* Chain background — static poster (works on Low Power Mode) */}
           <div
             aria-hidden
-            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovered ? "opacity-[0.07]" : "opacity-0"}`}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ${hovered ? "opacity-[0.1]" : "opacity-0"}`}
             style={{
               backgroundImage: `url(${VIDEOS.chainsRed.poster})`,
               backgroundSize: "cover",
@@ -1293,7 +1293,7 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
           />
           {/* Animated noise background */}
           <div
-            className="absolute inset-0 opacity-[0.04]"
+            className="absolute inset-0 opacity-[0.05]"
             style={{
               backgroundImage: NOISE_BG,
               backgroundSize: "200px 200px",
@@ -1301,19 +1301,17 @@ function B2B2BMystery({ onClick }: { onClick: () => void }) {
             }}
           />
           <div className="absolute inset-0 border border-[#8b0000]/10 group-hover:border-[#8b0000]/30 transition-colors duration-500" />
-          <div className="absolute inset-0 flex items-center justify-center gap-6 sm:gap-10">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
             <p
-              className={`${orbitron.className} text-3xl sm:text-5xl md:text-7xl font-black tracking-[0.15em] text-[#8b0000]/30 group-hover:text-[#8b0000]/50 transition-colors duration-500`}
+              className={`${orbitron.className} text-2xl sm:text-3xl md:text-4xl font-black tracking-[0.15em] text-[#8b0000]/30 group-hover:text-[#8b0000]/50 transition-colors duration-500`}
               style={{ animation: "mysteryGlow 3s ease-in-out infinite" }}
             >
               B2B2B
             </p>
-            <div className="flex flex-col items-center">
-              <p className={`${orbitron.className} text-base sm:text-lg text-neutral-600 tracking-[0.3em]`}>
-                ???
-              </p>
-              <p className={`${T.detail} text-neutral-700 mt-1`}>TO BE REVEALED</p>
-            </div>
+            <p className={`${orbitron.className} text-sm sm:text-base text-neutral-600 tracking-[0.3em]`}>
+              ???
+            </p>
+            <p className={`${T.detail} text-neutral-700 mt-1`}>TO BE REVEALED</p>
           </div>
         </div>
       </Frame>
@@ -1641,6 +1639,10 @@ function Lineup() {
           {stages.map((stage, stageIdx) => {
             const renderItems = buildRenderItems(stage.artists);
             const isDay2Indoor = stage.day === 2 && stage.stage === "indoor";
+            // Day 2 stages both use 3-col grid (6+ artists with mixed
+            // pair/solo cells benefit from the bigger card treatment;
+            // also avoids the orphan-card problem at odd counts).
+            const useThreeColGrid = stage.day === 2;
             return (
               <div key={`${stage.day}-${stage.stage}`} id={`stage-${stage.day}-${stage.stage}`} data-host={stage.host} className={stageIdx > 0 ? "mt-20" : "mt-12"}>
                 {stageIdx > 0 && <div className="mb-12"><SectionLine /></div>}
@@ -1666,7 +1668,11 @@ function Lineup() {
                   </motion.div>
                 </Reveal>
 
-                <StaggerGrid className={`grid grid-cols-2 lg:grid-cols-4 ${S.gridGap}`}>
+                <StaggerGrid
+                  className={`grid grid-cols-2 ${
+                    useThreeColGrid ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                  } ${S.gridGap}`}
+                >
                   {renderItems.map((item, idx) => {
                     if (item.type === "pair") {
                       return (
@@ -1779,8 +1785,7 @@ const FAQ_ITEMS: FaqEntry[] = [
           href="#getting-here"
           onClick={(e) => {
             e.preventDefault();
-            const el = document.querySelector("#getting-here");
-            if (el) el.scrollIntoView({ behavior: "smooth" });
+            scrollToHash("#getting-here");
           }}
           className="underline underline-offset-4 decoration-white/30 text-neutral-300 hover:text-white hover:decoration-white transition-colors"
         >
@@ -2146,6 +2151,38 @@ const NAV_LINKS = [
   { label: "PARTNERS", href: "#partners" },
 ];
 
+// Robust scroll-to-hash that handles layout shifts during scroll.
+//
+// Problem: lazy-loaded artist videos/images expand their card heights as
+// they enter the viewport during the smooth scroll. The browser computes
+// the scroll target at animation start, so by the time the smooth scroll
+// finishes the target section has been pushed further down — we land
+// hundreds of pixels short of where the user intended. (We measured
+// +1737px shifts on a top-of-page click to #getting-here.)
+//
+// Fix: smooth-scroll initially for the nice UX, then poll for ~1s after
+// the animation should have settled and instant-correct if the target
+// has drifted significantly.
+function scrollToHash(target: string) {
+  const el = document.querySelector(target);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  let attempts = 0;
+  const tick = () => {
+    if (attempts++ > 6) return;
+    const el2 = document.querySelector(target);
+    if (!el2) return;
+    const rect = el2.getBoundingClientRect();
+    // 30px tolerance — small drift is fine, big drift means we missed
+    if (Math.abs(rect.top) > 30) {
+      el2.scrollIntoView({ block: "start" });
+    }
+    setTimeout(tick, 200);
+  };
+  setTimeout(tick, 800);
+}
+
 // ============================================================
 // MAIN PAGE
 // ============================================================
@@ -2297,8 +2334,7 @@ export default function Trajectory() {
                 href="#hero"
                 onClick={(e) => {
                   e.preventDefault();
-                  const el = document.querySelector("#hero");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  scrollToHash("#hero");
                 }}
                 className="flex items-center gap-3 group"
               >
@@ -2318,8 +2354,7 @@ export default function Trajectory() {
                     href={link.href}
                     onClick={(e) => {
                       e.preventDefault();
-                      const el = document.querySelector(link.href);
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
+                      scrollToHash(link.href);
                     }}
                     className={`${orbitron.className} text-[8px] sm:text-[10px] tracking-[0.3em] sm:tracking-[0.35em] text-neutral-600 hover:text-white transition-colors duration-300`}
                   >
@@ -2328,59 +2363,74 @@ export default function Trajectory() {
                 ))}
               </div>
 
-              {/* Mobile: hamburger button + drop-down menu.
-                  Reuses the bottom-nav hamburger styling so it reads as the
-                  same affordance, just placed at the top. */}
-              <div className="md:hidden relative">
+              {/* Mobile: hamburger button. Tapping opens a side drawer
+                  (slide-in from right + backdrop). The drawer itself is
+                  rendered as a sibling of the nav so it can use position:
+                  fixed cleanly. Hamburger animates to X when open. */}
+              <div className="md:hidden">
                 <button
                   type="button"
                   onClick={() => setTopMenuOpen(!topMenuOpen)}
                   aria-label="Toggle menu"
                   aria-expanded={topMenuOpen}
-                  className="flex flex-col gap-[4px] p-2.5"
+                  className="flex flex-col gap-[4px] p-2.5 relative z-[60]"
                 >
                   <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${topMenuOpen ? "rotate-45 translate-y-[2.5px]" : ""}`} />
                   <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 ${topMenuOpen ? "opacity-0 scale-0" : ""}`} />
                   <span className={`block w-4 h-[1px] bg-neutral-400 transition-all duration-300 origin-center ${topMenuOpen ? "-rotate-45 -translate-y-[2.5px]" : ""}`} />
                 </button>
-
-                <AnimatePresence>
-                  {topMenuOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
-                      className="absolute top-full right-0 mt-3 overflow-hidden"
-                    >
-                      <Frame>
-                        <div className="bg-black/90 backdrop-blur-xl border border-white/[0.06] flex flex-col items-end gap-5 py-6 px-8 min-w-[180px]">
-                          {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
-                            <a
-                              key={link.label}
-                              href={link.href}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                const target = link.href;
-                                setTopMenuOpen(false);
-                                setTimeout(() => {
-                                  const el = document.querySelector(target);
-                                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                                }, 350);
-                              }}
-                              className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300 whitespace-nowrap`}
-                            >
-                              {link.label}
-                            </a>
-                          ))}
-                        </div>
-                      </Frame>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
           </motion.nav>
+        )}
+      </AnimatePresence>
+
+      {/* ===== MOBILE TOP-NAV SIDE DRAWER =====
+          Backdrop + right-anchored slide-in drawer. Mobile only.
+          Rendered as a sibling of the top nav so it can use position:
+          fixed cleanly and so the open state isn't tied to whether the
+          top nav itself is currently mounted. */}
+      <AnimatePresence>
+        {topMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setTopMenuOpen(false)}
+              aria-hidden="true"
+              className="fixed inset-0 z-[45] md:hidden bg-black/70 backdrop-blur-sm"
+            />
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] as const }}
+              className="fixed top-0 right-0 bottom-0 w-[78%] max-w-xs z-[55] md:hidden bg-black/95 backdrop-blur-xl border-l border-white/[0.06]"
+              aria-label="Mobile navigation"
+            >
+              <Frame className="h-full">
+                <nav className="h-full flex flex-col pt-24 pb-10 px-8 gap-7">
+                  {NAV_LINKS.filter((l) => l.label !== "TOP").map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const target = link.href;
+                        setTopMenuOpen(false);
+                        setTimeout(() => scrollToHash(target), 400);
+                      }}
+                      className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300`}
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </nav>
+              </Frame>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
 
@@ -2414,10 +2464,7 @@ export default function Trajectory() {
                             e.preventDefault();
                             const target = link.href;
                             setMenuOpen(false);
-                            setTimeout(() => {
-                              const el = document.querySelector(target);
-                              if (el) el.scrollIntoView({ behavior: "smooth" });
-                            }, 350);
+                            setTimeout(() => scrollToHash(target), 350);
                           }}
                           className={`${T.label} text-neutral-500 hover:text-white transition-colors duration-300`}
                         >
@@ -2438,8 +2485,7 @@ export default function Trajectory() {
                   href="#hero"
                   onClick={(e) => {
                     e.preventDefault();
-                    const el = document.querySelector("#hero");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                    scrollToHash("#hero");
                   }}
                   className="p-2.5 group relative h-10 w-20 flex items-center z-10"
                 >
@@ -3128,8 +3174,7 @@ export default function Trajectory() {
                         href={link.href}
                         onClick={(e) => {
                           e.preventDefault();
-                          const el = document.querySelector(link.href);
-                          if (el) el.scrollIntoView({ behavior: "smooth" });
+                          scrollToHash(link.href);
                         }}
                         className={`${T.bodySm} text-neutral-600 hover:text-white transition-colors duration-300`}
                       >

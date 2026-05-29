@@ -1582,13 +1582,13 @@ function B2B2BModal({ onClose }: { onClose: () => void }) {
 }
 
 // ---- Newsletter Modal (Laylo) ----
-// Two-step: our branded pitch first (full styling control), then the Laylo
-// signup iframe reveals in place on click — keeps the fan on-site. The iframe
-// is Laylo's UI (themed dark + accent red as far as their params allow), so it
-// only appears after intent, when its styling matters least.
+// Branded dark pitch with a CTA that opens the Laylo signup in a new tab.
+// We link out rather than embed: Laylo's iframe widget can't render cleanly in a
+// constrained modal — it doesn't report its height (white space below) and sizes
+// its content to the device width, so it overflows/clips on mobile no matter what
+// width the iframe is given. The Laylo page itself is dark-themed, so the hand-off
+// stays on-brand.
 function NewsletterModal({ onClose }: { onClose: () => void }) {
-  const [showForm, setShowForm] = useState(false);
-
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -1609,7 +1609,7 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.97 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
-        className="relative w-[90vw] max-w-lg max-h-[88vh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.06] p-8 sm:p-12 text-center"
+        className="relative w-[90vw] max-w-lg bg-[#0a0a0a] border border-white/[0.06] p-8 sm:p-12 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -1625,58 +1625,15 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
           {COPY.newsletter.body}
         </p>
 
-        <AnimatePresence initial={false} mode="wait">
-          {!showForm ? (
-            <motion.button
-              key="cta"
-              type="button"
-              onClick={() => setShowForm(true)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className={`${T.label} text-white mt-8 inline-block px-8 sm:px-10 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300`}
-            >
-              {COPY.newsletter.cta}
-            </motion.button>
-          ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
-              className="mt-8 overflow-hidden"
-            >
-              {/* Laylo embed (theme=dark + background=0a0a0a colors the widget
-                  body). Three things to manage, all because the widget is a
-                  cross-origin (doubly-nested) iframe we can't style:
-                  - White canvas shows below the form when the iframe is taller
-                    than the content. Content height depends on width and Laylo
-                    posts no resize message, so we FIX the width (312px — wide
-                    enough that the "Your number" placeholder isn't truncated) to
-                    make the height deterministic, then set height to match (230).
-                  - The widget card's light border is hidden by the overlay div
-                    below (inset #0a0a0a frame on top of the iframe edges).
-                  - Rounded overflow-hidden wrapper handles the outer corners.
-                  312px centered fits within the modal on phones >=~350px wide. */}
-              <div className="relative overflow-hidden rounded-[16px] bg-[#0a0a0a] mx-auto w-[312px]">
-                <iframe
-                  src={FESTIVAL.laylo.embed}
-                  title="Newsletter signup"
-                  frameBorder="0"
-                  scrolling="no"
-                  className="block w-[312px] h-[230px] bg-[#0a0a0a]"
-                />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-[16px]"
-                  style={{ boxShadow: "inset 0 0 0 6px #0a0a0a" }}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <a
+          href={FESTIVAL.laylo.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          className={`${T.label} text-white mt-8 inline-block px-8 sm:px-10 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300`}
+        >
+          {COPY.newsletter.cta}
+        </a>
       </motion.div>
     </motion.div>
   );

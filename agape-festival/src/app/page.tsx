@@ -1649,18 +1649,24 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
               className="mt-8 overflow-hidden"
             >
               {/* Laylo embed (theme=dark + background=0a0a0a colors the widget
-                  body). The widget card has a light border we can't restyle
-                  (cross-origin). We cover it: an absolutely-positioned overlay
-                  paints a dark inset frame (#0a0a0a, same as the modal) on top of
-                  the iframe's edges, hiding the border. pointer-events-none keeps
-                  the form clickable; the rounded clip handles the outer corners. */}
-              <div className="relative overflow-hidden rounded-[16px] bg-[#0a0a0a] mx-auto w-[248px]">
+                  body). Three things to manage, all because the widget is a
+                  cross-origin (doubly-nested) iframe we can't style:
+                  - White canvas shows below the form when the iframe is taller
+                    than the content. Content height depends on width and Laylo
+                    posts no resize message, so we FIX the width (312px — wide
+                    enough that the "Your number" placeholder isn't truncated) to
+                    make the height deterministic, then set height to match (230).
+                  - The widget card's light border is hidden by the overlay div
+                    below (inset #0a0a0a frame on top of the iframe edges).
+                  - Rounded overflow-hidden wrapper handles the outer corners.
+                  312px centered fits within the modal on phones >=~350px wide. */}
+              <div className="relative overflow-hidden rounded-[16px] bg-[#0a0a0a] mx-auto w-[312px]">
                 <iframe
                   src={FESTIVAL.laylo.embed}
                   title="Newsletter signup"
                   frameBorder="0"
                   scrolling="no"
-                  className="block w-[248px] h-[252px] bg-[#0a0a0a]"
+                  className="block w-[312px] h-[230px] bg-[#0a0a0a]"
                 />
                 <div
                   aria-hidden

@@ -358,7 +358,7 @@ export const ARTISTS: Artist[] = [
 
   // DAY 2 — INDOOR (44)
   {
-    name: "Clara Cuve",
+    name: "Clara Cuvé",
     day: 2,
     stage: "indoor",
     stageHost: "44 Label Group",

@@ -65,9 +65,22 @@ export const FESTIVAL = {
   },
   hours: "12PM — 6AM",
   ticketsFrom: "$105",
+  promo: {
+    code: "AGAPE",
+    discount: "15%",
+    expiry: "June 10", // uppercased via CSS in the ticket CTA label
+  },
   ticketUrl: "https://posh.vip/e/gap-festival-1",
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",
+  // Laylo newsletter. `url` is the public profile; `embed` is the in-iframe
+  // signup form. theme=dark renders a black form (client set the account to
+  // dark). NOTE: do NOT add background=transparent — it forces the light
+  // minimal variant and overrides the dark theme.
+  laylo: {
+    url: "https://laylo.com/agapenyc",
+    embed: "https://laylo.com/agapenyc/profile/embed?theme=dark",
+  },
 } as const;
 
 // ---- BRAND COPY ----
@@ -79,6 +92,12 @@ export const COPY = {
     "Now we're bringing that same spirit into something new. ÄGAPĒ Festival is beyond mere scale — it's about dwelling in an environment shaped by the people who built us up. A full weekend together in a communal plane, the kind we've been building toward for half a decade. ÄGAPĒ welcomes you to the movement.",
   merchComingSoon: "Merch dropping soon. Stay tuned.",
   origin: "Brooklyn, New York",
+  newsletter: {
+    eyebrow: "STAY IN THE LOOP",
+    title: "JOIN THE MOVEMENT",
+    body: "Get lineup drops, set times, and early access to tickets straight to your phone. No spam — just the moments that matter.",
+    cta: "SIGN UP FOR UPDATES",
+  },
 } as const;
 
 // ---- TICKET TIERS ----
@@ -340,7 +359,7 @@ export const ARTISTS: Artist[] = [
 
   // DAY 2 — INDOOR (44)
   {
-    name: "Clara Cuve",
+    name: "Clara Cuvé",
     day: 2,
     stage: "indoor",
     stageHost: "44 Label Group",

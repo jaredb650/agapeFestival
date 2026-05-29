@@ -2305,9 +2305,10 @@ export default function Trajectory() {
     setEnable3D(!reducedMotion);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
 
-    // Newsletter pop-up: auto-open ~2s after every page load, so a reload
-    // re-triggers it. The footer "NEWSLETTER" link also opens it manually.
-    const newsletterTimer = setTimeout(() => setShowNewsletter(true), 2000);
+    // Newsletter pop-up: auto-open ~5s after every page load (gives the intro
+    // animation time to finish), so a reload re-triggers it. The footer
+    // "NEWSLETTER" link also opens it manually.
+    const newsletterTimer = setTimeout(() => setShowNewsletter(true), 5000);
 
     let rafId = 0;
 

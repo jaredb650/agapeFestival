@@ -74,12 +74,17 @@ export const FESTIVAL = {
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",
   // Laylo newsletter. `url` is the public profile; `embed` is the in-iframe
-  // signup form. theme=dark renders a black form (client set the account to
-  // dark). NOTE: do NOT add background=transparent — it forces the light
-  // minimal variant and overrides the dark theme.
+  // signup form.
+  //   theme=dark         → dark card + light text.
+  //   background=0a0a0a  → sets the *nested* widget iframe's body color so it
+  //                        matches the modal exactly (without this, the widget
+  //                        body is white and a white ring shows around the card;
+  //                        we can't fix that with CSS since it's cross-origin).
+  //   Do NOT use background=transparent — it switches to a stripped minimal
+  //   variant and drops the card/description.
   laylo: {
     url: "https://laylo.com/agapenyc",
-    embed: "https://laylo.com/agapenyc/profile/embed?theme=dark",
+    embed: "https://laylo.com/agapenyc/profile/embed?theme=dark&background=0a0a0a",
   },
 } as const;
 

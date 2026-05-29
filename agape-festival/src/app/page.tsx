@@ -1648,18 +1648,24 @@ function NewsletterModal({ onClose }: { onClose: () => void }) {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
               className="mt-8 overflow-hidden"
             >
-              {/* Laylo embed renders dark (client set theme=dark). The iframe's
-                  default background is white and can peek through, so we paint it
-                  the same #0a0a0a as the modal so it stays invisible. */}
-              <iframe
-                src={FESTIVAL.laylo.embed}
-                title="Newsletter signup"
-                width="100%"
-                height={224}
-                frameBorder="0"
-                scrolling="no"
-                className="w-full bg-[#0a0a0a]"
-              />
+              {/* Laylo embed (theme=dark + background=0a0a0a colors the widget
+                  body). Its card has rounded corners whose triangles reveal the
+                  iframe's white canvas — which no attribute (allowTransparency is
+                  ignored by modern Chromium) or element bg can override. So we
+                  clip: a rounded overflow-hidden wrapper cuts the white corners,
+                  biased slightly larger than the card radius so the clip reveals
+                  the modal's #0a0a0a (identical) rather than ever leaving white. */}
+              <div className="overflow-hidden rounded-[18px] bg-[#0a0a0a]">
+                <iframe
+                  src={FESTIVAL.laylo.embed}
+                  title="Newsletter signup"
+                  width="100%"
+                  height={224}
+                  frameBorder="0"
+                  scrolling="no"
+                  className="w-full bg-[#0a0a0a]"
+                />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

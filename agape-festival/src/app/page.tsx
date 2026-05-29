@@ -1851,7 +1851,7 @@ const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "Can I get a discount on tickets?",
-    a: "Yes — use code AGAPE at checkout for 15% off your tickets.",
+    a: `Yes — use code ${FESTIVAL.promo.code} at checkout for ${FESTIVAL.promo.discount} off your tickets. Valid through ${FESTIVAL.promo.expiry}.`,
   },
   {
     q: "Are tickets refundable?",
@@ -3042,9 +3042,15 @@ export default function Trajectory() {
                   >
                     USE CODE{" "}
                     <span className="text-[#cc2222] font-bold tracking-[0.3em]">
-                      AGAPE
+                      {FESTIVAL.promo.code}
                     </span>{" "}
-                    FOR 15% OFF
+                    FOR {FESTIVAL.promo.discount} OFF
+                  </motion.p>
+                  <motion.p
+                    variants={fadeInUp}
+                    className={`${T.detail} text-[#cc2222]/80 mt-2 uppercase`}
+                  >
+                    Valid through {FESTIVAL.promo.expiry}
                   </motion.p>
 
                   {/* Logistics fine-print — age limit + refund/transfer policy */}

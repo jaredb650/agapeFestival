@@ -65,6 +65,11 @@ export const FESTIVAL = {
   },
   hours: "12PM — 6AM",
   ticketsFrom: "$105",
+  promo: {
+    code: "AGAPE",
+    discount: "15%",
+    expiry: "June 10", // uppercased via CSS in the ticket CTA label
+  },
   ticketUrl: "https://posh.vip/e/gap-festival-1",
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",

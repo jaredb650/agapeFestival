@@ -113,8 +113,6 @@ export const COPY = {
   },
   press: {
     eyebrow: "AS FEATURED IN",
-    // Faithful compression of RA's own framing (headline + "inaugural" in body).
-    framing: "New York's inaugural ÄGAPĒ Festival",
   },
 } as const;
 

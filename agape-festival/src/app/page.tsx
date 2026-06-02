@@ -2242,9 +2242,11 @@ function scrollToHash(target: string) {
 }
 
 // ============================================================
-// PRESS — "AS FEATURED IN" credibility band (Resident Advisor)
-// The RA monogram is inlined so `currentColor` lets it recolor with the
-// surrounding text (neutral-300 → white on hover), matching the link.
+// PRESS — compact "AS FEATURED IN" credibility lockup (Resident Advisor)
+// Embedded inside the "A STACKED WEEKEND" sell copy rather than a section of
+// its own — the RA piece is a neutral lineup announcement, so it earns a
+// credibility line, not a headline. The RA monogram is inlined so
+// `currentColor` lets it recolor with the link on hover.
 // ============================================================
 function RAMonogram({ className = "" }: { className?: string }) {
   return (
@@ -2260,30 +2262,22 @@ function RAMonogram({ className = "" }: { className?: string }) {
   );
 }
 
-function PressBadge() {
+function PressLockup() {
   return (
-    <section className={`${S.compact} ${S.px} bg-black/60`}>
-      <Reveal className="max-w-[1400px] mx-auto flex flex-col items-center text-center">
-        <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600`}>
-          {COPY.press.eyebrow}
-        </motion.p>
-        <motion.a
-          variants={fadeInUp}
-          href={FESTIVAL.press.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Read the ${FESTIVAL.press.outlet} feature (opens in a new tab)`}
-          className="group mt-5 inline-flex items-center gap-3 sm:gap-4 text-neutral-300 hover:text-white transition-colors duration-300"
-        >
-          <RAMonogram className="h-7 sm:h-8 w-auto" />
-          <span className={T.subheading}>RESIDENT ADVISOR</span>
-        </motion.a>
-        <motion.div variants={fadeInUp} className="h-[1px] w-12 mt-6 mb-5 bg-[#8b0000]/40" />
-        <motion.p variants={fadeInUp} className={`${T.monoSm} text-neutral-500`}>
-          {COPY.press.framing}
-        </motion.p>
-      </Reveal>
-    </section>
+    <a
+      href={FESTIVAL.press.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Read the ${FESTIVAL.press.outlet} feature (opens in a new tab)`}
+      className="group inline-flex items-center gap-3 text-neutral-500 hover:text-neutral-200 transition-colors duration-300"
+    >
+      <span className={`${T.detail} text-neutral-600 group-hover:text-neutral-400 transition-colors duration-300`}>
+        {COPY.press.eyebrow}
+      </span>
+      <span className="w-px h-4 bg-white/[0.12]" />
+      <RAMonogram className="h-5 w-auto" />
+      <span className={T.card}>{FESTIVAL.press.outlet}</span>
+    </a>
   );
 }
 
@@ -2852,11 +2846,6 @@ export default function Trajectory() {
           </Marquee>
         </div>
 
-        {/* ===== PRESS — "AS FEATURED IN" (Resident Advisor) ===== */}
-        <SectionLine />
-        <PressBadge />
-        <SectionLine />
-
         {/* ===== FLYER + SALES COPY ("A STACKED WEEKEND") ===== */}
         <section className={`${S.compact} ${S.px} bg-black/60`}>
           <div className="max-w-[1400px] mx-auto">
@@ -2923,6 +2912,9 @@ export default function Trajectory() {
                       </a>
                     </Frame>
                   </div>
+                </motion.div>
+                <motion.div variants={fadeInUp} className="mt-8">
+                  <PressLockup />
                 </motion.div>
               </Reveal>
             </div>

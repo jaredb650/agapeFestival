@@ -86,6 +86,14 @@ export const FESTIVAL = {
     url: "https://laylo.com/agapenyc",
     embed: "https://laylo.com/agapenyc/profile/embed?theme=dark&background=0a0a0a",
   },
+  // Press coverage. Resident Advisor lineup feature (June 1, 2026).
+  // `logo` is the RA monogram (currentColor SVG) — the PressBadge inlines the
+  // same path so it can recolor on hover; the file is the canonical asset.
+  press: {
+    outlet: "Resident Advisor",
+    url: "https://ra.co/news/85312",
+    logo: `${BASE_PATH}/assets/logos/resident-advisor.svg`,
+  },
 } as const;
 
 // ---- BRAND COPY ----
@@ -102,6 +110,11 @@ export const COPY = {
     title: "JOIN THE MOVEMENT",
     body: "Get lineup drops, set times, and early access to tickets straight to your phone. No spam — just the moments that matter.",
     cta: "SIGN UP FOR UPDATES",
+  },
+  press: {
+    eyebrow: "AS FEATURED IN",
+    // Faithful compression of RA's own framing (headline + "inaugural" in body).
+    framing: "New York's inaugural ÄGAPĒ Festival",
   },
 } as const;
 

@@ -2242,6 +2242,52 @@ function scrollToHash(target: string) {
 }
 
 // ============================================================
+// PRESS — "AS FEATURED IN" credibility band (Resident Advisor)
+// The RA monogram is inlined so `currentColor` lets it recolor with the
+// surrounding text (neutral-300 → white on hover), matching the link.
+// ============================================================
+function RAMonogram({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 83 40"
+      className={className}
+      fill="currentColor"
+      role="img"
+      aria-label={FESTIVAL.press.outlet}
+    >
+      <path d="M82.092 32.018c.556-.533.908-1.28.908-2.113 0-.802-.38-1.523-.9-2.051L58.665 4.3l-7.073 7.11 18.45 18.543h-26.14c-1.278-.038-2.29-.469-3.147-1.304l-11.73-11.788a6.828 6.828 0 00-4.689-1.888l-.017.001H10.004v-4.92h14.825c2.938.002 5.559 1.21 7.48 3.15l8.749 8.793 7.073-7.11-8.92-8.963C35.485 2.234 30.45 0 24.805 0H0v25.027h20.978v.002a4.919 4.919 0 013.486 1.48L35.95 38.053A6.74 6.74 0 0040.449 40h31.733a4.911 4.911 0 003.423-1.45l6.491-6.524-.004-.008" />
+    </svg>
+  );
+}
+
+function PressBadge() {
+  return (
+    <section className={`${S.compact} ${S.px} bg-black/60`}>
+      <Reveal className="max-w-[1400px] mx-auto flex flex-col items-center text-center">
+        <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600`}>
+          {COPY.press.eyebrow}
+        </motion.p>
+        <motion.a
+          variants={fadeInUp}
+          href={FESTIVAL.press.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Read the ${FESTIVAL.press.outlet} feature (opens in a new tab)`}
+          className="group mt-5 inline-flex items-center gap-3 sm:gap-4 text-neutral-300 hover:text-white transition-colors duration-300"
+        >
+          <RAMonogram className="h-7 sm:h-8 w-auto" />
+          <span className={T.subheading}>RESIDENT ADVISOR</span>
+        </motion.a>
+        <motion.div variants={fadeInUp} className="h-[1px] w-12 mt-6 mb-5 bg-[#8b0000]/40" />
+        <motion.p variants={fadeInUp} className={`${T.monoSm} text-neutral-500`}>
+          {COPY.press.framing}
+        </motion.p>
+      </Reveal>
+    </section>
+  );
+}
+
+// ============================================================
 // MAIN PAGE
 // ============================================================
 export default function Trajectory() {
@@ -2805,6 +2851,11 @@ export default function Trajectory() {
             ))}
           </Marquee>
         </div>
+
+        {/* ===== PRESS — "AS FEATURED IN" (Resident Advisor) ===== */}
+        <SectionLine />
+        <PressBadge />
+        <SectionLine />
 
         {/* ===== FLYER + SALES COPY ("A STACKED WEEKEND") ===== */}
         <section className={`${S.compact} ${S.px} bg-black/60`}>

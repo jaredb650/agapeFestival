@@ -2274,10 +2274,12 @@ export default function Trajectory() {
     setEnable3D(!reducedMotion);
     const topNavTimer = setTimeout(() => setTopNavReady(true), 6800);
 
+    // Newsletter pop-up: auto-open DISABLED per client request. The footer
+    // "NEWSLETTER" link still opens it manually.
     // Newsletter pop-up: auto-open ~5s after every page load (gives the intro
     // animation time to finish), so a reload re-triggers it. The footer
     // "NEWSLETTER" link also opens it manually.
-    const newsletterTimer = setTimeout(() => setShowNewsletter(true), 5000);
+    // const newsletterTimer = setTimeout(() => setShowNewsletter(true), 5000);
 
     let rafId = 0;
 
@@ -2330,7 +2332,7 @@ export default function Trajectory() {
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(rafId);
       clearTimeout(topNavTimer);
-      clearTimeout(newsletterTimer);
+      // clearTimeout(newsletterTimer); // auto-open disabled per client request
     };
   }, []);
 

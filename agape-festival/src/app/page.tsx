@@ -619,6 +619,48 @@ function FilmStrips({ photos }: { photos: string[] }) {
   );
 }
 
+// ---- Autoplay resilience (iOS Low Power Mode) ----
+// Low Power Mode rejects every programmatic play(), and iOS draws a
+// struck-through ▶ badge over any *visible* paused <video>. Two-part strategy:
+//  1. Every video stays at opacity 0 until its `playing` event fires, so a
+//     blocked video is never visible — only its poster art is.
+//  2. play() rejections queue a retry that runs inside the user's next tap;
+//     Safari allows play() from a genuine gesture even in Low Power Mode.
+const blockedVideoWakers = new Set<() => void>();
+
+function playWithRescue(vid: HTMLVideoElement | null) {
+  if (!vid) return;
+  const p = vid.play();
+  if (p !== undefined) {
+    p.catch(() => {
+      blockedVideoWakers.add(() => {
+        if (vid.isConnected) vid.play().catch(() => {});
+      });
+    });
+  }
+}
+
+// Mounted once; retries every blocked video on the first tap after a
+// rejection. Listeners stay attached — videos mounted later (lazy sections)
+// that also get blocked are rescued by the next tap after that.
+function GestureRescue() {
+  useEffect(() => {
+    const rescue = () => {
+      if (blockedVideoWakers.size === 0) return;
+      const wakers = [...blockedVideoWakers];
+      blockedVideoWakers.clear();
+      wakers.forEach((wake) => wake());
+    };
+    window.addEventListener("touchend", rescue, { passive: true });
+    window.addEventListener("pointerdown", rescue, { passive: true });
+    return () => {
+      window.removeEventListener("touchend", rescue);
+      window.removeEventListener("pointerdown", rescue);
+    };
+  }, []);
+  return null;
+}
+
 // ---- Tickets Background Video ----
 // Defers mount until in-view and catches autoplay rejection. Section itself
 // already renders the poster as a background-image, so if this never plays
@@ -627,6 +669,7 @@ function TicketsBackgroundVideo() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const vidRef = useRef<HTMLVideoElement>(null);
   const [mount, setMount] = useState(false);
+  const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -646,10 +689,7 @@ function TicketsBackgroundVideo() {
 
   useEffect(() => {
     if (!mount) return;
-    const vid = vidRef.current;
-    if (!vid) return;
-    const p = vid.play();
-    if (p !== undefined) p.catch(() => { /* poster background stays */ });
+    playWithRescue(vidRef.current);
   }, [mount]);
 
   return (
@@ -663,7 +703,9 @@ function TicketsBackgroundVideo() {
           playsInline
           preload="metadata"
           poster={VIDEOS.redStrobes.poster}
-          className="absolute inset-0 w-full h-full object-cover"
+          onPlaying={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${playing ? "opacity-100" : "opacity-0"}`}
           style={{ filter: "brightness(0.15) saturate(0.4)" }}
         >
           <source src={VIDEOS.redStrobes.mp4} type="video/mp4" />
@@ -685,12 +727,9 @@ function HeroVideo() {
     const vid = vidRef.current;
     if (!vid) return;
     if (vid.readyState >= 3) setLoaded(true);
-    const p = vid.play();
-    if (p !== undefined) {
-      p.catch(() => {
-        // Autoplay blocked (Low Power Mode, etc.) — keep poster showing.
-      });
-    }
+    // Blocked autoplay (Low Power Mode) keeps the poster showing; the first
+    // tap retries via GestureRescue and the video fades in on `playing`.
+    playWithRescue(vid);
   }, []);
 
   return (
@@ -741,6 +780,7 @@ function ParallaxVideoBreak() {
   const isInView = useInView(inViewRef, { once: true, margin: "-120px" });
   // Video mount flag — flipped once the section is within 400px of viewport.
   const [mountVideo, setMountVideo] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const vidRef = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -759,10 +799,7 @@ function ParallaxVideoBreak() {
   }, []);
   useEffect(() => {
     if (!mountVideo) return;
-    const vid = vidRef.current;
-    if (!vid) return;
-    const p = vid.play();
-    if (p !== undefined) p.catch(() => { /* autoplay blocked — poster stays */ });
+    playWithRescue(vidRef.current);
   }, [mountVideo]);
 
   return (
@@ -786,7 +823,9 @@ function ParallaxVideoBreak() {
             playsInline
             preload="metadata"
             poster={VIDEOS.davidLohlein.poster}
-            className="w-full h-full object-cover"
+            onPlaying={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            className={`w-full h-full object-cover transition-opacity duration-700 ${playing ? "opacity-100" : "opacity-0"}`}
           >
             <source src={VIDEOS.davidLohlein.mp4} type="video/mp4" />
           </video>
@@ -988,6 +1027,7 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
   const [imgLoaded, setImgLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovering, setHovering] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const isMystery = artist.name === "???";
 
   const handleMouseEnter = () => {
@@ -1085,8 +1125,10 @@ function ArtistCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 playsInline
                 preload="none"
                 poster={artist.imageUrl || undefined}
+                onPlaying={() => setVideoPlaying(true)}
+                onPause={() => setVideoPlaying(false)}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                  hovering ? "opacity-100" : "opacity-0"
+                  hovering && videoPlaying ? "opacity-100" : "opacity-0"
                 }`}
               />
             )}
@@ -1120,6 +1162,7 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
   const [imgLoaded, setImgLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovering, setHovering] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const isMystery = artist.name === "???";
 
   const handleMouseEnter = () => {
@@ -1215,8 +1258,10 @@ function InlineCard({ artist, onClick }: { artist: Artist; onClick: (a: Artist) 
                 playsInline
                 preload="none"
                 poster={artist.imageUrl || undefined}
+                onPlaying={() => setVideoPlaying(true)}
+                onPause={() => setVideoPlaying(false)}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                  hovering ? "opacity-100" : "opacity-0"
+                  hovering && videoPlaying ? "opacity-100" : "opacity-0"
                 }`}
               />
             )}
@@ -1358,8 +1403,8 @@ function ArtistModal({ artist, onClose }: { artist: Artist; onClose: () => void 
     const vid = videoRef.current;
     if (!vid) return;
     if (vid.readyState >= 3) setVideoLoaded(true);
-    const p = vid.play();
-    if (p !== undefined) p.catch(() => { /* poster stays visible */ });
+    // Blocked autoplay keeps the headshot; first tap retries via GestureRescue.
+    playWithRescue(vid);
   }, [artist.videoUrl]);
 
   return (
@@ -2363,6 +2408,9 @@ export default function Trajectory() {
     <div className={`${outfit.className} min-h-screen bg-black text-white relative`}>
       {/* Skip-to-content — keyboard/screen reader only */}
       <a href="#artists" className="skip-link">Skip to lineup</a>
+
+      {/* Retries autoplay-blocked videos inside the first user tap (iOS Low Power Mode) */}
+      <GestureRescue />
 
       {/* ===== FIXED 3D PARALLAX BACKGROUND =====
           Runs on every device except prefers-reduced-motion. Canvas is tuned

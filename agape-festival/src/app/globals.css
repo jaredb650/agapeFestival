@@ -178,3 +178,13 @@ footer {
     animation: none !important;
   }
 }
+
+/* All videos on this site are muted, decorative, and poster-backed — never
+   show native UI. In iOS Low Power Mode Safari overlays a struck-through ▶
+   badge on visible paused videos; hide it in case a paused video is ever
+   visible (belt-and-braces on top of the playing-gated opacity in page.tsx). */
+video::-webkit-media-controls,
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}

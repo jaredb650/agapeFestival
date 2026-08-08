@@ -1844,8 +1844,8 @@ const FAQ_ITEMS: FaqEntry[] = [
     a: "Yes. GA ticket holders can exit and reenter throughout the day with their wristband or ticket scan.",
   },
   {
-    q: "What is the difference between a single day ticket and a bundle?",
-    a: "Single day tickets give you access to one day of your choice — September 5 or September 6. A 2 day bundle gives you access to both days at a discounted rate.",
+    q: "What is the difference between a Single Day Ticket and a Weekend Pass?",
+    a: "A Single Day Ticket gives you access only to the specific day listed on your ticket: Saturday, September 5 or Sunday, September 6. Each single-day ticket includes the full day and night program, with up to 18 hours of music and dancing.\n\nA Weekend Pass gives you access to both Saturday and Sunday, allowing you to experience the full two-day ÄGAPĒ Festival weekend.",
   },
   {
     q: "Where is the festival?",
@@ -1960,7 +1960,7 @@ function FaqRow({
             className="overflow-hidden"
           >
             <div className="pb-7 sm:pb-8 pl-10 sm:pl-14 pr-6 sm:pr-10">
-              <p className={`${T.monoSm} text-neutral-500`}>{entry.a}</p>
+              <p className={`${T.monoSm} text-neutral-500 whitespace-pre-line`}>{entry.a}</p>
             </div>
           </motion.div>
         )}

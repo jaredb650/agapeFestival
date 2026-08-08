@@ -109,7 +109,7 @@ export const COPY = {
 
 export const TICKET_TIERS: TicketTier[] = [
   {
-    name: "BUNDLE",
+    name: "WEEKEND PASS",
     description:
       "Two-day access — both September 5 and 6. One wristband covers both days.",
     tag: "Best value.",

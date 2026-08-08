@@ -1864,10 +1864,6 @@ const FAQ_ITEMS: FaqEntry[] = [
     a: "Two stages — one indoor and one outdoor. Day 1 features the Hot Meal outdoor stage and the Face 2 Face indoor stage. Day 2 features 44 Label Group taking over both stages.",
   },
   {
-    q: "Can I get a discount on tickets?",
-    a: `Yes — use code ${FESTIVAL.promo.code} at checkout for ${FESTIVAL.promo.discount} off your tickets. Valid through ${FESTIVAL.promo.expiry}.`,
-  },
-  {
     q: "Are tickets refundable?",
     a: "Tickets are non-refundable but transferable. You can transfer your ticket to someone else if your plans change.",
   },
@@ -3052,30 +3048,10 @@ export default function Trajectory() {
                     </div>
                   </motion.div>
 
-                  {/* Promo code — secondary conversion nudge.
-                      Sized between the button and fine-print so it
-                      reads as an incentive without competing with the CTA. */}
-                  <motion.p
-                    variants={fadeInUp}
-                    className={`${orbitron.className} text-[11px] sm:text-xs tracking-[0.25em] text-neutral-400 mt-7`}
-                  >
-                    USE CODE{" "}
-                    <span className="text-[#cc2222] font-bold tracking-[0.3em]">
-                      {FESTIVAL.promo.code}
-                    </span>{" "}
-                    FOR {FESTIVAL.promo.discount} OFF
-                  </motion.p>
-                  <motion.p
-                    variants={fadeInUp}
-                    className={`${T.detail} text-[#cc2222]/80 mt-2 uppercase`}
-                  >
-                    Valid through {FESTIVAL.promo.expiry}
-                  </motion.p>
-
                   {/* Logistics fine-print — age limit + refund/transfer policy */}
                   <motion.p
                     variants={fadeInUp}
-                    className={`${T.detail} text-neutral-600 mt-4`}
+                    className={`${T.detail} text-neutral-600 mt-7`}
                   >
                     21+ EVENT
                     <span className="mx-3 opacity-50">·</span>

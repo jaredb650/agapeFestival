@@ -65,11 +65,8 @@ export const FESTIVAL = {
   },
   hours: "12PM — 6AM",
   ticketsFrom: "$105",
-  promo: {
-    code: "AGAPE",
-    discount: "15%",
-    expiry: "June 10", // uppercased via CSS in the ticket CTA label
-  },
+  // Promo code removed Aug 2026 — AGAPE code deactivated on Posh after the
+  // June 10 window ended. Re-add here + tickets section + FAQ if a new code drops.
   ticketUrl: "https://posh.vip/e/gap-festival-1",
   contactEmail: "bookings@agapemusic.us",
   websiteUrl: "https://agapemusic.us/",

@@ -1843,13 +1843,18 @@ function MerchCard({ item }: { item: (typeof MERCH_ITEMS)[number] }) {
     >
       {/* Image window — shop-style framed box w/ corner ticks */}
       <div className="merch-window aspect-square relative overflow-hidden bg-[#050505]">
-        {/* Back print — resting state */}
+        {/* Back print — resting state. The ref check catches images the
+            browser completed from cache before hydration attached onLoad
+            (otherwise the card sits at opacity-0 forever on refresh). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.backImage}
           alt={`${item.name} — ÄGAPĒ Festival merch, back print`}
           loading="lazy"
           decoding="async"
+          ref={(el) => {
+            if (el?.complete) setLoaded(true);
+          }}
           onLoad={() => setLoaded(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
             loaded ? "opacity-80 group-hover:opacity-100" : "opacity-0"

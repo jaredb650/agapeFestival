@@ -163,25 +163,25 @@ export const MERCH_ITEMS: MerchItem[] = [
   {
     name: "INFERNO TEE",
     handle: "inferno-tee",
-    backImage: `${SHOP_CDN}/inferno-tee-back.jpg?width=800`,
+    backImage: `${SHOP_CDN}/inferno-tee-back-v2.jpg?width=800`,
     frontImage: `${SHOP_CDN}/inferno-tee-front.jpg?width=800`,
   },
   {
     name: "INFERNO HOODIE",
     handle: "inferno-hoodie",
-    backImage: `${SHOP_CDN}/inferno-hoodie-back.jpg?width=800`,
+    backImage: `${SHOP_CDN}/inferno-hoodie-back-v2.jpg?width=800`,
     frontImage: `${SHOP_CDN}/inferno-hoodie-front.jpg?width=800`,
   },
   {
     name: "LIBERTY TEE",
     handle: "liberty-tee",
-    backImage: `${SHOP_CDN}/liberty-tee-liberty_tee_back.png?width=800`,
+    backImage: `${SHOP_CDN}/liberty-tee-back-v2.jpg?width=800`,
     frontImage: `${SHOP_CDN}/liberty-tee-tee_front.png?width=800`,
   },
   {
     name: "LIBERTY HOODIE",
     handle: "liberty-hoodie",
-    backImage: `${SHOP_CDN}/liberty-hoodie-liberty_hoodie_back.png?width=800`,
+    backImage: `${SHOP_CDN}/liberty-hoodie-back-v2.jpg?width=800`,
     frontImage: `${SHOP_CDN}/liberty-hoodie-hoodie_front.png?width=800`,
   },
 ];

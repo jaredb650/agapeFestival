@@ -72,6 +72,58 @@ body {
   60% { transform: scale(0.99); }
   75% { transform: scale(1.03); }
 }
+/* Merch cards: shop-parity framed windows — hairline border + corner
+   ticks that flicker bright on hover (same treatment as the shop grid) */
+@keyframes merchFlicker {
+  0%, 100% { filter: brightness(2.5); }
+  20% { filter: brightness(1); }
+  40% { filter: brightness(2.5); }
+  60% { filter: brightness(1); }
+  80% { filter: brightness(2.5); }
+}
+.merch-window {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.merch-window::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  z-index: 2;
+  --frame-c: rgba(255, 255, 255, 0.38);
+  --frame-s: 14px;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c));
+  background-position:
+    top left, top left,
+    top right, top right,
+    bottom left, bottom left,
+    bottom right, bottom right;
+  background-size:
+    var(--frame-s) 1px, 1px var(--frame-s),
+    var(--frame-s) 1px, 1px var(--frame-s),
+    var(--frame-s) 1px, 1px var(--frame-s),
+    var(--frame-s) 1px, 1px var(--frame-s);
+  transition: filter 0.2s ease;
+}
+.merch-window--info::after { --frame-s: 10px; }
+.merch-card:hover .merch-window::after {
+  animation: merchFlicker 0.25s linear;
+  filter: brightness(2.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .merch-card:hover .merch-window::after { animation: none; }
+}
+
 /* Merch card hover: CRT glitch swap (mirrors the shop theme's transition) */
 @keyframes crtReveal {
   0% { opacity: 1; clip-path: inset(0 0 88% 0); transform: translateX(-7px); filter: brightness(2.4) contrast(1.5) saturate(0.4); }

@@ -1840,78 +1840,71 @@ function MerchCard({ item }: { item: (typeof MERCH_ITEMS)[number] }) {
       variants={fadeInUp}
       href={`${SHOP_URL}/products/${item.handle}${SHOP_LINK_PARAMS}`}
       className="merch-card cursor-pointer group block"
-      whileHover={{ y: -4, transition: { duration: 0.3 } }}
     >
-      <Frame>
-        <div className="bg-[#060606]">
-          <div className="aspect-square relative overflow-hidden bg-[#050505]">
-            {/* Back print — resting state */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.backImage}
-              alt={`${item.name} — ÄGAPĒ Festival merch, back print`}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setLoaded(true)}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                loaded ? "opacity-80 group-hover:opacity-100" : "opacity-0"
-              }`}
-            />
-            {/* Front — CRT-glitches in on hover */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.frontImage}
-              alt=""
-              aria-hidden
-              loading="lazy"
-              decoding="async"
-              className="merch-front absolute inset-0 w-full h-full object-cover"
-            />
-            {/* Scanline sweep overlay */}
-            <div aria-hidden className="merch-sweep absolute inset-0 pointer-events-none z-10" />
-            <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
-          </div>
-          <div className="px-4 py-3 border-t border-white/[0.06]">
-            <h3 className={`${T.card} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
-              {item.name}
-            </h3>
-          </div>
-        </div>
-      </Frame>
+      {/* Image window — shop-style framed box w/ corner ticks */}
+      <div className="merch-window aspect-square relative overflow-hidden bg-[#050505]">
+        {/* Back print — resting state */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.backImage}
+          alt={`${item.name} — ÄGAPĒ Festival merch, back print`}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+            loaded ? "opacity-80 group-hover:opacity-100" : "opacity-0"
+          }`}
+        />
+        {/* Front — CRT-glitches in on hover */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.frontImage}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          decoding="async"
+          className="merch-front absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Scanline sweep overlay */}
+        <div aria-hidden className="merch-sweep absolute inset-0 pointer-events-none z-10" />
+      </div>
+      {/* Info window — separate smaller framed box, seam gap (shop parity) */}
+      <div className="merch-window merch-window--info mt-1.5 bg-[rgba(5,5,5,0.82)] px-4 py-3">
+        <h3 className={`${T.card} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
+          {item.name}
+        </h3>
+      </div>
     </motion.a>
   );
 }
 
 function MerchSection() {
   return (
-    <section id="merch" className={`${S.section} ${S.px} bg-black/70`}>
+    <section id="merch" className={`py-16 sm:py-20 ${S.px} bg-black/70`}>
       <div className="max-w-[1400px] mx-auto">
-        <Reveal>
+        <Reveal className="flex flex-col items-center text-center">
           <motion.div variants={fadeInUp}>
             <Label num="03" text="MERCH" />
           </motion.div>
           <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
             THE UNIFORM
           </motion.h2>
-          <motion.div variants={fadeInUp}>
-            <HeadingLine />
-          </motion.div>
           <motion.p
             variants={fadeInUp}
-            className={`${T.monoSm} text-neutral-500 max-w-2xl -mt-4 mb-12`}
+            className={`${T.monoSm} text-neutral-500 max-w-2xl mt-4 mb-8`}
           >
             Heavyweight blanks printed with the 2026 festival artwork.
             Festival pickup only — order online, collect at Industry City.
           </motion.p>
         </Reveal>
 
-        <StaggerGrid className={`grid grid-cols-2 lg:grid-cols-4 ${S.gridGap}`}>
+        <StaggerGrid className={`grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6`}>
           {MERCH_ITEMS.map((item) => (
             <MerchCard key={item.handle} item={item} />
           ))}
         </StaggerGrid>
 
-        <Reveal className="mt-12 text-center">
+        <Reveal className="mt-8 text-center">
           <motion.div variants={fadeInUp}>
             <Frame accent className="inline-block">
               <a

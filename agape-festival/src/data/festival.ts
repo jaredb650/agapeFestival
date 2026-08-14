@@ -145,6 +145,51 @@ export const SOCIALS: SocialLink[] = [
   },
 ];
 
+// ---- MERCH (Shopify satellite shop) ----
+// SHOP_URL: myshopify domain until the shop.agape-festival.com flip — then
+// change this one constant. SHOP_LINK_PARAMS carries `_fd=0`, which stops
+// Shopify redirecting the myshopify domain to the store's dead legacy
+// primary domain; harmless after the flip, delete at leisure.
+export const SHOP_URL = "https://96516a-f0.myshopify.com";
+export const SHOP_LINK_PARAMS = "?_fd=0";
+
+export interface MerchItem {
+  name: string;
+  handle: string; // Shopify product handle → `${SHOP_URL}/products/${handle}`
+  backImage: string; // lead image (back print)
+  frontImage: string; // hover swap (front)
+}
+
+// 4-item banner preview. Bolt pieces intentionally excluded — their images
+// still show the old-lineup placeholder art the client is redoing.
+const SHOP_CDN = "https://cdn.shopify.com/s/files/1/0678/4758/5949/files";
+export const MERCH_ITEMS: MerchItem[] = [
+  {
+    name: "INFERNO TEE",
+    handle: "inferno-tee",
+    backImage: `${SHOP_CDN}/inferno-tee-back.jpg?width=800`,
+    frontImage: `${SHOP_CDN}/inferno-tee-front.jpg?width=800`,
+  },
+  {
+    name: "INFERNO HOODIE",
+    handle: "inferno-hoodie",
+    backImage: `${SHOP_CDN}/inferno-hoodie-back.jpg?width=800`,
+    frontImage: `${SHOP_CDN}/inferno-hoodie-front.jpg?width=800`,
+  },
+  {
+    name: "LIBERTY TEE",
+    handle: "liberty-tee",
+    backImage: `${SHOP_CDN}/liberty-tee-liberty_tee_back.png?width=800`,
+    frontImage: `${SHOP_CDN}/liberty-tee-tee_front.png?width=800`,
+  },
+  {
+    name: "LIBERTY HOODIE",
+    handle: "liberty-hoodie",
+    backImage: `${SHOP_CDN}/liberty-hoodie-liberty_hoodie_back.png?width=800`,
+    frontImage: `${SHOP_CDN}/liberty-hoodie-hoodie_front.png?width=800`,
+  },
+];
+
 // ---- BRAND PARTNERS ----
 
 export const PARTNERS: BrandPartner[] = [

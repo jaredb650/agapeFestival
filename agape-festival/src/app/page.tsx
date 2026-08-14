@@ -49,6 +49,9 @@ import {
   VIDEOS,
   LOGOS,
   BASE_PATH,
+  SHOP_URL,
+  SHOP_LINK_PARAMS,
+  MERCH_ITEMS,
   type Artist,
 } from "@/data/festival";
 // ---- Fonts ----
@@ -1825,6 +1828,109 @@ function Lineup() {
 
 
 // ============================================================
+// MERCH — 4-item preview grid linking to the Shopify satellite
+// shop. Back print at rest; hover CRT-glitches to the front
+// (mirrors the shop's card transition). No prices shown here —
+// the shop is the point of sale.
+// ============================================================
+function MerchCard({ item }: { item: (typeof MERCH_ITEMS)[number] }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <motion.a
+      variants={fadeInUp}
+      href={`${SHOP_URL}/products/${item.handle}${SHOP_LINK_PARAMS}`}
+      className="merch-card cursor-pointer group block"
+      whileHover={{ y: -4, transition: { duration: 0.3 } }}
+    >
+      <Frame>
+        <div className="bg-[#060606]">
+          <div className="aspect-square relative overflow-hidden bg-[#050505]">
+            {/* Back print — resting state */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.backImage}
+              alt={`${item.name} — ÄGAPĒ Festival merch, back print`}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setLoaded(true)}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                loaded ? "opacity-80 group-hover:opacity-100" : "opacity-0"
+              }`}
+            />
+            {/* Front — CRT-glitches in on hover */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.frontImage}
+              alt=""
+              aria-hidden
+              loading="lazy"
+              decoding="async"
+              className="merch-front absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Scanline sweep overlay */}
+            <div aria-hidden className="merch-sweep absolute inset-0 pointer-events-none z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent" />
+          </div>
+          <div className="px-4 py-3 border-t border-white/[0.06]">
+            <h3 className={`${T.card} text-neutral-300 group-hover:text-white transition-colors duration-300`}>
+              {item.name}
+            </h3>
+          </div>
+        </div>
+      </Frame>
+    </motion.a>
+  );
+}
+
+function MerchSection() {
+  return (
+    <section id="merch" className={`${S.section} ${S.px} bg-black/70`}>
+      <div className="max-w-[1400px] mx-auto">
+        <Reveal>
+          <motion.div variants={fadeInUp}>
+            <Label num="03" text="MERCH" />
+          </motion.div>
+          <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
+            THE UNIFORM
+          </motion.h2>
+          <motion.div variants={fadeInUp}>
+            <HeadingLine />
+          </motion.div>
+          <motion.p
+            variants={fadeInUp}
+            className={`${T.monoSm} text-neutral-500 max-w-2xl -mt-4 mb-12`}
+          >
+            Heavyweight blanks printed with the 2026 festival artwork.
+            Festival pickup only — order online, collect at Industry City.
+          </motion.p>
+        </Reveal>
+
+        <StaggerGrid className={`grid grid-cols-2 lg:grid-cols-4 ${S.gridGap}`}>
+          {MERCH_ITEMS.map((item) => (
+            <MerchCard key={item.handle} item={item} />
+          ))}
+        </StaggerGrid>
+
+        <Reveal className="mt-12 text-center">
+          <motion.div variants={fadeInUp}>
+            <Frame accent className="inline-block">
+              <a
+                href={`${SHOP_URL}${SHOP_LINK_PARAMS}`}
+                className="block px-10 sm:px-12 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300"
+              >
+                <span className={`${orbitron.className} text-[12px] sm:text-[13px] tracking-[0.3em] font-semibold text-white`}>
+                  VIEW ALL →
+                </span>
+              </a>
+            </Frame>
+          </motion.div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================
 // FAQ Section
 // Single-open accordion. Questions in white, answers in muted grey.
 // Numbering and Frame motif match the rest of the site.
@@ -1972,7 +2078,7 @@ function Faq() {
       <div className="max-w-[1400px] mx-auto">
         <Reveal>
           <motion.div variants={fadeInUp}>
-            <Label num="03" text="FAQ" />
+            <Label num="04" text="FAQ" />
           </motion.div>
           <motion.h2
             variants={fadeInUp}
@@ -2071,7 +2177,7 @@ function GettingHere() {
         {/* Header */}
         <Reveal>
           <motion.div variants={fadeInUp}>
-            <Label num="04" text="GETTING HERE" />
+            <Label num="05" text="GETTING HERE" />
           </motion.div>
           <motion.h2
             variants={fadeInUp}
@@ -2244,6 +2350,7 @@ const NAV_LINKS = [
   { label: "TOP", href: "#hero" },
   { label: "LINEUP", href: "#artists" },
   { label: "TICKETS", href: "#tickets" },
+  { label: "MERCH", href: "#merch" },
   { label: "FAQ", href: "#faq" },
   { label: "GETTING HERE", href: "#getting-here" },
   { label: "ABOUT", href: "#about" },
@@ -3065,6 +3172,11 @@ export default function Trajectory() {
 
         <SectionLine />
 
+        {/* ===== MERCH ===== */}
+        <MerchSection />
+
+        <SectionLine />
+
         {/* ===== FAQ ===== */}
         <Faq />
 
@@ -3080,7 +3192,7 @@ export default function Trajectory() {
           <div className="max-w-[1400px] mx-auto">
             <Reveal>
               <motion.div variants={fadeInUp}>
-                <Label num="05" text="ABOUT" />
+                <Label num="06" text="ABOUT" />
               </motion.div>
               <motion.h2 variants={fadeInUp} className={`${T.heading} chrome-text ${S.labelGap}`}>
                 WHO WE ARE
@@ -3179,7 +3291,7 @@ export default function Trajectory() {
         <section id="partners" className={`${S.compact} ${S.px} bg-black/70`}>
           <Reveal replay>
             <motion.div variants={fadeInUp}>
-              <Label num="06" text="PARTNERS" />
+              <Label num="07" text="PARTNERS" />
             </motion.div>
             <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600 ${S.labelGap} ${S.headingGap}`}>
               PRESENTED BY

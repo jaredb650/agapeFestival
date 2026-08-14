@@ -146,12 +146,8 @@ export const SOCIALS: SocialLink[] = [
 ];
 
 // ---- MERCH (Shopify satellite shop) ----
-// SHOP_URL: myshopify domain until the shop.agape-festival.com flip — then
-// change this one constant. SHOP_LINK_PARAMS carries `_fd=0`, which stops
-// Shopify redirecting the myshopify domain to the store's dead legacy
-// primary domain; harmless after the flip, delete at leisure.
-export const SHOP_URL = "https://96516a-f0.myshopify.com";
-export const SHOP_LINK_PARAMS = "?_fd=0";
+export const SHOP_URL = "https://shop.agape-festival.com";
+export const SHOP_LINK_PARAMS = "";
 
 export interface MerchItem {
   name: string;

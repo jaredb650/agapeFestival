@@ -186,6 +186,90 @@ export const MERCH_ITEMS: MerchItem[] = [
   },
 ];
 
+// ---- SET TIMES (client-provided Sept 1, via WhatsApp) ----
+export interface SetSlot {
+  time: string;
+  act: string;
+  highlight?: boolean;
+}
+export interface StageSchedule {
+  stage: string;
+  slots: SetSlot[];
+}
+export interface DaySchedule {
+  day: string;
+  date: string;
+  host?: string;
+  stages: StageSchedule[];
+}
+
+export const SET_TIMES: DaySchedule[] = [
+  {
+    day: "DAY 1",
+    date: "SATURDAY, SEPTEMBER 5",
+    stages: [
+      {
+        stage: "OUTDOOR STAGE",
+        slots: [
+          { time: "12:00–13:30", act: "Daybreak" },
+          { time: "13:30–14:45", act: "Saint Velez" },
+          { time: "14:45–16:00", act: "Madness Of" },
+          { time: "16:00–18:00", act: "Ollie Lishman" },
+          { time: "18:00–19:30", act: "FUMI" },
+          { time: "19:30–21:00", act: "Bad Boombox" },
+          { time: "21:00–22:30", act: "Mischluft" },
+          { time: "22:30–00:00", act: "HHunter" },
+        ],
+      },
+      {
+        stage: "INDOOR STAGE",
+        slots: [
+          { time: "20:00–21:15", act: "Ramsey Neville F2F Michelle Kay" },
+          { time: "21:15–22:30", act: "Junkfile F2F Diossa" },
+          { time: "22:30–00:00", act: "Emilija F2F BIIANCO" },
+          { time: "00:00–01:30", act: "Cloudy F2F Serafina" },
+          { time: "01:30–03:00", act: "Adrián Mills F2F Wilderich" },
+          { time: "03:00–04:30", act: "Fenrick F2F Supergloss" },
+          { time: "04:30–06:00", act: "Flashgea F2F Conrad Taylor" },
+        ],
+      },
+    ],
+  },
+  {
+    day: "DAY 2",
+    date: "SUNDAY, SEPTEMBER 6",
+    host: "44 LABEL GROUP TAKEOVER",
+    stages: [
+      {
+        stage: "OUTDOOR STAGE",
+        slots: [
+          { time: "12:00–13:30", act: "Dalton Taylor" },
+          { time: "13:30–14:45", act: "Marco Neves B2B Jay York" },
+          { time: "14:45–16:00", act: "Volvox" },
+          { time: "16:00–17:45", act: "Future.666" },
+          { time: "17:45–19:30", act: "David Löhlein" },
+          { time: "19:30–21:00", act: "Aiden B2B Kobosil" },
+          { time: "21:00–22:30", act: "Triptykh B2B O.B.I." },
+        ],
+      },
+      {
+        stage: "INDOOR STAGE",
+        slots: [
+          { time: "20:00–22:00", act: "KAYA" },
+          { time: "22:00–23:30", act: "Ueberrest" },
+          { time: "23:30–01:00", act: "Kobosil" },
+          { time: "01:00–02:30", act: "Clara Cuvé" },
+          { time: "02:30–04:00", act: "Somewhen" },
+          { time: "04:00–CLOSE", act: "B2B2B — TO BE REVEALED", highlight: true },
+        ],
+      },
+    ],
+  },
+];
+
+// Locker reservations (Elockers) — linked from the FAQ
+export const LOCKER_URL = "https://agapefestival.elocke.rs/";
+
 // ---- BRAND PARTNERS ----
 
 export const PARTNERS: BrandPartner[] = [

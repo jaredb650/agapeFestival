@@ -52,6 +52,8 @@ import {
   SHOP_URL,
   SHOP_LINK_PARAMS,
   MERCH_ITEMS,
+  SET_TIMES,
+  LOCKER_URL,
   type Artist,
 } from "@/data/festival";
 // ---- Fonts ----
@@ -1809,6 +1811,74 @@ function Lineup() {
         </div>
       </section>
 
+      {/* ===== SET TIMES — inside the lineup section family ===== */}
+      <section id="schedule" className={`pb-28 sm:pb-36 ${S.px} bg-black/70 scroll-mt-20`}>
+        <div className="max-w-[1400px] mx-auto">
+          <Reveal>
+            <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-10">
+              <div
+                className="h-[1px] flex-1"
+                style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06))" }}
+              />
+              <div className="text-center shrink-0">
+                <h3 className={`${T.subheading} chrome-text`}>SET TIMES</h3>
+              </div>
+              <div
+                className="h-[1px] flex-1"
+                style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.06), transparent)" }}
+              />
+            </motion.div>
+          </Reveal>
+
+          <StaggerGrid className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 max-w-5xl mx-auto">
+            {SET_TIMES.map((day) => (
+              <motion.div key={day.day} variants={fadeInUp}>
+                <Frame className="h-full">
+                  <div className="p-6 sm:p-8 h-full bg-black/40">
+                    <p className={`${T.detail} text-[#8b0000]`}>{day.day}</p>
+                    <p className={`${T.card} text-neutral-200 mt-1.5`}>{day.date}</p>
+                    {day.host && (
+                      <p className={`${T.detail} text-neutral-500 mt-1.5`}>{day.host}</p>
+                    )}
+                    {day.stages.map((stage) => (
+                      <div key={stage.stage} className="mt-7">
+                        <p className={`${T.label} text-neutral-600 pb-2 border-b border-white/[0.06]`}>
+                          {stage.stage}
+                        </p>
+                        <div className="mt-1 divide-y divide-white/[0.04]">
+                          {stage.slots.map((slot) => (
+                            <div key={slot.time + slot.act} className="flex items-baseline gap-4 py-2">
+                              <span className={`${T.detail} text-neutral-600 w-[108px] shrink-0`}>
+                                {slot.time}
+                              </span>
+                              <span
+                                className={`${T.card} ${
+                                  slot.highlight
+                                    ? "text-[#ff0000]/80"
+                                    : "text-neutral-300"
+                                }`}
+                              >
+                                {slot.act}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Frame>
+              </motion.div>
+            ))}
+          </StaggerGrid>
+
+          <Reveal className="mt-8">
+            <motion.p variants={fadeInUp} className={`${T.detail} text-neutral-600 text-center`}>
+              ALL TIMES LOCAL (ET) · LINEUP AND TIMES SUBJECT TO CHANGE
+            </motion.p>
+          </Reveal>
+        </div>
+      </section>
+
       {/* Artist detail modal */}
       <AnimatePresence>
         {selectedArtist && (
@@ -1977,7 +2047,21 @@ const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "Will there be lockers?",
-    a: "Yes. Locker rentals will be available on site both days for a small fee. We recommend booking in advance as they are limited. Details on how to reserve yours will be shared closer to the event date.",
+    a: (
+      <>
+        Yes. Locker rentals are available on site both days for a small fee,
+        and they are limited — we recommend reserving in advance.{" "}
+        <a
+          href={LOCKER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-4 decoration-white/30 text-neutral-300 hover:text-white hover:decoration-white transition-colors"
+        >
+          Reserve your locker here
+        </a>
+        .
+      </>
+    ),
   },
   {
     q: "How do I get there?",
@@ -2347,6 +2431,7 @@ function GettingHere() {
 const NAV_LINKS = [
   { label: "TOP", href: "#hero" },
   { label: "LINEUP", href: "#artists" },
+  { label: "SET TIMES", href: "#schedule" },
   { label: "TICKETS", href: "#tickets" },
   { label: "MERCH", href: "#merch" },
   { label: "FAQ", href: "#faq" },

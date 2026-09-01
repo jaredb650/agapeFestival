@@ -2015,7 +2015,7 @@ const FAQ_ITEMS: FaqEntry[] = [
   },
   {
     q: "Is there reentry?",
-    a: "Yes. GA ticket holders can exit and reenter throughout the day with their wristband or ticket scan.",
+    a: "Re-entry is permitted.\n\nPlease keep your wristband on at all times and present your ticket again when returning to the festival. Keep this in mind as you exit and re-enter the festival grounds, as entry lines may become long and unpredictable.",
   },
   {
     q: "What is the difference between a Single Day Ticket and a Weekend Pass?",

@@ -1871,26 +1871,6 @@ function Lineup() {
             ))}
           </StaggerGrid>
 
-          <Reveal className="mt-10 text-center">
-            <motion.div variants={fadeInUp}>
-              <Frame accent className="inline-block">
-                <a
-                  href={LOCKER_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-10 sm:px-12 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300"
-                >
-                  <span className={`${orbitron.className} text-[12px] sm:text-[13px] tracking-[0.3em] font-semibold text-white`}>
-                    RESERVE A LOCKER →
-                  </span>
-                </a>
-              </Frame>
-              <p className={`${T.detail} text-neutral-600 mt-4`}>
-                LIMITED ON-SITE LOCKERS · BOOK AHEAD
-              </p>
-            </motion.div>
-          </Reveal>
-
           <Reveal className="mt-8">
             <motion.p variants={fadeInUp} className={`${T.detail} text-neutral-600 text-center`}>
               ALL TIMES LOCAL (ET) · LINEUP AND TIMES SUBJECT TO CHANGE
@@ -3282,6 +3262,38 @@ export default function Trajectory() {
 
         {/* ===== FAQ ===== */}
         <Faq />
+
+        <SectionLine />
+
+        {/* ===== LOCKERS — slim CTA band ===== */}
+        <section id="lockers" className={`py-16 sm:py-20 ${S.px} bg-black/70`}>
+          <div className="max-w-[1400px] mx-auto text-center">
+            <Reveal>
+              <motion.p variants={fadeInUp} className={`${T.label} text-neutral-600 mb-6`}>
+                <span className="text-[#8b0000]/50">—</span>
+                <span className="mx-2">—</span>
+                LOCKERS
+              </motion.p>
+              <motion.div variants={fadeInUp}>
+                <Frame accent className="inline-block">
+                  <a
+                    href={LOCKER_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-10 sm:px-12 py-4 bg-[#8b0000]/40 hover:bg-[#8b0000]/55 backdrop-blur-sm transition-colors duration-300"
+                  >
+                    <span className={`${orbitron.className} text-[12px] sm:text-[13px] tracking-[0.3em] font-semibold text-white`}>
+                      RESERVE A LOCKER →
+                    </span>
+                  </a>
+                </Frame>
+                <p className={`${T.detail} text-neutral-600 mt-4`}>
+                  LIMITED ON-SITE LOCKERS BOTH DAYS · BOOK AHEAD
+                </p>
+              </motion.div>
+            </Reveal>
+          </div>
+        </section>
 
         <SectionLine />
 

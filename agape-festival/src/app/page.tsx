@@ -100,7 +100,7 @@ export default function Home() {
         </div>
         <div className="winter-reveal">
           <div className="winter-divider" aria-hidden="true" />
-          <div className="winter-countdown" role="timer" aria-label="Countdown to February 19, 2027, midnight New York time">
+          <div className="winter-countdown" data-nosnippet role="timer" aria-label="Countdown to February 19, 2027, midnight New York time">
             {["Days", "Hours", "Minutes", "Seconds"].map((label, index) => (
               <div className="winter-time" key={label}>
                 <span className="winter-number">{remaining ? String(remaining[index]).padStart(2, "0") : "––"}</span>

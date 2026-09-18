@@ -1,282 +1,79 @@
 @import "tailwindcss";
 
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
+@font-face {
+  font-family: "Chonky Pixels";
+  src: url("/assets/fonts/ChonkyPixels.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
 }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  margin: 0;
-  padding: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root { color-scheme: dark; background: #000; color: #fff; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+body { margin: 0; background: #000; -webkit-font-smoothing: antialiased; }
+button, a { -webkit-tap-highlight-color: transparent; }
+.winter-landing { position: fixed; inset: 0; isolation: isolate; height: 100dvh; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); place-items: center; padding: 40px 24px 72px; background: #000; font-family: var(--font-orbitron), sans-serif; }
+.winter-background, .winter-vignette, .winter-scanlines { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.winter-background { opacity: 0; }
+.winter-background.is-ready { animation: background-in 2.4s 3.5s both; }
+.winter-background video, .winter-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.65) contrast(1.2); }
+.winter-background video { opacity: 0; transition: opacity .6s ease; }
+.winter-background video.is-playing { opacity: 1; }
+.winter-vignette { background: radial-gradient(ellipse at 50% 42%, transparent 10%, #0008 65%, #000e 100%), linear-gradient(#0004, #0003 50%, #000b); }
+.winter-scanlines { background: repeating-linear-gradient(0deg, transparent 0 3px, #0002 3px 4px); opacity: 0; animation: quiet-in 2s 3.5s both; }
+.winter-content { width: min(100%, 640px); margin: 0 auto; text-align: center; transform: scale(var(--content-scale, 1)); transform-origin: center; }
+.winter-logo { margin: 0 auto 32px; width: min(100%, 510px, 60svh); animation: logo-in .8s .6s both; }
+.winter-logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 22px #0009); }
+.winter-details { display: grid; justify-items: center; gap: 15px; text-transform: uppercase; }
+.winter-edition, .winter-date { margin: 0; font-weight: 400; }
+.winter-edition { font-family: "Chonky Pixels", monospace; font-size: clamp(20px, 4.4vw, 29px); letter-spacing: .055em; line-height: 1.5; }
+.winter-edition span, .winter-date span { display: block; white-space: nowrap; clip-path: inset(0 100% 0 0); }
+.winter-edition span { animation: type-in .85s steps(14, end) 1.5s both; }
+.winter-date { font-family: "Chonky Pixels", monospace; font-size: clamp(16px, 3.3vw, 21px); letter-spacing: .04em; line-height: 1.9; color: #d5d5d5; }
+.winter-date span { animation: type-in .6s steps(9, end) 2.45s both; }
+.winter-reveal { animation: quiet-in 1s 3.15s both; }
+.winter-divider { width: 30px; height: 1px; margin: 28px auto; background: #a42b2b; box-shadow: 0 0 14px #a42b2b66; }
+.winter-countdown { display: grid; grid-template-columns: repeat(4, 1fr); width: min(100%, 360px); margin: 0 auto 34px; }
+.winter-time { position: relative; display: grid; gap: 9px; }
+.winter-time + .winter-time::before { content: ":"; position: absolute; left: -3px; top: 3px; font-size: 23px; color: #ffffff40; }
+.winter-number { font-size: clamp(28px, 6vw, 36px); font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: .04em; }
+.winter-unit { font-size: 8px; text-transform: uppercase; letter-spacing: .18em; color: #a6a6a6; }
+/* Original ticket CTA: Orbitron, deep red, corner frame and glow. */
+.winter-notify { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 60px; max-width: 100%; padding: 20px 48px; background: #8b0000; color: #fff; text-decoration: none; text-transform: uppercase; font-family: var(--font-orbitron), sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3em; transition: background .3s, transform .3s; animation: ticketGlow 4s ease-in-out infinite; }
+.winter-notify::before { content: ""; position: absolute; inset: -1px; pointer-events: none; background: linear-gradient(#ff2a2a99,#ff2a2a99) left top/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) left top/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) right top/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) right top/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) left bottom/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) left bottom/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) right bottom/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) right bottom/1px 16px; background-repeat: no-repeat; }
+.winter-notify::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,.08) 50%), linear-gradient(90deg, rgba(255,0,0,.02), rgba(0,255,0,.01), rgba(0,0,255,.02)); background-size: 100% 2px, 3px 100%; pointer-events: none; }
+.winter-notify:hover { background: #a00000; transform: scale(1.05); }
+@keyframes ticketGlow { 0%, 100% { box-shadow: 0 0 8px rgba(200,0,0,.3); } 50% { box-shadow: 0 0 25px rgba(200,0,0,.5), 0 0 60px rgba(139,0,0,.2); } }
+.winter-notify:focus-visible, .winter-motion:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+.winter-frame { position: absolute; inset: 25px; pointer-events: none; animation: quiet-in 1.5s 3.5s both; }
+.winter-frame i { position: absolute; width: 13px; height: 13px; border-color: #ffffff35; border-style: solid; }
+.winter-frame i:nth-child(1) { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.winter-frame i:nth-child(2) { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.winter-frame i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.winter-frame i:nth-child(4) { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+.winter-motion { position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: #aaa; cursor: pointer; animation: quiet-in 1.5s 3.5s both; }
+.winter-motion:hover { color: #fff; }
+@keyframes logo-in {
+  0% { opacity: 0; transform: scale(1.13); clip-path: inset(48% 0 48% 0); }
+  20% { opacity: .85; transform: translateX(-8px) scale(1.04); clip-path: inset(0 0 60% 0); }
+  36% { opacity: .5; transform: translateX(6px); clip-path: inset(30% 0 10% 0); }
+  55% { opacity: 1; transform: translateX(-3px); clip-path: inset(0); }
+  70% { opacity: .65; transform: translateX(2px); }
+  100% { opacity: 1; transform: none; clip-path: inset(0); }
 }
-
-* {
-  box-sizing: border-box;
+@keyframes type-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes quiet-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes background-in { from { opacity: 0; } to { opacity: .65; } }
+@media (max-width: 600px) {
+  .winter-landing { padding: 40px 30px 72px; }
+  .winter-logo { margin-bottom: 30px; }
+  .winter-frame { inset: 16px; }
 }
-
-/* ---- Scrollbar ---- */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
-
-/* ---- Keyframes ---- */
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-@keyframes cursorBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-@keyframes filmScrollLeft {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-@keyframes filmScrollRight {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
-}
-@keyframes mysteryPulse {
-  0%, 100% { opacity: 0.03; }
-  50% { opacity: 0.08; }
-}
-@keyframes mysteryGlow {
-  0%, 100% { text-shadow: 0 0 20px rgba(139,0,0,0.3); }
-  50% { text-shadow: 0 0 40px rgba(139,0,0,0.6), 0 0 80px rgba(139,0,0,0.2); }
-}
-@keyframes ticketGlow {
-  0%, 100% { box-shadow: 0 0 8px rgba(200,0,0,0.3); }
-  50% { box-shadow: 0 0 25px rgba(200,0,0,0.5), 0 0 60px rgba(139,0,0,0.2); }
-}
-@keyframes ticketPulse {
-  0%, 82%, 100% { transform: scale(1); }
-  88% { transform: scale(1.02); }
-  94% { transform: scale(0.998); }
-}
-@keyframes ticketAttention {
-  0%, 100% { transform: scale(1); }
-  15% { transform: scale(1.08); }
-  30% { transform: scale(0.97); }
-  45% { transform: scale(1.05); }
-  60% { transform: scale(0.99); }
-  75% { transform: scale(1.03); }
-}
-/* Merch cards: shop-parity framed windows — hairline border + corner
-   ticks that flicker bright on hover (same treatment as the shop grid) */
-@keyframes merchFlicker {
-  0%, 100% { filter: brightness(2.5); }
-  20% { filter: brightness(1); }
-  40% { filter: brightness(2.5); }
-  60% { filter: brightness(1); }
-  80% { filter: brightness(2.5); }
-}
-.merch-window {
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-.merch-window::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-  z-index: 2;
-  --frame-c: rgba(255, 255, 255, 0.38);
-  --frame-s: 14px;
-  background-repeat: no-repeat;
-  background-image:
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c)),
-    linear-gradient(var(--frame-c), var(--frame-c));
-  background-position:
-    top left, top left,
-    top right, top right,
-    bottom left, bottom left,
-    bottom right, bottom right;
-  background-size:
-    var(--frame-s) 1px, 1px var(--frame-s),
-    var(--frame-s) 1px, 1px var(--frame-s),
-    var(--frame-s) 1px, 1px var(--frame-s),
-    var(--frame-s) 1px, 1px var(--frame-s);
-  transition: filter 0.2s ease;
-}
-.merch-window--info::after { --frame-s: 10px; }
-.merch-card:hover .merch-window::after {
-  animation: merchFlicker 0.25s linear;
-  filter: brightness(2.5);
-}
+.glitch-logo { position: relative; width: 100%; aspect-ratio: 586 / 310; }
+.glitch-logo-interactive { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.glitch-logo > img { transition: opacity .15s; }
+.glitch-logo-ready > img { opacity: 0; }
+.glitch-logo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .15s; }
+.glitch-logo-ready .glitch-logo-canvas { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .merch-card:hover .merch-window::after { animation: none; }
-}
-
-/* Merch card hover: CRT glitch swap (mirrors the shop theme's transition) */
-@keyframes crtReveal {
-  0% { opacity: 1; clip-path: inset(0 0 88% 0); transform: translateX(-7px); filter: brightness(2.4) contrast(1.5) saturate(0.4); }
-  12% { clip-path: inset(34% 0 42% 0); transform: translateX(6px); }
-  24% { clip-path: inset(4% 0 58% 0); transform: translateX(-5px); filter: brightness(1.7) saturate(0.5); }
-  36% { clip-path: inset(48% 0 8% 0); transform: translateX(4px); }
-  48% { clip-path: inset(0 0 26% 0); transform: translateX(-3px); filter: brightness(2) contrast(1.3); }
-  62% { clip-path: inset(12% 0 0 0); transform: translateX(2px); }
-  76% { clip-path: inset(0); transform: translateX(-1px); filter: brightness(1.35); }
-  100% { opacity: 1; clip-path: inset(0); transform: none; filter: none; }
-}
-@keyframes crtSweep {
-  0% { opacity: 0.55; background-position: 0 -110%; }
-  100% { opacity: 0; background-position: 0 210%; }
-}
-.merch-card .merch-front {
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-.merch-card:hover .merch-front {
-  opacity: 1;
-  animation: crtReveal 0.5s linear both;
-}
-.merch-card .merch-sweep {
-  opacity: 0;
-  background-image:
-    linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.28) 48%, rgba(255, 42, 42, 0.18) 52%, transparent 100%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0px, rgba(255, 255, 255, 0.07) 1px, transparent 1px, transparent 3px);
-  background-size: 100% 45%, 100% 3px;
-  background-repeat: no-repeat, repeat;
-}
-.merch-card:hover .merch-sweep {
-  animation: crtSweep 0.5s linear both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .merch-card:hover .merch-front { animation: none; }
-  .merch-card:hover .merch-sweep { animation: none; opacity: 0; }
-}
-
-@keyframes expandHint {
-  0%, 100% { transform: translateY(0); color: rgb(115,115,115); }
-  40% { transform: translateY(-6px); color: rgb(200,200,200); }
-  70% { transform: translateY(1px); color: rgb(160,160,160); }
-}
-
-/* ---- Chrome text ---- */
-.chrome-text {
-  background: linear-gradient(90deg, #444, #aaa, #fff, #aaa, #444);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 6s linear infinite;
-}
-.chrome-text-slow {
-  background: linear-gradient(90deg, #333, #888, #ddd, #888, #333);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 10s linear infinite;
-}
-
-/* ---- Ticket button ---- */
-.ticket-wrap {
-  display: inline-block;
-  transition: transform 0.3s ease;
-}
-.ticket-wrap:hover { transform: scale(1.05); }
-
-.ticket-btn {
-  position: relative;
-  overflow: hidden;
-  animation: ticketGlow 4s ease-in-out infinite, ticketPulse 7s ease-in-out infinite;
-}
-.ticket-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.08) 50%),
-    linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
-  background-size: 100% 2px, 3px 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-.ticket-attention {
-  animation: ticketAttention 0.8s ease-in-out 2;
-}
-.expand-hint {
-  animation: expandHint 0.7s ease-in-out 2 0.5s both;
-}
-
-/* ---- Content visibility: skip paint work for offscreen sections ---- */
-section#artists,
-section#merch,
-section#about,
-section#journey,
-section#partners,
-footer {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 1200px;
-}
-
-/* ---- Pause CSS marquees while offscreen via data attr hook ---- */
-[data-marquee-paused="true"] > * {
-  animation-play-state: paused !important;
-}
-
-/* ---- Skip-to-content link ---- */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 8px;
-  background: #000;
-  color: #fff;
-  padding: 8px 16px;
-  z-index: 100;
-  border: 1px solid rgba(255,255,255,0.2);
-  font-family: monospace;
-  text-decoration: none;
-}
-.skip-link:focus { top: 8px; }
-
-/* ---- Reduced motion: kill all non-essential animation ----
-   Keeps opacity transitions (need for fade-in fallback reveals) short but
-   disables marquees, shimmer, pulse, ticket glow, parallax transforms. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    animation-delay: 0ms !important;
-    transition-duration: 0.01ms !important;
-    transition-delay: 0ms !important;
-    scroll-behavior: auto !important;
-  }
-  .chrome-text,
-  .chrome-text-slow {
-    background: #ddd;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: none !important;
-  }
-}
-
-/* All videos on this site are muted, decorative, and poster-backed — never
-   show native UI. In iOS Low Power Mode Safari overlays a struck-through ▶
-   badge on visible paused videos; hide it in case a paused video is ever
-   visible (belt-and-braces on top of the playing-gated opacity in page.tsx). */
-video::-webkit-media-controls,
-video::-webkit-media-controls-start-playback-button {
-  display: none !important;
-  -webkit-appearance: none;
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition: none !important; }
 }

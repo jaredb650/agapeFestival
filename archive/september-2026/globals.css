@@ -1,0 +1,282 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* ---- Keyframes ---- */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes filmScrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes filmScrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+@keyframes mysteryPulse {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.08; }
+}
+@keyframes mysteryGlow {
+  0%, 100% { text-shadow: 0 0 20px rgba(139,0,0,0.3); }
+  50% { text-shadow: 0 0 40px rgba(139,0,0,0.6), 0 0 80px rgba(139,0,0,0.2); }
+}
+@keyframes ticketGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(200,0,0,0.3); }
+  50% { box-shadow: 0 0 25px rgba(200,0,0,0.5), 0 0 60px rgba(139,0,0,0.2); }
+}
+@keyframes ticketPulse {
+  0%, 82%, 100% { transform: scale(1); }
+  88% { transform: scale(1.02); }
+  94% { transform: scale(0.998); }
+}
+@keyframes ticketAttention {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.08); }
+  30% { transform: scale(0.97); }
+  45% { transform: scale(1.05); }
+  60% { transform: scale(0.99); }
+  75% { transform: scale(1.03); }
+}
+/* Merch cards: shop-parity framed windows — hairline border + corner
+   ticks that flicker bright on hover (same treatment as the shop grid) */
+@keyframes merchFlicker {
+  0%, 100% { filter: brightness(2.5); }
+  20% { filter: brightness(1); }
+  40% { filter: brightness(2.5); }
+  60% { filter: brightness(1); }
+  80% { filter: brightness(2.5); }
+}
+.merch-window {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.merch-window::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  z-index: 2;
+  --frame-c: rgba(255, 255, 255, 0.38);
+  --frame-s: 14px;
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c)),
+    linear-gradient(var(--frame-c), var(--frame-c));
+  background-position:
+    top left, top left,
+    top right, top right,
+    bottom left, bottom left,
+    bottom right, bottom right;
+  background-size:
+    var(--frame-s) 1px, 1px var(--frame-s),
+    var(--frame-s) 1px, 1px var(--frame-s),
+    var(--frame-s) 1px, 1px var(--frame-s),
+    var(--frame-s) 1px, 1px var(--frame-s);
+  transition: filter 0.2s ease;
+}
+.merch-window--info::after { --frame-s: 10px; }
+.merch-card:hover .merch-window::after {
+  animation: merchFlicker 0.25s linear;
+  filter: brightness(2.5);
+}
+@media (prefers-reduced-motion: reduce) {
+  .merch-card:hover .merch-window::after { animation: none; }
+}
+
+/* Merch card hover: CRT glitch swap (mirrors the shop theme's transition) */
+@keyframes crtReveal {
+  0% { opacity: 1; clip-path: inset(0 0 88% 0); transform: translateX(-7px); filter: brightness(2.4) contrast(1.5) saturate(0.4); }
+  12% { clip-path: inset(34% 0 42% 0); transform: translateX(6px); }
+  24% { clip-path: inset(4% 0 58% 0); transform: translateX(-5px); filter: brightness(1.7) saturate(0.5); }
+  36% { clip-path: inset(48% 0 8% 0); transform: translateX(4px); }
+  48% { clip-path: inset(0 0 26% 0); transform: translateX(-3px); filter: brightness(2) contrast(1.3); }
+  62% { clip-path: inset(12% 0 0 0); transform: translateX(2px); }
+  76% { clip-path: inset(0); transform: translateX(-1px); filter: brightness(1.35); }
+  100% { opacity: 1; clip-path: inset(0); transform: none; filter: none; }
+}
+@keyframes crtSweep {
+  0% { opacity: 0.55; background-position: 0 -110%; }
+  100% { opacity: 0; background-position: 0 210%; }
+}
+.merch-card .merch-front {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.merch-card:hover .merch-front {
+  opacity: 1;
+  animation: crtReveal 0.5s linear both;
+}
+.merch-card .merch-sweep {
+  opacity: 0;
+  background-image:
+    linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.28) 48%, rgba(255, 42, 42, 0.18) 52%, transparent 100%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0px, rgba(255, 255, 255, 0.07) 1px, transparent 1px, transparent 3px);
+  background-size: 100% 45%, 100% 3px;
+  background-repeat: no-repeat, repeat;
+}
+.merch-card:hover .merch-sweep {
+  animation: crtSweep 0.5s linear both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .merch-card:hover .merch-front { animation: none; }
+  .merch-card:hover .merch-sweep { animation: none; opacity: 0; }
+}
+
+@keyframes expandHint {
+  0%, 100% { transform: translateY(0); color: rgb(115,115,115); }
+  40% { transform: translateY(-6px); color: rgb(200,200,200); }
+  70% { transform: translateY(1px); color: rgb(160,160,160); }
+}
+
+/* ---- Chrome text ---- */
+.chrome-text {
+  background: linear-gradient(90deg, #444, #aaa, #fff, #aaa, #444);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 6s linear infinite;
+}
+.chrome-text-slow {
+  background: linear-gradient(90deg, #333, #888, #ddd, #888, #333);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 10s linear infinite;
+}
+
+/* ---- Ticket button ---- */
+.ticket-wrap {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+.ticket-wrap:hover { transform: scale(1.05); }
+
+.ticket-btn {
+  position: relative;
+  overflow: hidden;
+  animation: ticketGlow 4s ease-in-out infinite, ticketPulse 7s ease-in-out infinite;
+}
+.ticket-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.08) 50%),
+    linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.ticket-attention {
+  animation: ticketAttention 0.8s ease-in-out 2;
+}
+.expand-hint {
+  animation: expandHint 0.7s ease-in-out 2 0.5s both;
+}
+
+/* ---- Content visibility: skip paint work for offscreen sections ---- */
+section#artists,
+section#merch,
+section#about,
+section#journey,
+section#partners,
+footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 1200px;
+}
+
+/* ---- Pause CSS marquees while offscreen via data attr hook ---- */
+[data-marquee-paused="true"] > * {
+  animation-play-state: paused !important;
+}
+
+/* ---- Skip-to-content link ---- */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 8px;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 100;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-family: monospace;
+  text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
+
+/* ---- Reduced motion: kill all non-essential animation ----
+   Keeps opacity transitions (need for fade-in fallback reveals) short but
+   disables marquees, shimmer, pulse, ticket glow, parallax transforms. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .chrome-text,
+  .chrome-text-slow {
+    background: #ddd;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: none !important;
+  }
+}
+
+/* All videos on this site are muted, decorative, and poster-backed — never
+   show native UI. In iOS Low Power Mode Safari overlays a struck-through ▶
+   badge on visible paused videos; hide it in case a paused video is ever
+   visible (belt-and-braces on top of the playing-gated opacity in page.tsx). */
+video::-webkit-media-controls,
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}

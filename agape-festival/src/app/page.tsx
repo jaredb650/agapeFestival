@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import FestivalExperience from "@/components/FestivalExperience";
 import GlitchLogo from "@/components/GlitchLogo";
 
 // Midnight in New York. Replace when the actual doors time is announced.
@@ -77,7 +78,7 @@ export default function Home() {
   };
 
   return (
-    <main className="winter-landing">
+    <FestivalExperience><main className="winter-landing">
       <div className="winter-background is-ready" aria-hidden="true">
         <Image className="winter-poster" src={BACKGROUND_POSTER} alt="" fill sizes="100vw" priority />
         <video ref={video} src={BACKGROUND_VIDEO} poster={BACKGROUND_POSTER}
@@ -119,6 +120,6 @@ export default function Home() {
           {paused ? <path d="M4 2 14 8 4 14Z" /> : <><rect x="4" y="2" width="2" height="12" /><rect x="10" y="2" width="2" height="12" /></>}
         </svg>
       </button>
-    </main>
+    </main></FestivalExperience>
   );
 }

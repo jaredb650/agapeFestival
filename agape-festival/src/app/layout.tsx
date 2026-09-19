@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     title, description, siteName: "ÄGAPĒ Festival", url: "https://agape-festival.com",
-    images: [{ url: "/assets/logos/aFestWhite.png", width: 586, height: 310 }], type: "website",
+    images: [{ url: "/assets/og-image.jpg", width: 1200, height: 630 }], type: "website",
   },
-  twitter: { card: "summary", title, description, images: ["/assets/logos/aFestWhite.png"] },
+  twitter: { card: "summary_large_image", title, description, images: ["/assets/og-image.jpg"] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

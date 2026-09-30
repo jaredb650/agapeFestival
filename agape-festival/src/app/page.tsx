@@ -18,17 +18,35 @@ function remainingTime(now: number) {
     Math.floor(seconds / 60) % 60, seconds % 60];
 }
 
-export default function Home() {
-  const video = useRef<HTMLVideoElement>(null);
-  const content = useRef<HTMLElement>(null);
+// Own component so the once-a-second tick re-renders only the digits, not the
+// whole page (logo canvas, gallery deck).
+function Countdown() {
   const [remaining, setRemaining] = useState<number[] | null>(null);
-  const [videoReady, setVideoReady] = useState(false);
-  const [paused, setPaused] = useState(true);
-
   useEffect(() => {
     const update = () => setRemaining(remainingTime(Date.now()));
     update();
     const timer = window.setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div className="winter-countdown" data-nosnippet role="timer" aria-label="Countdown to February 19, 2027, midnight New York time">
+      {["Days", "Hours", "Minutes", "Seconds"].map((label, index) => (
+        <div className="winter-time" key={label}>
+          <span className="winter-number">{remaining ? String(remaining[index]).padStart(2, "0") : "––"}</span>
+          <span className="winter-unit">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Home() {
+  const video = useRef<HTMLVideoElement>(null);
+  const content = useRef<HTMLElement>(null);
+  const [videoReady, setVideoReady] = useState(false);
+  const [paused, setPaused] = useState(true);
+
+  useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const handleMotion = () => {
       if (motion.matches) {
@@ -47,7 +65,7 @@ export default function Home() {
       });
     }
     motion.addEventListener("change", handleMotion);
-    return () => { clearInterval(timer); motion.removeEventListener("change", handleMotion); };
+    return () => motion.removeEventListener("change", handleMotion);
   }, []);
 
 
@@ -101,15 +119,9 @@ export default function Home() {
         </div>
         <div className="winter-reveal">
           <div className="winter-divider" aria-hidden="true" />
-          <div className="winter-countdown" data-nosnippet role="timer" aria-label="Countdown to February 19, 2027, midnight New York time">
-            {["Days", "Hours", "Minutes", "Seconds"].map((label, index) => (
-              <div className="winter-time" key={label}>
-                <span className="winter-number">{remaining ? String(remaining[index]).padStart(2, "0") : "––"}</span>
-                <span className="winter-unit">{label}</span>
-              </div>
-            ))}
-          </div>
+          <Countdown />
           <a className="winter-notify" href="https://laylo.com/agapenyc/GHSBKw" target="_blank" rel="noopener noreferrer">
+            <span className="winter-notify-glow" aria-hidden="true" />
             Get notified
           </a>
         </div>

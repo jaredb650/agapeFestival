@@ -38,11 +38,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .winter-number { font-size: clamp(28px, 6vw, 36px); font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: .04em; }
 .winter-unit { font-size: 8px; text-transform: uppercase; letter-spacing: .18em; color: #a6a6a6; }
 /* Original ticket CTA: Orbitron, deep red, corner frame and glow. */
-.winter-notify { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 60px; max-width: 100%; padding: 20px 48px; background: #8b0000; color: #fff; text-decoration: none; text-transform: uppercase; font-family: var(--font-orbitron), sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3em; transition: background .3s, transform .3s; animation: ticketGlow 4s ease-in-out infinite; }
+.winter-notify { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 60px; max-width: 100%; padding: 20px 48px; background: #8b0000; color: #fff; text-decoration: none; text-transform: uppercase; font-family: var(--font-orbitron), sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3em; transition: background .3s, transform .3s; box-shadow: 0 0 8px rgba(200,0,0,.3); }
+/* Glow breathes by fading a pre-drawn peak shadow (compositor-only opacity)
+   instead of animating box-shadow, which repainted every frame. */
+.winter-notify-glow { position: absolute; inset: 0; pointer-events: none; box-shadow: 0 0 25px rgba(200,0,0,.5), 0 0 60px rgba(139,0,0,.2); opacity: 0; will-change: opacity; animation: ticketGlow 4s ease-in-out infinite; }
 .winter-notify::before { content: ""; position: absolute; inset: -1px; pointer-events: none; background: linear-gradient(#ff2a2a99,#ff2a2a99) left top/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) left top/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) right top/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) right top/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) left bottom/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) left bottom/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) right bottom/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) right bottom/1px 16px; background-repeat: no-repeat; }
 .winter-notify::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,.08) 50%), linear-gradient(90deg, rgba(255,0,0,.02), rgba(0,255,0,.01), rgba(0,0,255,.02)); background-size: 100% 2px, 3px 100%; pointer-events: none; }
 .winter-notify:hover { background: #a00000; transform: scale(1.05); }
-@keyframes ticketGlow { 0%, 100% { box-shadow: 0 0 8px rgba(200,0,0,.3); } 50% { box-shadow: 0 0 25px rgba(200,0,0,.5), 0 0 60px rgba(139,0,0,.2); } }
+@keyframes ticketGlow { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 .winter-notify:focus-visible, .winter-motion:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
 .winter-frame { position: absolute; inset: 25px; pointer-events: none; animation: quiet-in 1.5s 3.5s both; }
 .winter-frame i { position: absolute; width: 13px; height: 13px; border-color: #ffffff35; border-style: solid; }
@@ -95,7 +98,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .gallery-return { position: absolute; z-index: 12; top: max(12px, env(safe-area-inset-top)); left: calc(50% - 24px); display: grid; place-items: center; width: 48px; height: 44px; border: 0; color: #e52424; background: transparent; cursor: pointer; }
 .gallery-return svg { width: 24px; height: 16px; }
 .gallery-stage { position: relative; min-height: 0; display: grid; place-items: center; perspective: 1000px; }
-.gallery-card { position: absolute; top: 50%; left: 50%; margin: 0; margin-top: calc(var(--photo-height) / -2); margin-left: calc(var(--photo-width) / -2); width: var(--photo-width); height: var(--photo-height); --photo-height: min(71dvh, 880px); --photo-width: min(43vw, calc(var(--photo-height) * .75)); padding: 0; border: 1px solid #ffffff20; background: #111; overflow: hidden; box-shadow: 0 20px 55px #000a; cursor: grab; -webkit-user-select: none; user-select: none; touch-action: none; }
+.gallery-card { position: absolute; top: 50%; left: 50%; margin: 0; margin-top: calc(var(--photo-height) / -2); margin-left: calc(var(--photo-width) / -2); width: var(--photo-width); height: var(--photo-height); --photo-height: min(71dvh, 880px); --photo-width: min(43vw, calc(var(--photo-height) * .75)); padding: 0; border: 1px solid #ffffff20; background: #111; overflow: hidden; box-shadow: 0 20px 55px #000a; will-change: transform; cursor: grab; -webkit-user-select: none; user-select: none; touch-action: none; }
 .gallery-card:active { cursor: grabbing; }
 .gallery-card img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .58; transition: opacity .7s, filter .7s; filter: saturate(.7); pointer-events: none; }
 .gallery-card.is-center { border-color: #ffffff55; }

@@ -83,9 +83,15 @@ export default function FestivalExperience({ children }: { children: ReactNode }
         if (!card) return;
         // Recycle only outside the viewport so the loop has no visible seam.
         const offset = wrap(photoIndex - position.current + GALLERY.length / 2) - GALLERY.length / 2;
+        const hidden = Math.abs(offset) > 3;
+        // Hidden cards only need their final position written once.
+        if (hidden && card.style.visibility === "hidden") return;
         card.style.transform = `translateX(${offset * 106}%)`;
-        card.style.visibility = Math.abs(offset) > 3 ? "hidden" : "visible";
+        card.style.visibility = hidden ? "hidden" : "visible";
       });
+      // Nothing moves while the landing card covers the deck — stop looping
+      // (the effect restarts when the gallery is opened again).
+      if (!section) return;
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);

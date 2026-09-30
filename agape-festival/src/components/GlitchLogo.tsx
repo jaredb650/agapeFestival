@@ -50,6 +50,9 @@ const GRID_SIZE = 64;
 const DECAY = 0.96;
 const RADIUS = 0.15;
 const STRENGTH = 1.0;
+// Below this the displacement is invisible (≤0.0002% UV shift) — the field is
+// zeroed and the canvas stops rendering until the next touch.
+const REST_EPSILON = 1e-3;
 
 // ---------- Inner Mesh (lives inside Canvas) ----------
 function GlitchLogoMesh({
@@ -63,6 +66,7 @@ function GlitchLogoMesh({
 }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const texture = useTexture(imageSrc);
+  const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => { texture.colorSpace = THREE.SRGBColorSpace; onReady(); }, [texture, onReady]);
 
@@ -96,6 +100,7 @@ function GlitchLogoMesh({
         current.vY = y - current.prevY;
       }
       current.inside = inside;
+      if (inside) invalidate();
       return { x, y, inside };
     };
     const down = (event: PointerEvent) => {
@@ -125,7 +130,7 @@ function GlitchLogoMesh({
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", end);
     };
-  }, [containerRef]);
+  }, [containerRef, invalidate]);
 
   // Create the DataTexture (displacement map)
   const dataTexture = useMemo(() => {
@@ -155,7 +160,9 @@ function GlitchLogoMesh({
 
   // Per-frame: paint mouse velocity into DataTexture + decay
   // Interpolates between prev and current position so fast swipes leave a trail
-  useFrame((_, delta) => {
+  // The canvas uses frameloop="demand": this only runs while a touch is
+  // painting or the trail is still decaying, then the loop goes idle.
+  useFrame((state, delta) => {
     const data = dataTexture.image.data as Float32Array;
     const m = mouse.current;
 
@@ -165,7 +172,8 @@ function GlitchLogoMesh({
     const dist = Math.sqrt(dx * dx + dy * dy);
     const steps = Math.min(32, Math.max(1, Math.floor(dist / 0.01))); // ~1 step per 1% of UV space
 
-    for (let s = 0; s < steps; s++) {
+    // Painting only applies while the pointer is inside the logo.
+    for (let s = 0; m.inside && s < steps; s++) {
       const t = steps === 1 ? 1 : s / (steps - 1);
       const mx = m.prevX + dx * t;
       const my = m.prevY + dy * t;
@@ -207,11 +215,16 @@ function GlitchLogoMesh({
     }
 
     // Decay all values toward zero
+    const decay = Math.pow(DECAY, Math.min(delta, .05) * 60);
+    let peak = 0;
     for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
       const idx = i * 4;
-      data[idx] *= Math.pow(DECAY, Math.min(delta, .05) * 60);
-      data[idx + 1] *= Math.pow(DECAY, Math.min(delta, .05) * 60);
+      data[idx] *= decay;
+      data[idx + 1] *= decay;
+      peak = Math.max(peak, Math.abs(data[idx]), Math.abs(data[idx + 1]));
     }
+    const settled = peak < REST_EPSILON && !m.inside;
+    if (settled) data.fill(0);
 
     // Dampen velocity when mouse is stationary
     m.vX *= Math.pow(.9, Math.min(delta, .05) * 60);
@@ -220,6 +233,7 @@ function GlitchLogoMesh({
     m.prevY = m.y;
 
     dataTexture.needsUpdate = true;
+    if (!settled) state.invalidate();
   });
 
   // Contain the full image on both axes, including during viewport changes.
@@ -274,7 +288,7 @@ export default function GlitchLogo({ imageSrc }: { imageSrc: string }) {
       <img src={imageSrc} alt="ÄGAPĒ Festival" width={586} height={310} draggable={false} fetchPriority="high" />
       {enabled && !failed && <div className="glitch-logo-canvas" aria-hidden="true">
         <LogoBoundary onFailure={() => setFailed(true)}>
-          <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 1.5]}
+          <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 1.5]} frameloop="demand"
             // Ignore ancestor scale/glitch transforms when sizing the drawing surface.
             resize={{ offsetSize: true }}
             style={{ width: "100%", height: "100%" }}

@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 };
 
 const title = "ÄGAPĒ Festival — Winter Edition | Feb 19–20, 2027";
-const description = "ÄGAPĒ Festival returns to New York for Winter Edition, February 19–20, 2027. Sign up for announcements and festival updates.";
+const description = "ÄGAPĒ Festival returns to New York for Winter Edition, February 19–20, 2027. Tickets on sale now.";
 export const metadata: Metadata = {
   metadataBase: new URL("https://agape-festival.com"),
   title, description,

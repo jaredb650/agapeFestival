@@ -120,9 +120,9 @@ export default function Home() {
         <div className="winter-reveal">
           <div className="winter-divider" aria-hidden="true" />
           <Countdown />
-          <a className="winter-notify" href="https://laylo.com/agapenyc/GHSBKw" target="_blank" rel="noopener noreferrer">
+          <a className="winter-notify" href="https://dice.fm/partner/tickets/event/6dyng3-gap-winter-festival-19th-feb-industry-city-new-york-city-tickets" target="_blank" rel="noopener noreferrer">
             <span className="winter-notify-glow" aria-hidden="true" />
-            Get notified
+            Get tickets
           </a>
         </div>
       </section>

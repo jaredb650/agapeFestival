@@ -1,0 +1,569 @@
+/* ==========================================================================
+   ÄGAPĒ WINTER — design tokens + component styles
+   "The flyer, as a website."
+
+   Scope: tokens live on `.winter` (put it on the page root). Every class is
+   prefixed `w-` and every keyframe `w-`, so nothing here touches the current
+   live page (`.winter-*` classes in globals.css).
+
+   Rule of the accent: ice/volt blue appears ONLY on interactive or selected
+   things (CTA fill, focus, hover, the selected tile, the active window).
+   Everything else stays in the flyer's greys.
+   Full usage notes: context/winter-redesign/design-system.md
+   ========================================================================== */
+
+.winter {
+  /* ---- Colour (sampled from story-9x16_1080x1920.jpg) ---- */
+  --w-ink: #04060a;        /* flyer blacks, page background */
+  --w-deep: #1b212c;       /* fog shadows, panel fill */
+  --w-steel: #313743;      /* tower mid-tones, raised chrome */
+  --w-fog: #737c8b;        /* fogged sky; decorative + large text only on --w-deep */
+  --w-mist: #a7afba;       /* secondary text (AA on ink, deep and steel) */
+  --w-frost: #e9ebec;      /* the flyer's off-white type; primary text */
+  --w-steel-blue: #5a6f89; /* the lit blue of the tower; decoration only */
+
+  /* Accent (Y2K refs). Interactive / selected only. */
+  --w-ice: #9cc8ff;
+  --w-volt: #3d6bff;
+  --w-volt-deep: #1e3bb8;
+  --w-glow: rgba(61, 107, 255, 0.45);
+  --w-accent-grad: linear-gradient(180deg, var(--w-ice) 0%, var(--w-volt) 100%);
+  --w-accent-line: linear-gradient(90deg, var(--w-ice) 0%, var(--w-volt) 100%);
+
+  /* Lines */
+  --w-line: rgba(233, 235, 236, 0.08);
+  --w-line-strong: rgba(233, 235, 236, 0.18);
+  --w-bracket: rgba(233, 235, 236, 0.34);
+  --w-bracket-accent: rgba(156, 200, 255, 0.85);
+
+  /* ---- Type families (variables come from components/winter/fonts.ts) ---- */
+  /* var() fallbacks matter: an undefined variable without one invalidates the whole stack. */
+  --w-font-display: var(--font-display, "Arial Narrow"), var(--font-display-ext, "Arial Narrow"), "Arial Narrow", sans-serif;
+  --w-font-hud: var(--font-hud, var(--font-orbitron, sans-serif)), sans-serif;
+  --w-font-body: var(--font-body, var(--font-outfit, system-ui)), system-ui, sans-serif;
+  --w-font-pixel: var(--font-pixel, "Chonky Pixels"), "Chonky Pixels", monospace;
+
+  /* ---- Type scale (fluid, 390 → 1440) ---- */
+  --w-fs-display: clamp(3.25rem, 2.1rem + 4.9vw, 7rem); /* 52 → 112 */
+  --w-fs-h1: clamp(2.125rem, 1.35rem + 3.3vw, 4.5rem);  /* 34 → 72 */
+  --w-fs-h2: clamp(1.625rem, 1.15rem + 2vw, 3rem);      /* 26 → 48 */
+  --w-fs-h3: clamp(1.25rem, 1.05rem + 0.85vw, 1.75rem); /* 20 → 28 */
+  /* Lineup board: scales with the viewport so the flyer's line breaks survive on phones. */
+  --w-fs-lineup: clamp(1rem, 0.1rem + 4.6vw, 3rem);      /* 19.5 at 390 → 48 */
+  --w-fs-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); /* 17 → 20 */
+  --w-fs-body: 1rem;
+  --w-fs-small: 0.875rem;
+  --w-fs-micro: 0.6875rem; /* 11px HUD labels */
+  --w-fs-nano: 0.5625rem;  /* 9px decorative chrome only */
+
+  /* ---- Spacing (4px base; use only these) ---- */
+  --w-s-1: 4px;
+  --w-s-2: 8px;
+  --w-s-3: 12px;
+  --w-s-4: 16px;
+  --w-s-5: 24px;
+  --w-s-6: 32px;
+  --w-s-7: 48px;
+  --w-s-8: 64px;
+  --w-s-9: 96px;
+  --w-s-10: 128px;
+  --w-gutter: clamp(16px, 4vw, 48px);
+  --w-section-y: clamp(80px, 9vw, 128px);
+  --w-max: 1200px;
+
+  /* ---- Motion ---- */
+  --w-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --w-ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --w-dur-fast: 0.18s;
+  --w-dur: 0.3s;
+  --w-dur-slow: 0.6s;
+
+  /* ---- Layers ---- */
+  --w-z-content: 1;
+  --w-z-chrome: 20;
+  --w-z-grain: 60;
+
+  background: var(--w-ink);
+  color: var(--w-frost);
+  font-family: var(--w-font-body);
+  font-size: var(--w-fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+.winter ::selection { background: var(--w-volt); color: var(--w-frost); }
+
+/* ==========================================================================
+   Layout helpers
+   ========================================================================== */
+.w-container { width: 100%; max-width: var(--w-max); margin-inline: auto; padding-inline: var(--w-gutter); }
+.w-section { padding-block: var(--w-section-y); position: relative; }
+.w-stack > * + * { margin-top: var(--w-stack, var(--w-s-5)); }
+.w-hairline { height: 1px; border: 0; margin: 0; background: linear-gradient(90deg, transparent, var(--w-line) 20%, var(--w-line) 80%, transparent); }
+.w-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ==========================================================================
+   Typography
+   Display = flyer lineup face stand-in. Heavy weight + opsz 12 keeps the ink
+   traps open; slight width condensing matches the flyer's set width. The
+   1px same-colour text-shadow reproduces the flyer's soft, slightly bled type.
+   ========================================================================== */
+.w-display,
+.w-h1,
+.w-h2,
+.w-h3 {
+  font-family: var(--w-font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 12, "wdth" 88;
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: -0.012em;
+  color: var(--w-frost);
+  text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
+  margin: 0;
+  text-wrap: balance;
+}
+.w-display { font-size: var(--w-fs-display); line-height: 0.88; }
+.w-h1 { font-size: var(--w-fs-h1); }
+.w-h2 { font-size: var(--w-fs-h2); line-height: 0.96; }
+.w-h3 { font-size: var(--w-fs-h3); line-height: 1; font-variation-settings: "opsz" 14, "wdth" 92; }
+/* Big hero type gets the flyer's softness a touch stronger. */
+.w-soft { text-shadow: 0 0 1.5px rgba(233, 235, 236, 0.55), 0 0 18px rgba(4, 6, 10, 0.6); }
+
+.w-lead { font-size: var(--w-fs-lead); line-height: 1.55; color: var(--w-mist); font-weight: 300; max-width: 38em; margin: 0; }
+.w-body { font-size: var(--w-fs-body); line-height: 1.65; color: var(--w-mist); margin: 0; max-width: 62ch; }
+.w-small { font-size: var(--w-fs-small); line-height: 1.55; color: var(--w-mist); margin: 0; }
+.w-pixel { font-family: var(--w-font-pixel); letter-spacing: 0.04em; line-height: 1.8; }
+
+.w-section-heading { display: flex; flex-direction: column; align-items: flex-start; gap: var(--w-s-5); }
+.w-section-heading[data-align="center"] { align-items: center; text-align: center; }
+.w-section-heading[data-align="center"] .w-lead { margin-inline: auto; }
+
+/* Lineup board: echoes the flyer's centred block of names with • separators. */
+.w-lineup {
+  font-family: var(--w-font-display);
+  font-weight: 800;
+  font-variation-settings: "opsz" 12, "wdth" 90;
+  text-transform: uppercase;
+  font-size: var(--w-fs-lineup);
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  text-align: center;
+  text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.w-lineup__line { display: block; }
+.w-lineup__sep { display: inline-block; margin-inline: 0.22em; opacity: 0.9; }
+
+/* ==========================================================================
+   HUD micro-labels (Orbitron / Chonky Pixels)
+   ========================================================================== */
+.w-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--w-s-3);
+  font-family: var(--w-font-hud);
+  font-size: var(--w-fs-micro);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--w-mist);
+}
+.w-hud[data-tone="frost"] { color: var(--w-frost); }
+.w-hud[data-tone="fog"] { color: var(--w-fog); }
+.w-hud[data-tone="ice"] { color: var(--w-ice); }
+.w-hud[data-font="pixel"] { font-family: var(--w-font-pixel); letter-spacing: 0.08em; font-size: 0.8125rem; }
+.w-hud[data-size="nano"] { font-size: var(--w-fs-nano); letter-spacing: 0.26em; }
+.w-hud__idx { color: var(--w-fog); font-variant-numeric: tabular-nums; letter-spacing: 0.12em; }
+.w-hud__rule { width: 24px; height: 1px; background: currentColor; opacity: 0.4; }
+
+/* ==========================================================================
+   Frame — the Sept corner brackets. One pseudo-element, no extra DOM.
+   ========================================================================== */
+.w-frame { position: relative; --w-frame-c: var(--w-bracket); --w-frame-s: 12px; --w-frame-o: -1px; }
+.w-frame[data-variant="hairline"] { box-shadow: inset 0 0 0 1px var(--w-line); }
+.w-frame[data-accent] { --w-frame-c: var(--w-bracket-accent); --w-frame-s: 16px; }
+.w-frame[data-size="lg"] { --w-frame-s: 22px; }
+.w-frame::after,
+.w-btn--primary::before,
+.w-btn--secondary::before {
+  content: "";
+  position: absolute;
+  inset: var(--w-frame-o, -1px);
+  pointer-events: none;
+  z-index: 3;
+  background:
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) left top / var(--w-frame-s) 1px,
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) left top / 1px var(--w-frame-s),
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) right top / var(--w-frame-s) 1px,
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) right top / 1px var(--w-frame-s),
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) left bottom / var(--w-frame-s) 1px,
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) left bottom / 1px var(--w-frame-s),
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) right bottom / var(--w-frame-s) 1px,
+    linear-gradient(var(--w-frame-c), var(--w-frame-c)) right bottom / 1px var(--w-frame-s);
+  background-repeat: no-repeat;
+  transition: filter var(--w-dur-fast) ease, inset var(--w-dur) var(--w-ease);
+}
+/* Bracket flicker for hoverable frames (cards, tiles). */
+@keyframes w-flicker { 0%, 100% { filter: brightness(2.2); } 25% { filter: brightness(1); } 50% { filter: brightness(2.2); } 75% { filter: brightness(1); } }
+.w-frame[data-interactive]:hover::after { animation: w-flicker 0.25s linear; filter: brightness(2.2); }
+
+/* ==========================================================================
+   Buttons
+   Primary = the Sept ticket CTA rebuilt in volt: solid fill, ice corner
+   brackets standing off the fill, breathing glow (opacity-only), CRT
+   scanlines, hover scale.
+   ========================================================================== */
+.w-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--w-s-4);
+  max-width: 100%;
+  border: 0;
+  margin: 0;
+  background: none;
+  color: var(--w-frost);
+  font-family: var(--w-font-hud);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--w-dur) var(--w-ease), background-color var(--w-dur) ease, color var(--w-dur-fast) ease, box-shadow var(--w-dur) ease;
+}
+/* Trailing letter-spacing pushes text off-centre; pull it back. */
+.w-btn__label { margin-right: -0.3em; position: relative; z-index: 2; }
+.w-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 8px; }
+.w-btn[aria-disabled="true"], .w-btn:disabled { opacity: 0.45; pointer-events: none; }
+
+.w-btn[data-size="sm"] { min-height: 44px; padding: 12px 24px; font-size: 0.6875rem; }
+.w-btn[data-size="md"] { min-height: 52px; padding: 16px 32px; }
+.w-btn[data-size="lg"] { min-height: 60px; padding: 20px 48px; }
+
+.w-btn--primary {
+  --w-frame-c: var(--w-bracket-accent);
+  --w-frame-s: 14px;
+  --w-frame-o: -7px;
+  background: linear-gradient(180deg, #4a76ff 0%, #2c52e6 50%, #1e3bb8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(156, 200, 255, 0.75),
+    inset 0 -1px 0 rgba(4, 6, 10, 0.45),
+    0 0 10px rgba(61, 107, 255, 0.3);
+  text-shadow: 0 1px 0 rgba(4, 6, 10, 0.35);
+}
+/* CRT scanlines over the fill. */
+.w-btn--primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(rgba(4, 6, 10, 0) 50%, rgba(4, 6, 10, 0.14) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.025), rgba(0, 255, 0, 0.012), rgba(0, 0, 255, 0.03));
+  background-size: 100% 2px, 3px 100%;
+}
+.w-btn__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: 0 0 26px var(--w-glow), 0 0 64px rgba(61, 107, 255, 0.2);
+  opacity: 0;
+  will-change: opacity;
+  animation: w-breathe 4s ease-in-out infinite;
+}
+@keyframes w-breathe { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+.w-btn--primary:hover { transform: scale(1.05); background: linear-gradient(180deg, #5a84ff 0%, #2e58ec 50%, #2142c0 100%); }
+.w-btn--primary:hover::before { inset: -9px; }
+.w-btn--primary:active { transform: scale(1.02); }
+
+.w-btn--secondary {
+  --w-frame-c: rgba(233, 235, 236, 0.5);
+  --w-frame-s: 10px;
+  background: rgba(27, 33, 44, 0.6);
+  box-shadow: inset 0 0 0 1px var(--w-line-strong);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.w-btn--secondary:hover { color: var(--w-ice); --w-frame-c: var(--w-ice); box-shadow: inset 0 0 0 1px rgba(156, 200, 255, 0.35); }
+
+.w-btn--ghost {
+  color: var(--w-mist);
+  padding-inline: 4px !important;
+}
+.w-btn--ghost .w-btn__label::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0.3em;
+  bottom: -6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0.25);
+  transform-origin: left;
+  opacity: 0.6;
+  transition: transform var(--w-dur) var(--w-ease), opacity var(--w-dur) ease;
+}
+.w-btn--ghost:hover { color: var(--w-frost); }
+.w-btn--ghost:hover .w-btn__label::after { transform: scaleX(1); opacity: 1; }
+
+.w-btn--link {
+  min-height: 44px;
+  padding: 0;
+  gap: var(--w-s-3);
+  font-weight: 400;
+  font-size: var(--w-fs-micro);
+  color: var(--w-frost);
+}
+.w-btn__arrow { width: 22px; height: 10px; flex: none; transition: transform var(--w-dur) var(--w-ease), color var(--w-dur-fast) ease; position: relative; z-index: 2; }
+.w-btn--link:hover { color: var(--w-ice); }
+.w-btn--link:hover .w-btn__arrow { transform: translateX(6px); }
+
+/* ==========================================================================
+   GlassWindow — the "skinned app window" (Y2K chrome) for artist select and
+   info panels. Steel skin is quiet; chrome skin is the silver bevel bar from
+   the references. data-active = selected/focused window (accent underline + LED).
+   ========================================================================== */
+.w-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(49, 55, 67, 0.5) 0%, rgba(27, 33, 44, 0.78) 38%, rgba(16, 20, 27, 0.86) 100%);
+  border: 1px solid rgba(156, 200, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(233, 235, 236, 0.1),
+    inset 0 0 0 1px rgba(4, 6, 10, 0.5),
+    0 40px 80px -30px rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  isolation: isolate;
+}
+.w-window::before {
+  /* chrome sheen */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(233, 235, 236, 0.035) 44%, transparent 58%);
+}
+.w-window__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--w-s-3);
+  height: 30px;
+  padding: 0 var(--w-s-2) 0 var(--w-s-3);
+  flex: none;
+  position: relative;
+  background: linear-gradient(180deg, #3d4451 0%, #2a303b 50%, #1f2530 51%, #1b212c 100%);
+  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.16), 0 1px 0 rgba(4, 6, 10, 0.9);
+  color: var(--w-mist);
+  font-family: var(--w-font-hud);
+  font-size: var(--w-fs-nano);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.w-window[data-skin="chrome"] .w-window__bar {
+  background: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(4, 6, 10, 0.35), 0 1px 0 rgba(4, 6, 10, 0.9);
+  color: #0b0e14;
+  font-weight: 700;
+}
+.w-window__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-window__meta { color: inherit; opacity: 0.75; white-space: nowrap; }
+.w-window__led { width: 6px; height: 6px; flex: none; background: var(--w-steel); box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.6); }
+.w-window[data-active] .w-window__led { background: var(--w-ice); box-shadow: 0 0 6px var(--w-volt), inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
+.w-window[data-active] .w-window__bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--w-accent-line);
+}
+.w-window__controls { display: flex; gap: 4px; flex: none; }
+.w-window__controls i {
+  display: block;
+  width: 13px;
+  height: 11px;
+  background: linear-gradient(180deg, #4a5160, #2a303b);
+  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.22), 0 0 0 1px rgba(4, 6, 10, 0.8);
+}
+.w-window[data-skin="chrome"] .w-window__controls i {
+  background: linear-gradient(180deg, #f4f6f8, #a7aeb8);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(4, 6, 10, 0.55);
+}
+.w-window__body { position: relative; flex: 1; min-height: 0; padding: var(--w-s-5); }
+.w-window[data-flush] .w-window__body { padding: 0; }
+.w-window__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--w-s-4);
+  min-height: 24px;
+  padding: 4px var(--w-s-3);
+  border-top: 1px solid var(--w-line);
+  background: rgba(4, 6, 10, 0.45);
+  font-family: var(--w-font-hud);
+  font-size: var(--w-fs-nano);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--w-fog);
+}
+
+/* ==========================================================================
+   Redaction — the flyer's grainy white marker blob ("to be revealed").
+   The shape is an inline SVG (see Redaction.tsx); sized in em so it sits in a
+   line of display type like the flyer.
+   ========================================================================== */
+.w-redaction {
+  display: inline-block;
+  height: 0.84em;
+  vertical-align: -0.08em;
+  color: var(--w-frost);
+  line-height: 0;
+}
+.w-redaction svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* ==========================================================================
+   Scrim — darken behind text over the bright moments of the background.
+   ========================================================================== */
+.w-scrim { position: absolute; inset: 0; pointer-events: none; --w-scrim-a: 0.7; }
+.w-scrim[data-variant="bottom"] { background: linear-gradient(180deg, transparent 0%, rgba(4, 6, 10, calc(var(--w-scrim-a) * 0.6)) 45%, rgba(4, 6, 10, var(--w-scrim-a)) 100%); }
+.w-scrim[data-variant="top"] { background: linear-gradient(0deg, transparent 0%, rgba(4, 6, 10, calc(var(--w-scrim-a) * 0.6)) 45%, rgba(4, 6, 10, var(--w-scrim-a)) 100%); }
+.w-scrim[data-variant="radial"] { background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(4, 6, 10, var(--w-scrim-a)) 0%, rgba(4, 6, 10, calc(var(--w-scrim-a) * 0.5)) 55%, transparent 100%); }
+.w-scrim[data-variant="vignette"] { background: radial-gradient(ellipse at 50% 45%, transparent 20%, rgba(4, 6, 10, calc(var(--w-scrim-a) * 0.6)) 65%, rgba(4, 6, 10, var(--w-scrim-a)) 100%); }
+
+/* ==========================================================================
+   Grain — the flyer's brightness-only film grain. Grayscale noise tile at low
+   alpha, no blend mode (so it also shows on the blacks, like the flyer, and
+   costs one composited layer). Animated variant shifts the tile with a
+   stepped transform (compositor only), desktop + motion-OK only.
+   ========================================================================== */
+.w-grain {
+  position: fixed;
+  inset: 0;
+  z-index: var(--w-z-grain);
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+.w-grain::before {
+  content: "";
+  position: absolute;
+  inset: -120px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  opacity: var(--w-grain-a, 0.075);
+}
+@keyframes w-grain-shift {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-37px, 23px, 0); }
+  40% { transform: translate3d(41px, -61px, 0); }
+  60% { transform: translate3d(-83px, -17px, 0); }
+  80% { transform: translate3d(19px, 71px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .w-grain[data-animated]::before { animation: w-grain-shift 0.6s steps(1) infinite; will-change: transform; }
+}
+
+/* ==========================================================================
+   Marquee
+   ========================================================================== */
+.w-marquee { overflow: hidden; display: flex; user-select: none; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.w-marquee__track { display: flex; flex: none; min-width: max-content; animation: w-marquee var(--w-marquee-dur, 40s) linear infinite; }
+.w-marquee[data-reverse] .w-marquee__track { animation-direction: reverse; }
+.w-marquee[data-paused] .w-marquee__track { animation-play-state: paused; }
+.w-marquee__item { display: inline-flex; align-items: center; white-space: nowrap; }
+.w-marquee__sep { display: inline-block; margin-inline: var(--w-s-5); opacity: 0.5; }
+@keyframes w-marquee { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
+
+/* ==========================================================================
+   GlitchLayer — hover / tap bursts for floating flyer layers.
+   Base gets a stepped chromatic offset (two coloured drop-shadows of the
+   layer's alpha = RGB split along the cut-out edges). Two copies mounted
+   only during the burst run horizontal slice displacement. A scanline band
+   sweeps down. Hover (fine pointer) adds a faint ice glow.
+   ========================================================================== */
+.w-glitch { position: relative; display: block; isolation: isolate; --w-gx: 5px; }
+.w-glitch[data-intensity="subtle"] { --w-gx: 3px; }
+.w-glitch[data-intensity="strong"] { --w-gx: 9px; }
+.w-glitch__base { position: relative; transition: filter var(--w-dur-slow) var(--w-ease); }
+.w-glitch__base > img, .w-glitch__copy > img { display: block; }
+.w-glitch__copy { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.w-glitch__sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  background-image:
+    linear-gradient(to bottom, transparent 0%, rgba(233, 235, 236, 0.22) 47%, rgba(156, 200, 255, 0.26) 53%, transparent 100%),
+    repeating-linear-gradient(0deg, rgba(233, 235, 236, 0.07) 0 1px, transparent 1px 3px);
+  background-size: 100% 40%, 100% 3px;
+  background-repeat: no-repeat, repeat;
+  mix-blend-mode: screen;
+}
+@media (hover: hover) {
+  .w-glitch[data-hover] .w-glitch__base { filter: drop-shadow(0 0 22px rgba(156, 200, 255, 0.22)); }
+}
+.w-glitch[data-burst] .w-glitch__base { animation: w-rgb 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__copy--a { animation: w-slice-a 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__copy--b { animation: w-slice-b 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__sweep { animation: w-sweep 0.46s linear both; }
+@keyframes w-rgb {
+  0% { transform: translateX(calc(var(--w-gx) * 0.4)); filter: drop-shadow(calc(var(--w-gx) * -1) 0 0 rgba(255, 52, 80, 0.55)) drop-shadow(var(--w-gx) 0 0 rgba(120, 200, 255, 0.7)); }
+  18% { transform: translateX(calc(var(--w-gx) * -0.6)); filter: drop-shadow(var(--w-gx) 0 0 rgba(255, 52, 80, 0.5)) drop-shadow(calc(var(--w-gx) * -1.4) 0 0 rgba(120, 200, 255, 0.65)); }
+  38% { transform: translateX(calc(var(--w-gx) * 0.25)); filter: drop-shadow(calc(var(--w-gx) * -0.5) 0 0 rgba(255, 52, 80, 0.45)) drop-shadow(calc(var(--w-gx) * 0.5) 0 0 rgba(120, 200, 255, 0.6)) brightness(1.25); }
+  62% { transform: translateX(-1px); filter: drop-shadow(1px 0 0 rgba(255, 52, 80, 0.35)) drop-shadow(-1px 0 0 rgba(120, 200, 255, 0.45)); }
+  80%, 100% { transform: none; filter: none; }
+}
+@keyframes w-slice-a {
+  0% { clip-path: inset(12% 0 74% 0); transform: translateX(calc(var(--w-gx) * 2)); opacity: 1; }
+  16% { clip-path: inset(58% 0 30% 0); transform: translateX(calc(var(--w-gx) * -2.4)); }
+  32% { clip-path: inset(30% 0 62% 0); transform: translateX(calc(var(--w-gx) * 1.4)); }
+  50% { clip-path: inset(80% 0 6% 0); transform: translateX(calc(var(--w-gx) * -1)); }
+  66%, 100% { clip-path: inset(50% 0 50% 0); transform: none; opacity: 0; }
+}
+@keyframes w-slice-b {
+  0% { clip-path: inset(64% 0 22% 0); transform: translateX(calc(var(--w-gx) * -1.6)); opacity: 1; filter: brightness(1.5) saturate(0.6); }
+  22% { clip-path: inset(6% 0 86% 0); transform: translateX(calc(var(--w-gx) * 2.6)); }
+  40% { clip-path: inset(44% 0 44% 0); transform: translateX(calc(var(--w-gx) * -0.8)); }
+  58%, 100% { clip-path: inset(50% 0 50% 0); transform: none; opacity: 0; }
+}
+@keyframes w-sweep {
+  0% { opacity: 0.8; background-position: 0 -110%, 0 0; }
+  100% { opacity: 0; background-position: 0 220%, 0 0; }
+}
+
+/* ==========================================================================
+   Selection state (shared by tiles, tabs, day switch)
+   ========================================================================== */
+.w-selected { box-shadow: 0 0 0 1px var(--w-ice), 0 0 0 3px rgba(61, 107, 255, 0.35), 0 0 22px rgba(61, 107, 255, 0.25); }
+
+/* ==========================================================================
+   Reduced motion: kill decorative loops and bursts.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .w-btn__glow { animation: none; opacity: 0.5; }
+  .w-btn--primary:hover { transform: none; }
+  .w-marquee__track { animation: none; }
+  .w-glitch[data-burst] .w-glitch__base,
+  .w-glitch[data-burst] .w-glitch__copy--a,
+  .w-glitch[data-burst] .w-glitch__copy--b,
+  .w-glitch[data-burst] .w-glitch__sweep { animation: none; }
+  .w-glitch__copy { display: none; }
+  .w-frame[data-interactive]:hover::after { animation: none; }
+}

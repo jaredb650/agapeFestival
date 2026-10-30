@@ -6,3 +6,7 @@ out/
 next-env.d.ts
 .env*
 .vercel
+
+# Raw winter reel/animation masters (~200 MB each) — never commit; web encodes live in agape-festival/public
+agapeFest_Assets/WinterReel/
+agapeFest_Assets/WinterAnimation/

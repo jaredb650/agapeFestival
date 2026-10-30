@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Chonky Pixels";
+  src: url("/assets/fonts/ChonkyPixels.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+:root { color-scheme: dark; background: #000; color: #fff; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+body { margin: 0; background: #000; -webkit-font-smoothing: antialiased; }
+button, a { -webkit-tap-highlight-color: transparent; }
+.winter-landing { position: fixed; inset: 0; isolation: isolate; height: 100dvh; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); place-items: center; padding: 40px 24px 72px; background: #000; font-family: var(--font-orbitron), sans-serif; }
+.winter-background, .winter-vignette, .winter-scanlines { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.winter-background { opacity: 0; }
+.winter-background.is-ready { animation: background-in 2.4s 3.5s both; }
+.winter-background video, .winter-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.65) contrast(1.2); }
+.winter-background video { opacity: 0; transition: opacity .6s ease; }
+.winter-background video.is-playing { opacity: 1; }
+.winter-vignette { background: radial-gradient(ellipse at 50% 42%, transparent 10%, #0008 65%, #000e 100%), linear-gradient(#0004, #0003 50%, #000b); }
+.winter-scanlines { background: repeating-linear-gradient(0deg, transparent 0 3px, #0002 3px 4px); opacity: 0; animation: quiet-in 2s 3.5s both; }
+.winter-content { width: min(100%, 640px); margin: 0 auto; text-align: center; transform: scale(var(--content-scale, 1)); transform-origin: center; }
+.winter-logo { margin: 0 auto 32px; width: min(100%, 510px, 60svh); animation: logo-in .8s .6s both; }
+.winter-logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 22px #0009); }
+.winter-details { display: grid; justify-items: center; gap: 15px; text-transform: uppercase; }
+.winter-edition, .winter-date { margin: 0; font-weight: 400; }
+.winter-edition { font-family: "Chonky Pixels", monospace; font-size: clamp(20px, 4.4vw, 29px); letter-spacing: .055em; line-height: 1.5; }
+.winter-edition span, .winter-date span { display: block; white-space: nowrap; clip-path: inset(0 100% 0 0); }
+.winter-edition span { animation: type-in .85s steps(14, end) 1.5s both; }
+.winter-date { font-family: "Chonky Pixels", monospace; font-size: clamp(16px, 3.3vw, 21px); letter-spacing: .04em; line-height: 1.9; color: #d5d5d5; }
+.winter-date span { animation: type-in .6s steps(9, end) 2.45s both; }
+.winter-reveal { animation: quiet-in 1s 3.15s both; }
+.winter-divider { width: 30px; height: 1px; margin: 28px auto; background: #a42b2b; box-shadow: 0 0 14px #a42b2b66; }
+.winter-countdown { display: grid; grid-template-columns: repeat(4, 1fr); width: min(100%, 360px); margin: 0 auto 34px; }
+.winter-time { position: relative; display: grid; gap: 9px; }
+.winter-time + .winter-time::before { content: ":"; position: absolute; left: -3px; top: 3px; font-size: 23px; color: #ffffff40; }
+.winter-number { font-size: clamp(28px, 6vw, 36px); font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: .04em; }
+.winter-unit { font-size: 8px; text-transform: uppercase; letter-spacing: .18em; color: #a6a6a6; }
+/* Original ticket CTA: Orbitron, deep red, corner frame and glow. */
+.winter-notify { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 60px; max-width: 100%; padding: 20px 48px; background: #8b0000; color: #fff; text-decoration: none; text-transform: uppercase; font-family: var(--font-orbitron), sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .3em; transition: background .3s, transform .3s; box-shadow: 0 0 8px rgba(200,0,0,.3); }
+/* Glow breathes by fading a pre-drawn peak shadow (compositor-only opacity)
+   instead of animating box-shadow, which repainted every frame. */
+.winter-notify-glow { position: absolute; inset: 0; pointer-events: none; box-shadow: 0 0 25px rgba(200,0,0,.5), 0 0 60px rgba(139,0,0,.2); opacity: 0; will-change: opacity; animation: ticketGlow 4s ease-in-out infinite; }
+.winter-notify::before { content: ""; position: absolute; inset: -1px; pointer-events: none; background: linear-gradient(#ff2a2a99,#ff2a2a99) left top/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) left top/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) right top/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) right top/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) left bottom/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) left bottom/1px 16px, linear-gradient(#ff2a2a99,#ff2a2a99) right bottom/16px 1px, linear-gradient(#ff2a2a99,#ff2a2a99) right bottom/1px 16px; background-repeat: no-repeat; }
+.winter-notify::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,.08) 50%), linear-gradient(90deg, rgba(255,0,0,.02), rgba(0,255,0,.01), rgba(0,0,255,.02)); background-size: 100% 2px, 3px 100%; pointer-events: none; }
+.winter-notify:hover { background: #a00000; transform: scale(1.05); }
+@keyframes ticketGlow { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+.winter-notify:focus-visible, .winter-motion:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+.winter-frame { position: absolute; inset: 25px; pointer-events: none; animation: quiet-in 1.5s 3.5s both; }
+.winter-frame i { position: absolute; width: 13px; height: 13px; border-color: #ffffff35; border-style: solid; }
+.winter-frame i:nth-child(1) { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.winter-frame i:nth-child(2) { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.winter-frame i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.winter-frame i:nth-child(4) { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+.winter-motion { position: absolute; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: transparent; color: #aaa; cursor: pointer; animation: quiet-in 1.5s 3.5s both; }
+.winter-motion:hover { color: #fff; }
+@keyframes logo-in {
+  0% { opacity: 0; transform: scale(1.13); clip-path: inset(48% 0 48% 0); }
+  20% { opacity: .85; transform: translateX(-8px) scale(1.04); clip-path: inset(0 0 60% 0); }
+  36% { opacity: .5; transform: translateX(6px); clip-path: inset(30% 0 10% 0); }
+  55% { opacity: 1; transform: translateX(-3px); clip-path: inset(0); }
+  70% { opacity: .65; transform: translateX(2px); }
+  100% { opacity: 1; transform: none; clip-path: inset(0); }
+}
+@keyframes type-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes quiet-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes background-in { from { opacity: 0; } to { opacity: .65; } }
+@media (max-width: 600px) {
+  .winter-landing { padding: 40px 30px 72px; }
+  .winter-logo { margin-bottom: 30px; }
+  .winter-frame { inset: 16px; }
+}
+.glitch-logo { position: relative; width: 100%; aspect-ratio: 586 / 310; }
+.glitch-logo-interactive { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.glitch-logo > img { transition: opacity .15s; }
+.glitch-logo-ready > img { opacity: 0; }
+.glitch-logo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .15s; }
+.glitch-logo-ready .glitch-logo-canvas { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition: none !important; }
+}
+
+/* Two locked screens: the Winter card lifts off the photo deck. */
+.festival-experience { position: fixed; inset: 0; height: 100dvh; overflow: hidden; background: #090909; perspective: 1600px; touch-action: none; font-family: var(--font-orbitron), sans-serif; }
+.landing-card { position: absolute; inset: 0; z-index: 3; height: 100%; transform-origin: 50% 0; overflow: hidden; box-shadow: 0 30px 120px #000; }
+.landing-card .winter-landing { position: absolute; height: 100%; }
+.gallery-invitation { position: absolute; z-index: 5; bottom: max(13px, env(safe-area-inset-bottom)); left: calc(50% - 24px); width: 48px; height: 48px; display: grid; place-items: center; border: 0; background: none; color: #e52424; opacity: 0; pointer-events: none; transition: opacity .8s; cursor: pointer; }
+.gallery-invitation.is-visible { opacity: 1; pointer-events: auto; }
+.gallery-invitation.is-visible svg, .gallery-return svg { animation: pixel-down 2.2s ease-in-out infinite; filter: drop-shadow(0 0 8px #e5242440); }
+@keyframes pixel-down { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(4px); } }
+.gallery-screen { position: absolute; inset: 0; height: 100%; overflow: clip; background: #0a0a0a; display: grid; grid-template-rows: auto minmax(0,1fr) auto; padding: 30px 40px 26px; }
+.gallery-ambient { position: absolute; inset: -60px; background-size: cover; background-position: center; filter: blur(60px) saturate(.7); opacity: .2; transition: background-image .8s; pointer-events: none; }
+.gallery-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 25%, #0007); }
+.gallery-header, .gallery-controls { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+.gallery-eyebrow { font-size: 10px; letter-spacing: .2em; color: #aaa; }
+.gallery-header h2 { margin: 7px 0 0; font-family: "Chonky Pixels", monospace; text-transform: uppercase; font-size: clamp(20px,2.6vw,34px); font-weight: 400; line-height: 1.2; }
+.gallery-return { position: absolute; z-index: 12; top: max(12px, env(safe-area-inset-top)); left: calc(50% - 24px); display: grid; place-items: center; width: 48px; height: 44px; border: 0; color: #e52424; background: transparent; cursor: pointer; }
+.gallery-return svg { width: 24px; height: 16px; }
+.gallery-stage { position: relative; min-height: 0; display: grid; place-items: center; perspective: 1000px; }
+.gallery-card { position: absolute; top: 50%; left: 50%; margin: 0; margin-top: calc(var(--photo-height) / -2); margin-left: calc(var(--photo-width) / -2); width: var(--photo-width); height: var(--photo-height); --photo-height: min(71dvh, 880px); --photo-width: min(43vw, calc(var(--photo-height) * .75)); padding: 0; border: 1px solid #ffffff20; background: #111; overflow: hidden; box-shadow: 0 20px 55px #000a; will-change: transform; cursor: grab; -webkit-user-select: none; user-select: none; touch-action: none; }
+.gallery-card:active { cursor: grabbing; }
+.gallery-card img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: .58; transition: opacity .7s, filter .7s; filter: saturate(.7); pointer-events: none; }
+.gallery-card.is-center { border-color: #ffffff55; }
+.gallery-card.is-center img { opacity: 1; filter: none; }
+.gallery-photo-number { position: absolute; bottom: 15px; left: 15px; color: #fff; background: #0009; padding: 7px 9px; font-size: 10px; letter-spacing: .2em; }
+.gallery-controls { padding-top: 15px; }
+.gallery-caption { display: grid; gap: 8px; font-size: 9px; letter-spacing: .12em; color: #d3d3d3; }
+.gallery-caption span + span { color: #858585; font-size: 8px; }
+.gallery-navigation { display: flex; align-items: center; gap: 13px; }
+.gallery-navigation button { width: 44px; height: 44px; display: grid; place-items: center; background: #ffffff05; border: 1px solid #ffffff25; color: white; font-size: 21px; cursor: pointer; transition: background .2s; }
+.gallery-navigation button:hover { background: #8b0000; }
+.gallery-navigation .gallery-auto { border: 0; background: transparent; font-size: 15px; width: 32px; }
+.gallery-auto:disabled { opacity: .3; cursor: default; }
+.gallery-counter { font-size: 13px; font-variant-numeric: tabular-nums; min-width: 78px; text-align: center; }
+.gallery-counter span { color: #777; }
+.gallery-progress { position: absolute; z-index: 10; bottom: 0; left: 0; right: 0; display: flex; gap: 2px; }
+.gallery-progress span { flex: 1; height: 3px; background: #ffffff10; transition: background .3s; }
+.gallery-progress .active { background: #d32222; }
+.festival-experience button:focus-visible { outline: 2px solid white; outline-offset: 5px; }
+@media (max-width: 600px) {
+  .gallery-screen { padding: max(24px, env(safe-area-inset-top)) 20px max(28px, env(safe-area-inset-bottom)); }
+  .gallery-eyebrow { font-size: 8px; }
+  .gallery-header h2 { font-size: 20px; }
+  .gallery-header { padding-top: 32px; }
+  .gallery-card { --photo-height: min(65dvh, 680px); --photo-width: 78vw; }
+  .gallery-controls { flex-direction: column-reverse; gap: 18px; }
+  .gallery-caption { display: flex; gap: 10px; font-size: 7px; }
+  .gallery-caption span + span { font-size: 7px; }
+  .gallery-navigation { gap: 17px; }
+}
+@media (max-height: 560px) {
+  .gallery-screen { padding: 15px 24px; }
+  .gallery-header h2 { font-size: 18px; }
+  .gallery-card { --photo-height: 62dvh; --photo-width: min(40vw, calc(var(--photo-height) * .75)); }
+  .gallery-controls { flex-direction: row; gap: 8px; }
+  .gallery-caption { display: none; }
+  .gallery-navigation { margin-left: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-invitation.is-visible svg, .gallery-return svg { animation: none; }
+  .gallery-card, .gallery-card img { transition: none; }
+}

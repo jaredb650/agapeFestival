@@ -1,0 +1,28 @@
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
+import { Orbitron, Outfit } from "next/font/google";
+
+const orbitron = Orbitron({ subsets: ["latin"], weight: ["400", "700", "900"], display: "swap", variable: "--font-orbitron" });
+const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400"], display: "swap", variable: "--font-outfit" });
+
+export const viewport: Viewport = {
+  themeColor: "#000000", width: "device-width", initialScale: 1, colorScheme: "dark",
+};
+
+const title = "ÄGAPĒ Festival — Winter Edition | Feb 19–20, 2027";
+const description = "ÄGAPĒ Festival returns to New York for Winter Edition, February 19–20, 2027. Tickets on sale now.";
+export const metadata: Metadata = {
+  metadataBase: new URL("https://agape-festival.com"),
+  title, description,
+  icons: { icon: "/assets/logos/agape_favicon.png" },
+  alternates: { canonical: "/" },
+  openGraph: {
+    title, description, siteName: "ÄGAPĒ Festival", url: "https://agape-festival.com",
+    images: [{ url: "/assets/og-image.jpg", width: 1200, height: 630 }], type: "website",
+  },
+  twitter: { card: "summary_large_image", title, description, images: ["/assets/og-image.jpg"] },
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="en"><body className={`${orbitron.variable} ${outfit.variable}`}>{children}</body></html>;
+}

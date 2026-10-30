@@ -1,0 +1,436 @@
+{
+  "version": 1,
+  "generated": "2026-10-30",
+  "colorSpace": "sRGB (stills ICC-tagged; videos H.264 High 8-bit yuv420p, BT.709 tagged, no audio, faststart)",
+  "background": {
+    "source": "agapeFest_Assets/WinterAnimation/AGAPE WINTER FEST LINE UP 001 PLAIN V1.mp4 (2160x3840, 30fps, 20.03s, BT.709)",
+    "desktop": {
+      "src": "/assets/winter/bg/desktop.mp4",
+      "width": 1280,
+      "height": 2276,
+      "duration": 20.033,
+      "fps": 30.0,
+      "frames": 601,
+      "bytes": 13881270,
+      "gop": 4,
+      "bframes": 0,
+      "crf": 27.5,
+      "notes": "Portrait 1280x2276. Keyframe every 4 frames, no B-frames: currentTime seeks decode <=3 extra frames. Display object-fit: cover; can pan vertically."
+    },
+    "frames": {
+      "dir": "/assets/winter/bg/frames/",
+      "pattern": "f-{000}.webp",
+      "first": "f-000.webp",
+      "count": 151,
+      "width": 720,
+      "height": 1280,
+      "fps": 7.5,
+      "sourceFrameStep": 4,
+      "totalBytes": 4719058,
+      "timeOfIndex": "index * 4 / 30 seconds (index 150 = 20.0s, last frame)",
+      "notes": "Mobile canvas scrub. Zero-padded 3 digits, f-000..f-150."
+    },
+    "posterDesktop": {
+      "src": "/assets/winter/bg/poster-desktop.webp",
+      "width": 1280,
+      "height": 2276,
+      "bytes": 78200,
+      "time": 4.2,
+      "notes": "Antenna mast shot (frame 126), mean luma ~38/255. Not the t=0 frame (t=0 is black)."
+    },
+    "posterMobile": {
+      "src": "/assets/winter/bg/poster-mobile.webp",
+      "width": 720,
+      "height": 1280,
+      "bytes": 30636,
+      "time": 4.2
+    },
+    "duration": 20.033,
+    "brightRanges": [
+      {
+        "start": 0.067,
+        "end": 0.2,
+        "peakLuma": 134,
+        "level": "flash"
+      },
+      {
+        "start": 2.967,
+        "end": 3.7,
+        "peakLuma": 143,
+        "level": "strong"
+      },
+      {
+        "start": 6.267,
+        "end": 6.433,
+        "peakLuma": 76,
+        "level": "mild"
+      },
+      {
+        "start": 8.633,
+        "end": 9.333,
+        "peakLuma": 113,
+        "level": "strong"
+      },
+      {
+        "start": 11.967,
+        "end": 12.5,
+        "peakLuma": 162,
+        "level": "whiteout"
+      },
+      {
+        "start": 14.633,
+        "end": 15.2,
+        "peakLuma": 86,
+        "level": "strong"
+      },
+      {
+        "start": 15.633,
+        "end": 16.267,
+        "peakLuma": 77,
+        "level": "mild"
+      }
+    ],
+    "brightRangesNote": "Frame-average luma (0-255, ffmpeg signalstats YAVG) > 75. Typical frames sit at 25-65. Boost the text scrim inside these ranges.",
+    "cuts": [
+      0.067,
+      0.767,
+      2.967,
+      3.667,
+      7.267,
+      8.633,
+      9.333,
+      9.9,
+      11.967,
+      12.5,
+      14.633,
+      15.167
+    ],
+    "shots": [
+      {
+        "start": 0.0,
+        "end": 0.067,
+        "label": "black"
+      },
+      {
+        "start": 0.067,
+        "end": 0.767,
+        "label": "lattice column, interior lit"
+      },
+      {
+        "start": 0.767,
+        "end": 2.967,
+        "label": "platform underside (very dark)"
+      },
+      {
+        "start": 2.967,
+        "end": 3.667,
+        "label": "glitch burst: inverted mast flashes",
+        "glitch": true
+      },
+      {
+        "start": 3.667,
+        "end": 7.267,
+        "label": "antenna mast top, slow drift (best continuous scrub segment)"
+      },
+      {
+        "start": 7.267,
+        "end": 8.633,
+        "label": "lattice column close-up"
+      },
+      {
+        "start": 8.633,
+        "end": 9.333,
+        "label": "glitch burst: inverted lattice",
+        "glitch": true
+      },
+      {
+        "start": 9.333,
+        "end": 9.9,
+        "label": "lattice column close-up (cont.)"
+      },
+      {
+        "start": 9.9,
+        "end": 11.967,
+        "label": "platform underside (dark)"
+      },
+      {
+        "start": 11.967,
+        "end": 12.5,
+        "label": "fog whiteout glitch",
+        "glitch": true
+      },
+      {
+        "start": 12.5,
+        "end": 14.633,
+        "label": "lattice column, interior lights pulsing"
+      },
+      {
+        "start": 14.633,
+        "end": 15.167,
+        "label": "glitch: ghost-negative upside-down tower",
+        "glitch": true
+      },
+      {
+        "start": 15.167,
+        "end": 20.033,
+        "label": "upside-down antenna mast, slow drift; fades to near-black from ~19s"
+      }
+    ]
+  },
+  "hero": {
+    "type": "photo",
+    "credit": "Photo: @EMILYGUZZ",
+    "photographer": "Emily Guzz (@EMILYGUZZ)",
+    "event": "ÄGAPĒ Festival, September 5, 2026",
+    "artist": null,
+    "artistNote": "DJ not identifiable from filenames or site data (curly hair, moustache; not in the Sept press-kit headshots). Ask Andres before captioning a name.",
+    "source": "~/Downloads/9-5-26 AGAPE FESTIVAL/09052026_AGAPEFESTIVAL_@EMILYGUZZ-120.jpg",
+    "desktop": {
+      "src": "/assets/winter/hero/hero-2400.webp",
+      "width": 2400,
+      "height": 1600,
+      "bytes": 366432,
+      "aspect": "3:2",
+      "objectPosition": "45% 50%",
+      "alt": "A DJ raises one arm against icy blue stage light at ÄGAPĒ Festival"
+    },
+    "mobile": {
+      "src": "/assets/winter/hero/hero-1200.webp",
+      "width": 1200,
+      "height": 2133,
+      "bytes": 214952,
+      "aspect": "9:16",
+      "objectPosition": "40% 40%"
+    },
+    "alternates": [
+      {
+        "src": "/assets/winter/hero/alt-1.webp",
+        "width": 2400,
+        "height": 1600,
+        "bytes": 129934,
+        "aspect": "3:2",
+        "objectPosition": "62% 50%",
+        "source": "09052026_AGAPEFESTIVAL_@EMILYGUZZ-128.jpg",
+        "artist": null,
+        "credit": "Photo: @EMILYGUZZ",
+        "note": "Same DJ from behind, both hands up, facing the crowd; violet haze."
+      },
+      {
+        "src": "/assets/winter/hero/alt-2.webp",
+        "width": 2400,
+        "height": 1600,
+        "bytes": 153660,
+        "aspect": "3:2",
+        "objectPosition": "50% 40%",
+        "source": "FLASHGEA AGAPE FESTIVAL/09052026_AGAPEFESTIVAL_@EMILYGUZZ-197.jpg",
+        "artist": "Flash Gea",
+        "credit": "Photo: @EMILYGUZZ",
+        "note": "Flash Gea (Winter Day 2) at the decks, arm raised, blue beams."
+      }
+    ],
+    "mobileLight": {
+      "src": "/assets/winter/hero/hero-1080.webp",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 140700,
+      "aspect": "9:16",
+      "objectPosition": "40% 40%",
+      "notes": "Added by J4: same crop as hero-1200 (source x .2-.8, y .06-.86), 1080x1920 WebP q70 from the source JPG. Used on portrait screens to keep the mobile LCP path light (215 KB -> ~140 KB)."
+    }
+  },
+  "flyer": {
+    "coordinateSpace": {
+      "width": 2160,
+      "height": 3840,
+      "note": "Layer x/y/w/h are in this space; scale all by (rendered flyer width / 2160)."
+    },
+    "overlayFull": {
+      "src": "/assets/winter/flyer/overlay-full.webp",
+      "width": 2160,
+      "height": 3840,
+      "bytes": 498154,
+      "notes": "Repaired designer overlay incl. soft dark scrim (logo replaced, ONLYNUMBERS rebuilt)."
+    },
+    "overlayFull1080": {
+      "src": "/assets/winter/flyer/overlay-full-1080.webp",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 206476
+    },
+    "scrim": {
+      "src": "/assets/winter/flyer/scrim.webp",
+      "width": 2160,
+      "height": 3840,
+      "bytes": 191762,
+      "notes": "Black with alpha = designer's soft scrim. Composite under the text layers."
+    },
+    "textFull": {
+      "src": "/assets/winter/flyer/text-full.webp",
+      "width": 2160,
+      "height": 3840,
+      "bytes": 431404,
+      "notes": "All text, scrim removed, full 2160x3840 canvas."
+    },
+    "layers": {
+      "logos": {
+        "src": "/assets/winter/flyer/layers/logos.webp",
+        "x": 781,
+        "y": 957,
+        "width": 595,
+        "height": 239,
+        "bytes": 30784
+      },
+      "logo-mark": {
+        "src": "/assets/winter/flyer/layers/logo-mark.webp",
+        "x": 781,
+        "y": 957,
+        "width": 170,
+        "height": 239,
+        "bytes": 7168
+      },
+      "logo-festival": {
+        "src": "/assets/winter/flyer/layers/logo-festival.webp",
+        "x": 1021,
+        "y": 987,
+        "width": 355,
+        "height": 203,
+        "bytes": 24426
+      },
+      "title": {
+        "src": "/assets/winter/flyer/layers/title.webp",
+        "x": 413,
+        "y": 1292,
+        "width": 1342,
+        "height": 146,
+        "bytes": 46554
+      },
+      "day1-label": {
+        "src": "/assets/winter/flyer/layers/day1-label.webp",
+        "x": 977,
+        "y": 1522,
+        "width": 211,
+        "height": 92,
+        "bytes": 5290
+      },
+      "day1-names": {
+        "src": "/assets/winter/flyer/layers/day1-names.webp",
+        "x": 404,
+        "y": 1614,
+        "width": 1357,
+        "height": 266,
+        "bytes": 98378
+      },
+      "day2-label": {
+        "src": "/assets/winter/flyer/layers/day2-label.webp",
+        "x": 977,
+        "y": 1980,
+        "width": 244,
+        "height": 103,
+        "bytes": 5906
+      },
+      "day2-names": {
+        "src": "/assets/winter/flyer/layers/day2-names.webp",
+        "x": 333,
+        "y": 2083,
+        "width": 1494,
+        "height": 343,
+        "bytes": 176024
+      },
+      "date": {
+        "src": "/assets/winter/flyer/layers/date.webp",
+        "x": 567,
+        "y": 2513,
+        "width": 1024,
+        "height": 203,
+        "bytes": 39878
+      }
+    },
+    "layersNote": "Text-only (alpha = text coverage, grain kept in colour). 'logos' = both logos together; 'logo-mark' (Ä) and 'logo-festival' are the same pixels split for independent motion - use either 'logos' or the two sub-layers, not all three. Reassembly: scrim + logos + title + day1-label + day1-names + day2-label + day2-names + date at their x/y reproduces overlay-full (mean abs diff ~0.1/255).",
+    "storyFlyer": {
+      "src": "/assets/winter/flyer/flyer-story-1080.jpg",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 663838,
+      "source": "~/Downloads/AgapeFestWinter_Flyers_v3_OnlyNumbersFixed/digital/story-9x16_1080x1920.jpg"
+    },
+    "storyFlyerWebp": {
+      "src": "/assets/winter/flyer/flyer-story-1080.webp",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 163064
+    },
+    "backgroundStill": {
+      "src": "/assets/winter/flyer/bg-still-1080.webp",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 93910,
+      "source": "FlyerIngredients/STILLS/AGAPE 001 (0-00-13-11).png (Adobe RGB -> sRGB)",
+      "animationTime": 13.367,
+      "notes": "The v3 story flyer = this still + scrim + text layers (verified: mean abs diff 0.85/255 vs story-9x16_2160x3840.jpg). The designer's layout file sat on still 15-15, but v3 uses 13-11."
+    },
+    "scrimSmall": {
+      "src": "/assets/winter/flyer/scrim-540.webp",
+      "width": 540,
+      "height": 960,
+      "bytes": 26784,
+      "notes": "Added by J4 (page assembly): scrim.webp downscaled 4x (PIL LANCZOS, WebP q90/alpha 100). The scrim is a soft gradient, so it is visually identical at page sizes and ~1/10 the bytes."
+    },
+    "dateSmall": {
+      "src": "/assets/winter/flyer/layers/date-640.webp",
+      "width": 640,
+      "height": 127,
+      "bytes": 25326,
+      "notes": "Added by J4: the date scrawl layer at 640px wide (PIL LANCZOS, WebP q90/alpha 100) for the hero, where it shows at <=300 CSS px."
+    }
+  },
+  "og": {
+    "image": {
+      "src": "/assets/winter/og/og-1200x630.jpg",
+      "width": 1200,
+      "height": 630,
+      "bytes": 308194,
+      "source": "v3 digital/link-preview_1200x630.jpg"
+    }
+  },
+  "artists": {
+    "flash-gea": {
+      "name": "Flash Gea",
+      "headshot600": {
+        "src": "/assets/winter/artists/flash-gea/headshot-600.webp",
+        "width": 600,
+        "height": 600,
+        "bytes": 60926,
+        "aspect": "1:1"
+      },
+      "headshot1200": {
+        "src": "/assets/winter/artists/flash-gea/headshot-1200.webp",
+        "width": 1200,
+        "height": 1200,
+        "bytes": 139496,
+        "aspect": "1:1"
+      },
+      "clip": {
+        "src": "/assets/winter/artists/flash-gea/clip.mp4",
+        "width": 720,
+        "height": 1280,
+        "duration": 6.25,
+        "fps": 24.0,
+        "frames": 150,
+        "bytes": 1046240,
+        "sourceRange": [
+          2.75,
+          9.0
+        ],
+        "loop": true,
+        "notes": "From press-kit flashgea-video.mp4: back view at the decks, arms up, magenta light. Light denoise + CRF 29."
+      },
+      "clipPoster": {
+        "src": "/assets/winter/artists/flash-gea/clip-poster.webp",
+        "width": 720,
+        "height": 1280,
+        "bytes": 27124,
+        "notes": "First frame of clip.mp4"
+      }
+    }
+  }
+}

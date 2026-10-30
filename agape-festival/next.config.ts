@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
 
+// Cloudflare Pages branch previews get the artist select automatically.
+// GitHub Pages (the live site) never sets CF_PAGES, so it stays off there.
+const isCfBranchPreview =
+  process.env.CF_PAGES === "1" && process.env.CF_PAGES_BRANCH !== "main";
+
 const nextConfig: NextConfig = {
   output: "export",
+  env: {
+    NEXT_PUBLIC_SHOW_ARTIST_SELECT:
+      process.env.NEXT_PUBLIC_SHOW_ARTIST_SELECT ?? (isCfBranchPreview ? "1" : "0"),
+  },
   images: {
     unoptimized: true,
   },

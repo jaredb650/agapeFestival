@@ -70,3 +70,7 @@ Status: COLLECTING. Don't dispatch until Jared says go. Review build at http://l
 - **Mobile hamburger menu:** flips/unfolds with a badass mech/HUD animation, "like some shit out of Gundam… absolutely insane."
 - "The website itself should feel like art."
 - GO given ~18:35. Budget: ~2.5 h of unlimited parallel agents.
+
+## Decision (18:50): section order + lineup
+- Preview (profiler on): **artist profiler BEFORE the lineup**. The profiler is the fun explorable thing. Nobody is forced through it: right after it comes the plain lineup, easy to read, aesthetically pleasing, symmetrical, compact, all text fitting in one area.
+- Real site (main): leave it alone until the whole redesign is merged. Touching main = merging this branch.

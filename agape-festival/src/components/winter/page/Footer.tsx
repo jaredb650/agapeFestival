@@ -70,7 +70,7 @@ export function Footer({ links }: { links: { label: string; href: string }[] }) 
         <div className="wfoot__base">
           <p className="w-hud" data-tone="fog">{FOOTER.copyright}</p>
           <p className="w-hud" data-tone="fog">
-            Hero photo {HERO.credit.replace(/^Photo:\s*/, "")} · {FOOTER.origin}
+            {HERO.credit ? `Hero photo ${HERO.credit.replace(/^Photo:\s*/, "")} · ${FOOTER.origin}` : FOOTER.origin}
           </p>
           <a className="wfoot__meka" href={FOOTER.credit.url} target="_blank" rel="noopener noreferrer">
             <span className="w-hud" data-tone="fog">{FOOTER.credit.label}</span>

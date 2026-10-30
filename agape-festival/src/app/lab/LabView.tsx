@@ -25,7 +25,7 @@ const SWATCHES = [
 ] as const;
 const ACCENTS = [
   { token: "--w-ice", hex: "#9CC8FF", role: "Hover / focus / selected" },
-  { token: "--w-volt", hex: "#3D6BFF", role: "CTA fill · selected glow" },
+  { token: "--w-volt", hex: "#3D6BFF", role: "CTA edge light · selected glow" },
 ] as const;
 
 /** Distinct seeds per blob so neighbours don't look stamped. */
@@ -154,9 +154,9 @@ export function LabView({ flyer, poster, layers, flashGeaHeadshot }: LabMedia) {
 
         {/* ---------------- TYPE ---------------- */}
         <section className="w-section w-container lab-type">
-          <SectionHeading index="02" label="Type" title="Ink traps, heavy caps" size="h2">
-            Display: Bricolage Grotesque 800, opsz 12, wdth 88, standing in for the flyer face (likely ABC Whyte Inktrap) behind
-            <code> --font-display</code>.
+          <SectionHeading index="02" label="Type" title="Wide, heavy, tracked" size="h2">
+            Display: Orbitron black, the September heading face (display 900 at 0.12em, headings 800 at 0.08em), shared
+            with the HUD labels. Swap point: <code>--font-display</code> in fonts.ts.
           </SectionHeading>
           <dl className="lab-specimens">
             <div><dt className="w-hud" data-size="nano">w-display</dt><dd className="w-display w-soft">Ben Klock</dd></div>
@@ -183,7 +183,8 @@ export function LabView({ flyer, poster, layers, flashGeaHeadshot }: LabMedia) {
         {/* ---------------- CONTROLS ---------------- */}
         <section className="w-section w-container">
           <SectionHeading index="04" label="Controls" title="Buttons & frames" size="h2">
-            The primary is the September ticket button rebuilt in volt. One per view.
+            Hologram panes: chamfered ice glass, a 1px luminous edge, scanlines and the Sept corner brackets. Hover for
+            the sheen and the red/cyan split. One primary per view.
           </SectionHeading>
           <div className="lab-grid-2">
             <div className="lab-panel">

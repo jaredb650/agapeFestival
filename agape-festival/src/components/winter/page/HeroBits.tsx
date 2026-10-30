@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
+import { afterLoadIdle } from "./idle";
 import { withGsap } from "./loadGsap";
 import { GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
@@ -52,28 +53,72 @@ export function DaysOut({ startIso, label }: { startIso: string; label: string }
   );
 }
 
-function useMedia(query: string): boolean | null {
-  return useSyncExternalStore(
-    (cb) => {
-      const mq = window.matchMedia(query);
-      mq.addEventListener("change", cb);
-      return () => mq.removeEventListener("change", cb);
-    },
-    () => window.matchMedia(query).matches,
-    () => null,
-  );
-}
+// ---- Hero video ---------------------------------------------------------
+// The video and its pause control live in different parts of the hero (the
+// control can't sit inside the feathered, fading media box), so they share
+// this tiny store.
+type HeroVideoState = "off" | "waiting" | "playing" | "paused";
+let hvState: HeroVideoState = "off";
+let hvUserPaused = false;
+let hvEl: HTMLVideoElement | null = null;
+const hvSubs = new Set<() => void>();
+const setHvState = (s: HeroVideoState) => {
+  if (s === hvState) return;
+  hvState = s;
+  hvSubs.forEach((f) => f());
+};
+const subscribeHv = (cb: () => void) => {
+  hvSubs.add(cb);
+  return () => void hvSubs.delete(cb);
+};
+const useHvState = () => useSyncExternalStore(subscribeHv, () => hvState, () => "off" as HeroVideoState);
 
-/** Optional hero video over the photo: playing-gated opacity + first-tap rescue (iOS Low Power Mode). */
-export function HeroVideo({ video, portraitQuery }: { video: HeroVideoConfig; portraitQuery: string }) {
+/** Poster-first, decorative hero video. */
+export function HeroVideo({ video }: { video: HeroVideoConfig }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [src, setSrc] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
-  const reduced = useMedia("(prefers-reduced-motion: reduce)");
-  const portrait = useMedia(portraitQuery);
-  const src = reduced !== false ? null : portrait && video.srcMobile ? video.srcMobile : video.src;
+
+  // Decide once, after load: the poster is the LCP, the video never competes with it.
   useEffect(() => {
-    if (src) playWithRescue(ref.current);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (reduced.matches || conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return;
+    const portrait = window.matchMedia("(max-aspect-ratio: 3/4)").matches;
+    const cancel = afterLoadIdle(() => setSrc(portrait && video.srcMobile ? video.srcMobile : video.src), 200);
+    const onMotion = () => reduced.matches && setSrc(null);
+    reduced.addEventListener("change", onMotion);
+    return () => {
+      cancel();
+      reduced.removeEventListener("change", onMotion);
+    };
+  }, [video.src, video.srcMobile]);
+
+  // Play while the hero is on screen (until its media has faded out), else pause.
+  useEffect(() => {
+    const vid = ref.current;
+    const hero = document.getElementById("hero");
+    if (!src || !vid || !hero) return;
+    hvEl = vid;
+    setHvState("waiting");
+    let inView = true;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        inView = e.isIntersecting;
+        if (!inView) vid.pause();
+        else if (!hvUserPaused) playWithRescue(vid);
+      },
+      { rootMargin: "-50% 0px 0px 0px" },
+    );
+    io.observe(hero);
+    if (!hvUserPaused) playWithRescue(vid);
+    return () => {
+      io.disconnect();
+      if (hvEl === vid) hvEl = null;
+      setHvState("off");
+    };
   }, [src]);
+
   if (!src) return null;
   return (
     <video
@@ -84,15 +129,53 @@ export function HeroVideo({ video, portraitQuery }: { video: HeroVideoConfig; po
       muted
       loop
       playsInline
-      autoPlay
-      preload="metadata"
+      preload="auto"
       disablePictureInPicture
       aria-hidden="true"
       tabIndex={-1}
-      onPlaying={() => setPlaying(true)}
-      onPause={() => setPlaying(false)}
-      onError={() => setPlaying(false)}
+      onPlaying={() => {
+        setPlaying(true);
+        setHvState("playing");
+      }}
+      onPause={() => {
+        setPlaying(false);
+        setHvState("paused");
+      }}
+      onError={() => {
+        setPlaying(false);
+        setHvState("off");
+      }}
     />
+  );
+}
+
+/** Pause/play for the hero video (WCAG 2.2.2: motion longer than 5 s can be stopped). */
+export function HeroVideoToggle() {
+  const state = useHvState();
+  if (state === "off") return null;
+  const playing = state === "playing";
+  return (
+    <button
+      type="button"
+      className="whero__toggle"
+      aria-label={playing ? "Pause background video" : "Play background video"}
+      onClick={() => {
+        const vid = hvEl;
+        if (!vid) return;
+        if (playing) {
+          hvUserPaused = true;
+          vid.pause();
+        } else {
+          hvUserPaused = false;
+          vid.play().catch(() => {});
+        }
+      }}
+    >
+      <svg viewBox="0 0 10 10" aria-hidden="true">
+        {playing ? <path d="M1.5 1h2.4v8H1.5zM6.1 1h2.4v8H6.1z" fill="currentColor" /> : <path d="M2 1l7 4-7 4z" fill="currentColor" />}
+      </svg>
+      <span aria-hidden="true">{playing ? "Pause" : "Play"}</span>
+    </button>
   );
 }
 

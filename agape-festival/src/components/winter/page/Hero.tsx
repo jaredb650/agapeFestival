@@ -2,12 +2,12 @@ import type { CSSProperties } from "react";
 import { Button } from "@/components/winter/ui";
 import { WINTER, WINTER_DAYS } from "@/data/winter";
 import { FLYER, HERO, HERO_PORTRAIT_QUERY } from "./media";
-import { DaysOut, HeroExit, HeroLogo, HeroVideo } from "./HeroBits";
+import { DaysOut, HeroExit, HeroLogo, HeroVideo, HeroVideoToggle } from "./HeroBits";
 
 /**
- * Bottom lockup over the Sept DJ photo: logo, WINTER FESTIVAL on one line
- * (two on phones) kept below the performer's face, then CTA + the flyer's
- * hand-scrawled date. The media slot takes a video via HERO.video in media.ts.
+ * Bottom lockup over the hero media: logo, WINTER FESTIVAL on one line (two on
+ * phones), then CTA + the flyer's hand-scrawled date. The media is HERO in
+ * media.ts: a still (the LCP element) with an optional video over it.
  */
 export function Hero() {
   const [d1, d2] = WINTER_DAYS;
@@ -18,9 +18,9 @@ export function Hero() {
 
   return (
     <section id="hero" className="whero" aria-labelledby="hero-title" style={style}>
-      <div className="whero__media" data-hero-media>
-        <picture>
-          <source media={HERO_PORTRAIT_QUERY} srcSet={HERO.mobile.src} width={HERO.mobile.width} height={HERO.mobile.height} />
+      <div className="whero__media" data-hero-media data-kind={HERO.video ? "video" : "photo"}>
+        {HERO.mobile.src === HERO.desktop.src ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             className="whero__img"
             src={HERO.desktop.src}
@@ -29,8 +29,20 @@ export function Hero() {
             alt={HERO.alt}
             fetchPriority="high"
           />
-        </picture>
-        {HERO.video && <HeroVideo video={HERO.video} portraitQuery={HERO_PORTRAIT_QUERY} />}
+        ) : (
+          <picture>
+            <source media={HERO_PORTRAIT_QUERY} srcSet={HERO.mobile.src} width={HERO.mobile.width} height={HERO.mobile.height} />
+            <img
+              className="whero__img"
+              src={HERO.desktop.src}
+              width={HERO.desktop.width}
+              height={HERO.desktop.height}
+              alt={HERO.alt}
+              fetchPriority="high"
+            />
+          </picture>
+        )}
+        {HERO.video && <HeroVideo video={HERO.video} />}
         <div className="whero__shade" aria-hidden="true" />
       </div>
 
@@ -79,9 +91,16 @@ export function Hero() {
         </div>
       </div>
 
-      <p className="whero__credit" data-hero-meta>
-        {HERO.credit}
-      </p>
+      {HERO.credit && (
+        <p className="whero__credit" data-hero-meta>
+          {HERO.credit}
+        </p>
+      )}
+      {HERO.video && (
+        <div className="whero__meta" data-hero-meta>
+          <HeroVideoToggle />
+        </div>
+      )}
       <HeroExit />
     </section>
   );

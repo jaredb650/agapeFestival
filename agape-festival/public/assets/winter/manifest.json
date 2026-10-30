@@ -175,7 +175,28 @@
         "end": 20.033,
         "label": "upside-down antenna mast, slow drift; fades to near-black from ~19s"
       }
-    ]
+    ],
+    "placeholder": {
+      "dataUri": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAwICQsJCAwLCgsODQwOEh4UEhEREiUbHBYeLCcuLisnKyoxN0Y7MTRCNCorPVM+QkhKTk9OLztWXFVMW0ZNTkv/2wBDAQ0ODhIQEiQUFCRLMisyS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0v/wAARCAAgABIDASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAQCAwUH/8QAJBAAAgEEAQIHAAAAAAAAAAAAAQIAAwQRIRMFEjEyUYGRscH/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAVEQEBAAAAAAAAAAAAAAAAAAAAEf/aAAwDAQACEQMRAD8A5wVwwEnx5zGLi3OmxojB+ZbSokKVbbAzUQjxGEe4YRA3XUC3b2+xLVVSahGPN+TEub6o9NVZsHxwupC3u3pqVV2367EtSNvsEIm3UVDEdh0YRR//2Q==",
+      "width": 18,
+      "height": 32,
+      "notes": "Added by J5: poster-mobile at 18x32, JPEG q62, inlined as the background's base layer so the fixed tower is never plain black (before the poster, frames or video arrive). Too small to be an LCP candidate."
+    },
+    "segments": [
+      [
+        3.667,
+        7.267
+      ],
+      [
+        8.4,
+        9.867
+      ],
+      [
+        12.0,
+        18.9
+      ]
+    ],
+    "segmentsNote": "Added by J5: the footage the scroll scrub may show. Frame luma (mobile frames, phone crop) is under ~25/255 (reads as black under the vignette) at 0.8-2.93 s (platform underside), 10.0-11.87 s (underside again) and from 19.07 s (fade to black), and 7.47-8.27 s sits at 22-28. The scrub jumps across the gaps (as cuts, firing a glitch burst) instead of playing through them. Segment ends sit on scene cuts: 3.667, 7.267, 9.9 and 11.967 (whiteout)."
   },
   "hero": {
     "type": "photo",
@@ -237,6 +258,28 @@
       "objectPosition": "40% 40%",
       "notes": "Added by J4: same crop as hero-1200 (source x .2-.8, y .06-.86), 1080x1920 WebP q70 from the source JPG. Used on portrait screens to keep the mobile LCP path light (215 KB -> ~140 KB)."
     }
+  },
+  "heroVideo": {
+    "src": "/assets/videos/winter-kobosil.mp4",
+    "width": 1440,
+    "height": 1080,
+    "duration": 15.64,
+    "fps": 25,
+    "bytes": 11016464,
+    "audio": false,
+    "faststart": true,
+    "poster": {
+      "src": "/assets/videos/posters/winter-crowd.jpg",
+      "width": 1440,
+      "height": 1080,
+      "bytes": 65451,
+      "time": 6.5
+    },
+    "objectPosition": "50% 50%",
+    "objectPositionMobile": "41% 50%",
+    "credit": null,
+    "alt": "A packed warehouse crowd under tall factory windows, lit by a single stage beam",
+    "notes": "Hero video 'for now' (Jared, 2026-10-30): web encode of 05 KOBOSIL.mp4 (FRONTROW, not shot at ÄGAPĒ; the FRONTROW banner at ~12-14 s is accepted). Same file as the winter landing v1 background. Photographer/videographer unknown, so no credit is shown. objectPositionMobile keeps the DJ (x ~42-46% of the frame in the deck shots at 0, 11-15 s) inside a 390x844 portrait crop. Switch back to the photo hero with HERO = HERO_PHOTO in src/components/winter/page/media.ts."
   },
   "flyer": {
     "coordinateSpace": {

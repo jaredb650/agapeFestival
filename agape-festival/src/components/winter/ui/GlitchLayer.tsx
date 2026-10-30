@@ -1,17 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { cx } from "./cx";
 
 /** Dispatch on a GlitchLayer root (`.w-glitch`) to fire one burst from outside. */
 export const GLITCH_EVENT = "w-glitch-burst";
 
 export interface GlitchLayerProps {
-  /** Ideally one transparent <img> (a floating flyer layer). It is cloned twice while a burst runs. */
+  /** Ideally one transparent <img> (a floating flyer layer). Rendered twice: base + slice copy. */
   children: ReactNode;
   /** Offset scale of the RGB split and slices. Default "medium" (5px). */
   intensity?: "subtle" | "medium" | "strong";
-  /** React to hover / tap / click / focus. Default true. */
+  /** React to mouse hover, click/tap and keyboard focus. Default true. */
   interactive?: boolean;
   /** Fire an unprompted burst every ~N ms (±40%) while on screen. Off by default. */
   idleEvery?: number;
@@ -22,11 +22,31 @@ export interface GlitchLayerProps {
   style?: CSSProperties;
 }
 
+// Content scrolling under a resting mouse fires pointerenter; that is not a
+// hover and must not glitch (it was a burst per layer per scroll). One shared,
+// passive listener records the last scroll.
+let lastScroll = -1e9;
+let scrollWatchers = 0;
+const onScroll = () => {
+  lastScroll = performance.now();
+};
+function watchScroll() {
+  if (scrollWatchers++ === 0) window.addEventListener("scroll", onScroll, { passive: true });
+  return () => {
+    if (--scrollWatchers === 0) window.removeEventListener("scroll", onScroll);
+  };
+}
+
 /**
- * Hover/tap glitch for parallax flyer layers: stepped RGB split along the
- * layer's alpha edges, two horizontal slice copies, a scanline sweep, and a
- * faint ice glow while hovered (fine pointers). Touch: a tap fires one burst
- * and never blocks scrolling. Disabled under prefers-reduced-motion.
+ * Glitch bursts for floating flyer layers: the layer jitters, a red and a cyan
+ * silhouette (the layer's own alpha, via mask) split off its edges, one slice
+ * copy tears sideways and a scan band sweeps down.
+ *
+ * Built for scroll performance: the effect DOM is always present but
+ * `display: none` between bursts (no React render, no mount), a burst is one
+ * attribute toggle, and the motion is transform/opacity only. No filters, no
+ * blend modes, no isolation group. Mouse: real hover or click. Touch: tap
+ * (`click`), never the touch that starts a scroll. Off under reduced motion.
  */
 export function GlitchLayer({
   children,
@@ -39,85 +59,70 @@ export function GlitchLayer({
   style,
 }: GlitchLayerProps) {
   const Tag = as as "div";
-  const [burst, setBurst] = useState(0); // 0 = idle; otherwise the burst count (keys the clone layers)
-  const [hover, setHover] = useState(false);
-  const reduced = useRef(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const root = useRef<HTMLDivElement>(null);
-  const visible = useRef(true);
 
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reduced.current = mq.matches;
-    const onChange = () => (reduced.current = mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => {
-      mq.removeEventListener("change", onChange);
-      clearTimeout(timer.current);
-    };
-  }, []);
-
-  // One burst at a time; re-triggers during a burst are ignored (the CSS
-  // keyframes can't restart without remounting the image).
-  const fire = useCallback(() => {
-    if (reduced.current || timer.current) return;
-    setBurst((n) => (n % 1000) + 1);
-    timer.current = setTimeout(() => {
-      timer.current = undefined;
-      setBurst(0);
-    }, burstMs);
-  }, [burstMs]);
-
-  // External trigger: dispatch `new Event(GLITCH_EVENT)` on the layer's root
-  // (e.g. on a cut in the background footage). Same reduced-motion and
-  // one-at-a-time rules as a hover burst, and no React re-render to trigger it.
   useEffect(() => {
     const el = root.current;
     if (!el) return;
-    el.addEventListener(GLITCH_EVENT, fire);
-    return () => el.removeEventListener(GLITCH_EVENT, fire);
-  }, [fire]);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let timer = 0;
+    let maskSrc = "";
+    let onScreen = true;
 
-  // Idle bursts, only while on screen and the tab is visible.
-  useEffect(() => {
-    if (!idleEvery) return;
-    const el = root.current;
-    const io =
-      el && typeof IntersectionObserver !== "undefined"
-        ? new IntersectionObserver(([e]) => (visible.current = e.isIntersecting))
-        : null;
-    if (el && io) io.observe(el);
-    let t: ReturnType<typeof setTimeout>;
-    const loop = () => {
-      t = setTimeout(() => {
-        if (visible.current && document.visibilityState === "visible") fire();
-        loop();
-      }, idleEvery * (0.6 + Math.random() * 0.8));
-    };
-    loop();
-    return () => {
-      clearTimeout(t);
-      io?.disconnect();
-    };
-  }, [idleEvery, fire]);
-
-  const handlers = interactive
-    ? {
-        onPointerEnter: (e: ReactPointerEvent) => {
-          if (e.pointerType === "mouse") {
-            setHover(true);
-            fire();
-          }
-        },
-        onPointerLeave: (e: ReactPointerEvent) => {
-          if (e.pointerType === "mouse") setHover(false);
-        },
-        onPointerDown: (e: ReactPointerEvent) => {
-          if (e.pointerType !== "mouse" || e.button === 0) fire();
-        },
-        onFocusCapture: fire,
+    const fire = () => {
+      if (reduced.matches || timer) return;
+      const img = el.querySelector<HTMLImageElement>(".w-glitch__base img");
+      const src = img?.currentSrc || img?.src;
+      if (!img || !src || !img.complete || !img.naturalWidth) return; // nothing painted yet
+      if (src !== maskSrc) {
+        el.style.setProperty("--w-glitch-src", `url("${src}")`);
+        maskSrc = src;
       }
-    : {};
+      el.setAttribute("data-burst", "");
+      timer = window.setTimeout(() => {
+        timer = 0;
+        el.removeAttribute("data-burst");
+      }, burstMs);
+    };
+
+    const onEnter = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" && performance.now() - lastScroll > 220) fire();
+    };
+    el.addEventListener(GLITCH_EVENT, fire);
+    const unwatch = interactive ? watchScroll() : () => {};
+    if (interactive) {
+      el.addEventListener("pointerenter", onEnter);
+      el.addEventListener("click", fire);
+      el.addEventListener("focusin", fire);
+    }
+
+    // Idle bursts, only while on screen and the tab is visible.
+    let idleTimer = 0;
+    let io: IntersectionObserver | null = null;
+    if (idleEvery) {
+      io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting));
+      io.observe(el);
+      const loop = () => {
+        idleTimer = window.setTimeout(() => {
+          if (onScreen && document.visibilityState === "visible") fire();
+          loop();
+        }, idleEvery * (0.6 + Math.random() * 0.8));
+      };
+      loop();
+    }
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(idleTimer);
+      io?.disconnect();
+      unwatch();
+      el.removeEventListener(GLITCH_EVENT, fire);
+      el.removeEventListener("pointerenter", onEnter);
+      el.removeEventListener("click", fire);
+      el.removeEventListener("focusin", fire);
+      el.removeAttribute("data-burst");
+    };
+  }, [burstMs, idleEvery, interactive]);
 
   return (
     <Tag
@@ -125,24 +130,14 @@ export function GlitchLayer({
       className={cx("w-glitch", className)}
       style={style}
       data-intensity={intensity === "medium" ? undefined : intensity}
-      data-burst={burst ? "" : undefined}
-      data-hover={hover || undefined}
-      {...handlers}
     >
-      <div className="w-glitch__base">
+      <span className="w-glitch__fringe w-glitch__fringe--r" aria-hidden="true" />
+      <span className="w-glitch__fringe w-glitch__fringe--c" aria-hidden="true" />
+      <div className="w-glitch__base">{children}</div>
+      <div className="w-glitch__slice" aria-hidden="true">
         {children}
       </div>
-      {burst > 0 && (
-        <>
-          <div className="w-glitch__copy w-glitch__copy--a" aria-hidden="true" key={`a${burst}`}>
-            {children}
-          </div>
-          <div className="w-glitch__copy w-glitch__copy--b" aria-hidden="true" key={`c${burst}`}>
-            {children}
-          </div>
-        </>
-      )}
-      <div className="w-glitch__sweep" aria-hidden="true" />
+      <span className="w-glitch__sweep" aria-hidden="true" />
     </Tag>
   );
 }

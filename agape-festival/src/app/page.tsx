@@ -49,9 +49,13 @@ const jsonLd = {
 };
 
 export default function Home() {
-  // Only the hero is preloaded; everything else loads lazily or after idle.
-  preload(HERO.mobile.src, { as: "image", fetchPriority: "high", media: HERO_PORTRAIT_QUERY });
-  preload(HERO.desktop.src, { as: "image", fetchPriority: "high", media: `not all and ${HERO_PORTRAIT_QUERY}` });
+  // Only the hero still is preloaded (it is the LCP); everything else loads lazily or after idle.
+  if (HERO.mobile.src === HERO.desktop.src) {
+    preload(HERO.desktop.src, { as: "image", fetchPriority: "high" });
+  } else {
+    preload(HERO.mobile.src, { as: "image", fetchPriority: "high", media: HERO_PORTRAIT_QUERY });
+    preload(HERO.desktop.src, { as: "image", fetchPriority: "high", media: `not all and ${HERO_PORTRAIT_QUERY}` });
+  }
 
   return (
     <div className={`winter wpage ${winterFontVariables}`}>

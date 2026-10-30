@@ -240,9 +240,15 @@ export interface NamedArtist {
   headshot: string | null;
   /** ~1200px-wide WebP for the P1 panel. */
   headshotLarge: string | null;
-  /** Short muted performance clip (H.264 MP4, no audio). */
+  /** Short muted performance clip (H.264 MP4, no audio). The artist-select splash plays it on hover/tap. */
   clip: string | null;
+  /** First frame of `clip` as WebP, shown until the clip is actually playing. */
   clipPoster: string | null;
+  /**
+   * Optional CSS object-position for the artist-select splash crop of the clip/headshot
+   * (default "50% 30%"). Set it when the subject sits off-centre in a 9:16 clip.
+   */
+  splashFocus?: string;
   socials?: ArtistSocial[];
 }
 

@@ -39,7 +39,7 @@ function Act({ act, linkToSelect }: { act: LineupAct; linkToSelect: boolean }) {
 
 export function Lineup({ linkToSelect }: { linkToSelect: boolean }) {
   return (
-    <section id="lineup" className="w-section wlineup" aria-labelledby="lineup-title" data-bg-dim="0.55">
+    <section id="lineup" className="w-section wlineup" aria-labelledby="lineup-title" data-bg-dim="0.4">
       <div className="w-container">
         <SectionHeading title="The lineup" id="lineup-title">
           One stage each day. Set times will be announced closer to the festival.

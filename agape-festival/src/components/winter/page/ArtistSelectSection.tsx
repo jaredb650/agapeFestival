@@ -1,24 +1,41 @@
-import { SectionHeading } from "@/components/winter/ui";
-import { ARTISTS, ARTIST_PENDING, WINTER_DAYS } from "@/data/winter";
-import { ArtistSelect } from "./ArtistSelect";
-import { NO_SIGNAL_STILL } from "./media";
+import dynamic from "next/dynamic";
+import { ARTISTS, ARTIST_PENDING, SHOW_ARTIST_SELECT, WINTER_DAYS } from "@/data/winter";
+import { BG, FLYER } from "./media";
 
-/** Gated by NEXT_PUBLIC_SHOW_ARTIST_SELECT (the page only renders this when SHOW_ARTIST_SELECT). */
+// Own chunk + CSS, and the import sits behind the env literal (inlined at build
+// time) so the bundler drops it from builds without the flag: the hidden
+// production page carries none of the artist select's JS or CSS.
+const ArtistSelect =
+  process.env.NEXT_PUBLIC_SHOW_ARTIST_SELECT === "1"
+    ? dynamic(() => import("@/components/winter/artist-select/ArtistSelect").then((m) => m.ArtistSelect))
+    : null;
+
+const logoFestival = FLYER.layers.find((l) => l.id === "logo-festival")!;
+
+/**
+ * "Choose your fighter": the split character select (Day 1 left, Day 2 right).
+ * Gated by NEXT_PUBLIC_SHOW_ARTIST_SELECT; renders nothing when it's off.
+ */
 export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
-  const locked = ARTISTS.filter((a) => a.kind === "tba").length;
+  if (!SHOW_ARTIST_SELECT || !ArtistSelect) return null;
   return (
-    <section id="artists" className="w-section wartists" aria-labelledby="artists-title" data-bg-at={bgAt}>
-      <div className="w-container">
-        <SectionHeading title="Choose your fighter" id="artists-title">
-          Hover or tap a tile to load an artist. {locked === 3 ? "Three" : locked} slots stay locked until the reveal.
-        </SectionHeading>
-        <ArtistSelect
-          artists={ARTISTS}
-          dayDates={{ 1: WINTER_DAYS[0].date, 2: WINTER_DAYS[1].date }}
-          noSignal={NO_SIGNAL_STILL}
-          pending={ARTIST_PENDING}
-        />
-      </div>
+    <section id="artists" className="asel-section" aria-labelledby="artists-title" data-bg-at={bgAt}>
+      <ArtistSelect
+        artists={ARTISTS}
+        days={WINTER_DAYS}
+        pending={ARTIST_PENDING}
+        headingId="artists-title"
+        title="Choose your fighter"
+        media={{
+          frameDir: BG.frames.dir,
+          tileStill: BG.posterMobile.src,
+          emblem: { src: logoFestival.src, width: logoFestival.width, height: logoFestival.height },
+          dayLabels: {
+            1: { src: FLYER.dayLabels[1].src, width: FLYER.dayLabels[1].width, height: FLYER.dayLabels[1].height },
+            2: { src: FLYER.dayLabels[2].src, width: FLYER.dayLabels[2].width, height: FLYER.dayLabels[2].height },
+          },
+        }}
+      />
     </section>
   );
 }

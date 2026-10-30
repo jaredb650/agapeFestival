@@ -41,7 +41,10 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: var(--w-ink);
+  /* The inline ~0.5 KB still (ScrollBackground sets background-image) under everything: never plain black. */
+  background-color: var(--w-ink);
+  background-size: cover;
+  background-position: 50% 50%;
   contain: strict;
 }
 /* Landscape: the 9:16 footage is shown full-width and panned vertically by scroll. */
@@ -52,10 +55,9 @@
 .wbg__video,
 .wbg__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .wbg__poster, .wbg__video { object-fit: cover; object-position: 50% 50%; }
-.wbg__poster { transition: opacity var(--w-dur-slow) ease; }
+/* The poster stays under the live layer for good: if the video stalls or errors, it is what shows. */
 .wbg__video, .wbg__canvas { opacity: 0; transition: opacity var(--w-dur-slow) ease; }
 .wbg[data-live] .wbg__video, .wbg[data-live] .wbg__canvas { opacity: 1; }
-.wbg[data-live] .wbg__poster { opacity: 0; }
 .wbg__scrim { position: absolute; inset: 0; background: var(--w-ink); opacity: 0; will-change: opacity; }
 .wbg__vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 35%, rgba(4, 6, 10, 0.55) 100%); }
 @media (min-aspect-ratio: 1/1) { .wbg__vignette { background: radial-gradient(ellipse 60% 75% at 50% 48%, rgba(4, 6, 10, 0.12) 20%, rgba(4, 6, 10, 0.72) 100%); } }
@@ -137,7 +139,7 @@
   transition: opacity var(--w-dur) ease, transform var(--w-dur) var(--w-ease), visibility 0s linear var(--w-dur);
 }
 .wnav[data-cta] .wnav__cta { opacity: 1; visibility: visible; transform: none; transition: opacity var(--w-dur) ease, transform var(--w-dur) var(--w-ease); }
-.wnav__cta .w-btn { --w-frame-o: -5px; --w-frame-s: 9px; }
+.wnav__cta .w-btn { --w-frame-o: -4px; --w-frame-s: 8px; }
 .wnav__menu-btn,
 .wmenu__close {
   display: inline-flex;
@@ -187,7 +189,7 @@
 .wmenu__link .w-h2 { transition: color var(--w-dur-fast) ease; }
 .wmenu__link:hover .w-h2, .wmenu__link.is-active .w-h2 { color: var(--w-ice); }
 .wmenu__idx { font: 400 var(--w-fs-micro) / 1 var(--w-font-hud); letter-spacing: 0.12em; color: var(--w-fog); }
-.wmenu__foot { margin-top: auto; padding: var(--w-s-7) 0 0 7px; display: flex; flex-direction: column; align-items: flex-start; gap: var(--w-s-6); }
+.wmenu__foot { margin-top: auto; padding: var(--w-s-7) 0 0 8px; display: flex; flex-direction: column; align-items: flex-start; gap: var(--w-s-6); }
 .wmenu__socials { display: flex; flex-wrap: wrap; gap: var(--w-s-2) var(--w-s-5); margin: 0; padding: 0; list-style: none; }
 .wmenu__socials a { display: inline-flex; align-items: center; min-height: 44px; color: var(--w-mist); text-decoration: none; }
 .wmenu__socials a:hover { color: var(--w-ice); }
@@ -209,24 +211,29 @@ html.wmenu-open { overflow: hidden; }
 .whero__media picture, .whero__img, .whero__video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .whero__img, .whero__video { object-fit: cover; object-position: var(--hero-pos, 50% 50%); }
 .whero__img { filter: saturate(0.72) contrast(1.05); }
+/* The Kobosil clip runs warm (sodium windows, red crowd light): pull it toward the flyer's steel greys. */
+.whero__media[data-kind="video"] .whero__img,
+.whero__media[data-kind="video"] .whero__video { filter: saturate(0.55) contrast(1.1) brightness(0.96); }
 @media (max-aspect-ratio: 3/4) { .whero__img, .whero__video { object-position: var(--hero-pos-m, 50% 40%); } }
+/* Playing-gated: a blocked or paused video is never visible (iOS Low Power Mode), only the poster. */
 .whero__video { opacity: 0; transition: opacity 0.8s ease; }
 .whero__video[data-playing] { opacity: 1; }
 .whero__shade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(4, 6, 10, 0.45) 0%, rgba(4, 6, 10, 0) 18%, rgba(4, 6, 10, 0) 40%, rgba(4, 6, 10, 0.7) 68%, rgba(4, 6, 10, 0.95) 100%),
-    linear-gradient(90deg, rgba(4, 6, 10, 0.6) 0%, rgba(4, 6, 10, 0.15) 45%, rgba(4, 6, 10, 0) 60%);
+    repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.2) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(4, 6, 10, 0.5) 0%, rgba(4, 6, 10, 0) 18%, rgba(4, 6, 10, 0) 38%, rgba(4, 6, 10, 0.72) 66%, rgba(4, 6, 10, 0.96) 100%),
+    linear-gradient(90deg, rgba(4, 6, 10, 0.62) 0%, rgba(4, 6, 10, 0.16) 45%, rgba(4, 6, 10, 0) 60%);
 }
 .whero__copy { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--w-s-4); padding-bottom: clamp(40px, 7vh, 72px); will-change: transform, opacity; }
 .whero__logo { width: clamp(168px, 18vw, 264px); margin-bottom: var(--w-s-1); }
 .whero__logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 18px rgba(4, 6, 10, 0.7)); }
 .whero__logo-static { cursor: crosshair; }
-/* One line on desktop, sized to sit under the performer's chin; two lines on phones. */
-.whero__title { margin: 0; font-size: clamp(3.9rem, 0.9rem + 8.6vw, 8.75rem); line-height: 0.86; white-space: nowrap; }
+/* One line on desktop (Orbitron black at 0.12em tracking ≈ 12.6em for WINTER FESTIVAL); two lines on phones. */
+.whero__title { margin: 0; font-size: clamp(2.5rem, 6vw, 5.25rem); line-height: 1; white-space: nowrap; }
 .whero__row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--w-s-6) var(--w-s-7); width: 100%; margin-top: var(--w-s-4); }
-.whero__ctas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--w-s-5) var(--w-s-7); padding-left: 7px; }
+.whero__ctas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--w-s-5) var(--w-s-7); padding-left: 8px; }
 .whero__when { display: flex; flex-direction: column; align-items: flex-end; gap: var(--w-s-2); text-align: right; }
 .whero__scrawl { display: block; width: clamp(220px, 21vw, 300px); height: auto; margin-right: -6px; filter: drop-shadow(0 1px 8px rgba(4, 6, 10, 0.85)); }
 .whero__facts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0; margin: 0; }
@@ -246,8 +253,28 @@ html.wmenu-open { overflow: hidden; }
   color: var(--w-mist);
   text-shadow: 0 0 6px rgba(4, 6, 10, 0.9);
 }
+/* Hero video pause/play: a hairline HUD chip where a photo credit would sit. */
+.whero__meta { position: absolute; z-index: 2; right: var(--w-gutter); top: calc(64px + var(--w-s-5)); }
+.whero__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--w-line-strong);
+  background: rgba(4, 6, 10, 0.35);
+  color: var(--w-mist);
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--w-dur-fast) ease, border-color var(--w-dur-fast) ease;
+}
+.whero__toggle svg { width: 8px; height: 8px; flex: none; }
+.whero__toggle span { margin-right: -0.3em; }
+.whero__toggle:hover { color: var(--w-ice); border-color: rgba(156, 200, 255, 0.45); }
 @media (max-width: 899px) {
-  .whero__title { white-space: normal; max-width: 5.2em; }
+  .whero__title { white-space: normal; font-size: clamp(2.5rem, 11.5vw, 4.5rem); }
   .whero__row { flex-direction: column-reverse; align-items: flex-start; gap: var(--w-s-5); margin-top: var(--w-s-2); }
   .whero__when { align-items: flex-start; text-align: left; }
   .whero__facts { justify-content: flex-start; }
@@ -256,7 +283,7 @@ html.wmenu-open { overflow: hidden; }
 @media (max-width: 640px) {
   .whero__copy { gap: var(--w-s-3); padding-bottom: 36px; }
   .whero__logo { width: 124px; }
-  .whero__title { font-size: clamp(3.4rem, 15.5vw, 4.25rem); }
+  .whero__title { font-size: clamp(2.25rem, 12.2vw, 3.25rem); }
   .whero__row { gap: var(--w-s-5); }
   .whero__scrawl { width: 208px; }
   .whero__facts { font-size: 10px; letter-spacing: 0.2em; line-height: 1.7; }
@@ -289,8 +316,11 @@ html.wmenu-open { overflow: hidden; }
   width: calc(var(--wf-h) * 9 / 16);
   transform: translate(-50%, -50%);
 }
-.wflyer__scrim { position: absolute; inset: 0; width: 100%; height: 100%; display: block; will-change: opacity; }
-.wflyer__layer { position: absolute; pointer-events: auto; will-change: transform, opacity; }
+.wflyer__scrim { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wflyer__layer { position: absolute; pointer-events: auto; }
+/* Promoted only while the section is within a screen of the viewport (FlyerStage toggles data-live). */
+.wflyer__stage[data-live] .wflyer__scrim { will-change: opacity; }
+.wflyer__stage[data-live] .wflyer__layer { will-change: transform, opacity; }
 .wflyer__layer img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 .wflyer__layer .w-glitch { cursor: crosshair; }
 
@@ -307,10 +337,9 @@ html.wmenu-open { overflow: hidden; }
 .wlineup__name {
   font-family: var(--w-font-display);
   font-weight: 800;
-  font-variation-settings: "opsz" 12, "wdth" 88;
-  font-size: var(--w-fs-h2);
-  line-height: 0.95;
-  letter-spacing: -0.012em;
+  font-size: clamp(1.0625rem, 0.82rem + 1vw, 1.75rem); /* 17 → 28: "JOHANNES SCHUSTER" fits one line at 390 */
+  line-height: 1.1;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
   color: var(--w-frost);
@@ -329,7 +358,8 @@ html.wmenu-open { overflow: hidden; }
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  background: linear-gradient(170deg, rgba(36, 42, 53, 0.94) 0%, rgba(20, 24, 32, 0.96) 55%, rgba(12, 15, 21, 0.97) 100%);
+  /* Translucent stub: the tower keeps moving behind it. */
+  background: linear-gradient(170deg, rgba(36, 42, 53, 0.8) 0%, rgba(20, 24, 32, 0.84) 55%, rgba(12, 15, 21, 0.88) 100%);
   box-shadow: inset 0 0 0 1px var(--w-line-strong), inset 0 1px 0 rgba(233, 235, 236, 0.12), 0 40px 80px -40px rgba(0, 0, 0, 0.9);
 }
 .wticket__main { display: flex; flex-direction: column; align-items: flex-start; gap: var(--w-s-5); padding: var(--w-s-7) var(--w-s-5) var(--w-s-6); }
@@ -338,8 +368,8 @@ html.wmenu-open { overflow: hidden; }
 .wticket__stub { display: flex; flex-direction: column; align-items: stretch; gap: var(--w-s-6); padding: var(--w-s-6) var(--w-s-5) var(--w-s-5); }
 .wticket__facts { margin: 0; display: grid; gap: var(--w-s-3); }
 .wticket__facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--w-s-4); padding-bottom: var(--w-s-3); border-bottom: 1px solid var(--w-line); }
-.wticket__facts dd { margin: 0; text-align: right; font-family: var(--w-font-display); font-weight: 800; font-variation-settings: "opsz" 14, "wdth" 92; font-size: var(--w-fs-h3); line-height: 1; text-transform: uppercase; color: var(--w-frost); }
-.wticket__cta { align-self: flex-start; margin-left: 7px; }
+.wticket__facts dd { margin: 0; text-align: right; font-family: var(--w-font-display); font-weight: 700; font-size: var(--w-fs-h3); line-height: 1.15; letter-spacing: 0.06em; text-transform: uppercase; color: var(--w-frost); }
+.wticket__cta { align-self: flex-start; margin-left: 8px; }
 .wticket__foot { margin: 0; }
 @media (min-width: 900px) {
   .wticket { grid-template-columns: minmax(0, 1.35fr) auto minmax(0, 1fr); }
@@ -611,7 +641,8 @@ html.wmenu-open { overflow: hidden; }
 /* ==========================================================================
    Footer
    ========================================================================== */
-.wfoot { padding-block: var(--w-section-y) var(--w-s-6); background: linear-gradient(180deg, rgba(4, 6, 10, 0) 0%, rgba(4, 6, 10, 0.86) 18%, rgba(4, 6, 10, 0.94) 55%, var(--w-ink) 100%); }
+/* Never solid: the tower stays visible behind the footer, dimmed for legibility. */
+.wfoot { padding-block: var(--w-section-y) var(--w-s-6); background: linear-gradient(180deg, rgba(4, 6, 10, 0) 0%, rgba(4, 6, 10, 0.66) 16%, rgba(4, 6, 10, 0.74) 55%, rgba(4, 6, 10, 0.8) 100%); }
 .wfoot__news { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--w-s-6); padding-bottom: var(--w-s-8); border-bottom: 1px solid var(--w-line); }
 .wfoot__news-copy { display: flex; flex-direction: column; align-items: flex-start; gap: var(--w-s-5); max-width: 40rem; }
 /* The flyer's sign-off: logos over the hand-scrawled date, centred like the poster. */
@@ -639,7 +670,6 @@ html.wmenu-open { overflow: hidden; }
    ========================================================================== */
 @media (hover: none), (max-width: 899px) {
   .wpage .w-window { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(180deg, rgba(36, 42, 53, 0.96) 0%, rgba(20, 24, 32, 0.97) 40%, rgba(14, 17, 23, 0.98) 100%); }
-  .wpage .w-btn--secondary { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(27, 33, 44, 0.9); }
 }
 
 /* Page leads sit over moving footage: Outfit 300 shimmers against the grain there. */

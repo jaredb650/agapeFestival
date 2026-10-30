@@ -26,6 +26,7 @@ cyber references and the Sept site's UI language as accents, not as the foundati
 **Type:** headings in the flyer's lineup face (best guess **ABC Whyte Inktrap**, Dinamo — Jared to
 source; free fallback **Bricolage Grotesque** at low opsz for the ink traps). Micro-labels keep
 Orbitron/Chonky Pixels. Hand-scrawl only as image assets cut from the flyer (date, DAY 1/DAY 2).
+**Update Oct 30:** display switched to Orbitron black (the Sept heading face); Bricolage dropped. See design-system.md.
 
 ## Page structure (one scrolling page; remove the current scroll lock)
 

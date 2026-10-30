@@ -38,18 +38,21 @@
 
   /* ---- Type families (variables come from components/winter/fonts.ts) ---- */
   /* var() fallbacks matter: an undefined variable without one invalidates the whole stack. */
-  --w-font-display: var(--font-display, "Arial Narrow"), var(--font-display-ext, "Arial Narrow"), "Arial Narrow", sans-serif;
+  /* Display = Orbitron black (the Sept heading face). Swap point: define --font-display in fonts.ts. */
+  --w-font-display: var(--font-display, var(--font-hud, var(--font-orbitron, sans-serif))), sans-serif;
   --w-font-hud: var(--font-hud, var(--font-orbitron, sans-serif)), sans-serif;
   --w-font-body: var(--font-body, var(--font-outfit, system-ui)), system-ui, sans-serif;
   --w-font-pixel: var(--font-pixel, "Chonky Pixels"), "Chonky Pixels", monospace;
 
-  /* ---- Type scale (fluid, 390 → 1440) ---- */
-  --w-fs-display: clamp(3.25rem, 2.1rem + 4.9vw, 7rem); /* 52 → 112 */
-  --w-fs-h1: clamp(2.125rem, 1.35rem + 3.3vw, 4.5rem);  /* 34 → 72 */
-  --w-fs-h2: clamp(1.625rem, 1.15rem + 2vw, 3rem);      /* 26 → 48 */
-  --w-fs-h3: clamp(1.25rem, 1.05rem + 0.85vw, 1.75rem); /* 20 → 28 */
+  /* ---- Type scale (fluid, 390 → 1440) ----
+     Orbitron is wide (caps ≈ 0.9em + tracking), so display sizes run ~30% under
+     a grotesk's. Sized so the longest real words fit a 390px phone. */
+  --w-fs-display: clamp(2.25rem, 1.32rem + 3.8vw, 4.75rem); /* 36 → 76 */
+  --w-fs-h1: clamp(1.5rem, 1.04rem + 1.9vw, 2.75rem);       /* 24 → 44 */
+  --w-fs-h2: clamp(1.25rem, 0.97rem + 1.15vw, 2rem);        /* 20 → 32 */
+  --w-fs-h3: clamp(1rem, 0.86rem + 0.55vw, 1.375rem);       /* 16 → 22 */
   /* Lineup board: scales with the viewport so the flyer's line breaks survive on phones. */
-  --w-fs-lineup: clamp(1rem, 0.1rem + 4.6vw, 3rem);      /* 19.5 at 390 → 48 */
+  --w-fs-lineup: clamp(0.75rem, 0.05rem + 3.3vw, 2.25rem);  /* 13 at 390 → 36 */
   --w-fs-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); /* 17 → 20 */
   --w-fs-body: 1rem;
   --w-fs-small: 0.875rem;
@@ -105,29 +108,33 @@
 
 /* ==========================================================================
    Typography
-   Display = flyer lineup face stand-in. Heavy weight + opsz 12 keeps the ink
-   traps open; slight width condensing matches the flyer's set width. The
-   1px same-colour text-shadow reproduces the flyer's soft, slightly bled type.
+   Display = Orbitron, set the way the Sept site set it: heavy, wide, tracked
+   (display 0.12em, headings 0.08em). Tracking is part of the face here, so
+   every heading keeps it; the trailing space it leaves on the last glyph is
+   pulled back with a matching negative margin. The 1px same-colour shadow is
+   the flyer's slightly bled type.
    ========================================================================== */
 .w-display,
 .w-h1,
 .w-h2,
 .w-h3 {
+  --w-track: 0.08em;
   font-family: var(--w-font-display);
   font-weight: 800;
-  font-variation-settings: "opsz" 12, "wdth" 88;
+  font-synthesis: none;
   text-transform: uppercase;
-  line-height: 0.92;
-  letter-spacing: -0.012em;
+  line-height: 1.04;
+  letter-spacing: var(--w-track);
+  margin: 0 calc(var(--w-track) * -1) 0 0;
   color: var(--w-frost);
   text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
-  margin: 0;
   text-wrap: balance;
+  font-kerning: normal;
 }
-.w-display { font-size: var(--w-fs-display); line-height: 0.88; }
+.w-display { --w-track: 0.12em; font-size: var(--w-fs-display); font-weight: 900; line-height: 1; }
 .w-h1 { font-size: var(--w-fs-h1); }
-.w-h2 { font-size: var(--w-fs-h2); line-height: 0.96; }
-.w-h3 { font-size: var(--w-fs-h3); line-height: 1; font-variation-settings: "opsz" 14, "wdth" 92; }
+.w-h2 { font-size: var(--w-fs-h2); }
+.w-h3 { --w-track: 0.06em; font-size: var(--w-fs-h3); font-weight: 700; line-height: 1.12; }
 /* Big hero type gets the flyer's softness a touch stronger. */
 .w-soft { text-shadow: 0 0 1.5px rgba(233, 235, 236, 0.55), 0 0 18px rgba(4, 6, 10, 0.6); }
 
@@ -144,11 +151,10 @@
 .w-lineup {
   font-family: var(--w-font-display);
   font-weight: 800;
-  font-variation-settings: "opsz" 12, "wdth" 90;
   text-transform: uppercase;
   font-size: var(--w-fs-lineup);
-  line-height: 1.06;
-  letter-spacing: -0.01em;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
   text-align: center;
   text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
   margin: 0;
@@ -188,9 +194,7 @@
 .w-frame[data-variant="hairline"] { box-shadow: inset 0 0 0 1px var(--w-line); }
 .w-frame[data-accent] { --w-frame-c: var(--w-bracket-accent); --w-frame-s: 16px; }
 .w-frame[data-size="lg"] { --w-frame-s: 22px; }
-.w-frame::after,
-.w-btn--primary::before,
-.w-btn--secondary::before {
+.w-frame::after {
   content: "";
   position: absolute;
   inset: var(--w-frame-o, -1px);
@@ -213,17 +217,30 @@
 .w-frame[data-interactive]:hover::after { animation: w-flicker 0.25s linear; filter: brightness(2.2); }
 
 /* ==========================================================================
-   Buttons
-   Primary = the Sept ticket CTA rebuilt in volt: solid fill, ice corner
-   brackets standing off the fill, breathing glow (opacity-only), CRT
-   scanlines, hover scale.
+   Buttons — hologram panes.
+   A chamfered pane of ice glass (top-left + bottom-right corners cut, like
+   the Floodgear/Winamp frames) behind a 1px luminous edge, with fine
+   scanlines, the Sept corner brackets standing off the two square corners,
+   and wide-spaced Orbitron caps. Hover: a holographic sheen crosses the
+   glass, the caps split into red/cyan for a beat, the brackets step out.
+   No fill slab, no bevel, no drop shadow. Every moving part is transform or
+   opacity; the label shadow and bracket flicker are a few stepped repaints
+   of small boxes.
    ========================================================================== */
 .w-btn {
+  --w-cut: 8px;
+  /* The pane and its 1px ring (even-odd: outer chamfered rect minus the same rect inset 1px). */
+  --w-pane: polygon(var(--w-cut) 0, 100% 0, 100% calc(100% - var(--w-cut)), calc(100% - var(--w-cut)) 100%, 0 100%, 0 var(--w-cut));
+  --w-ring: polygon(evenodd,
+    var(--w-cut) 0, 100% 0, 100% calc(100% - var(--w-cut)), calc(100% - var(--w-cut)) 100%, 0 100%, 0 var(--w-cut), var(--w-cut) 0,
+    calc(var(--w-cut) + 0.414px) 1px, 1px calc(var(--w-cut) + 0.414px), 1px calc(100% - 1px),
+    calc(100% - var(--w-cut) - 0.414px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--w-cut) - 0.414px),
+    calc(100% - 1px) 1px, calc(var(--w-cut) + 0.414px) 1px);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--w-s-4);
+  gap: 12px;
   max-width: 100%;
   border: 0;
   margin: 0;
@@ -232,69 +249,175 @@
   font-family: var(--w-font-hud);
   font-weight: 700;
   font-size: 0.8125rem;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  isolation: isolate;
   -webkit-tap-highlight-color: transparent;
-  transition: transform var(--w-dur) var(--w-ease), background-color var(--w-dur) ease, color var(--w-dur-fast) ease, box-shadow var(--w-dur) ease;
+  transition: transform var(--w-dur) var(--w-ease), color var(--w-dur-fast) ease;
 }
 /* Trailing letter-spacing pushes text off-centre; pull it back. */
-.w-btn__label { margin-right: -0.3em; position: relative; z-index: 2; }
-.w-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 8px; }
+.w-btn__label { margin-right: -0.32em; position: relative; z-index: 2; }
+.w-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 10px; }
 .w-btn[aria-disabled="true"], .w-btn:disabled { opacity: 0.45; pointer-events: none; }
 
-.w-btn[data-size="sm"] { min-height: 44px; padding: 12px 24px; font-size: 0.6875rem; }
-.w-btn[data-size="md"] { min-height: 52px; padding: 16px 32px; }
-.w-btn[data-size="lg"] { min-height: 60px; padding: 20px 48px; }
+.w-btn[data-size="sm"] { --w-cut: 8px; min-height: 44px; padding: 12px 20px; font-size: 0.6875rem; gap: 8px; }
+.w-btn[data-size="md"] { --w-cut: 8px; min-height: 52px; padding: 16px 28px; }
+.w-btn[data-size="lg"] { --w-cut: 12px; min-height: 60px; padding: 20px 40px; }
 
-.w-btn--primary {
-  --w-frame-c: var(--w-bracket-accent);
-  --w-frame-s: 14px;
-  --w-frame-o: -7px;
-  background: linear-gradient(180deg, #4a76ff 0%, #2c52e6 50%, #1e3bb8 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(156, 200, 255, 0.75),
-    inset 0 -1px 0 rgba(4, 6, 10, 0.45),
-    0 0 10px rgba(61, 107, 255, 0.3);
-  text-shadow: 0 1px 0 rgba(4, 6, 10, 0.35);
+/* ---- Glass pane (chamfered) + scanlines + sheen ---- */
+.w-btn__glass {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  clip-path: var(--w-pane);
+  background-color: var(--w-glass, rgba(5, 10, 20, 0.5));
+  background-image: linear-gradient(180deg, var(--w-glass-hi, rgba(156, 200, 255, 0.2)) 0%, rgba(156, 200, 255, 0.05) 46%, var(--w-glass-lo, rgba(61, 107, 255, 0.12)) 100%);
+  transition: background-color var(--w-dur) ease;
 }
-/* CRT scanlines over the fill. */
-.w-btn--primary::after {
+.w-btn__glass::before {
   content: "";
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background:
-    linear-gradient(rgba(4, 6, 10, 0) 50%, rgba(4, 6, 10, 0.14) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.025), rgba(0, 255, 0, 0.012), rgba(0, 0, 255, 0.03));
-  background-size: 100% 2px, 3px 100%;
+  background: repeating-linear-gradient(180deg, rgba(156, 200, 255, 0.11) 0 1px, transparent 1px 3px);
+  opacity: var(--w-scan, 0.9);
 }
+.w-btn__glass::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70%;
+  width: 60%;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 70, 110, 0.12) 28%, rgba(233, 235, 236, 0.34) 47%, rgba(156, 200, 255, 0.3) 55%, rgba(80, 210, 255, 0.12) 72%, transparent 100%);
+  transform: translateX(0) skewX(-20deg);
+  opacity: 0;
+}
+
+/* ---- 1px luminous edge: a chamfered ring cut with an even-odd polygon ---- */
+.w-btn__edge {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--w-edge-hi) 0%, var(--w-edge) 52%, var(--w-edge-lo) 100%);
+  opacity: 0.85;
+  clip-path: var(--w-ring);
+  transition: opacity var(--w-dur) ease;
+}
+
+/* ---- Brackets: the Sept corner ticks, on the two square corners only (::before top-right,
+   ::after bottom-left). Hover steps them out with transform, flickers them with opacity. ---- */
+.w-btn--primary::before,
+.w-btn--secondary::before,
+.w-btn--primary::after,
+.w-btn--secondary::after {
+  content: "";
+  position: absolute;
+  width: var(--w-frame-s);
+  height: var(--w-frame-s);
+  pointer-events: none;
+  z-index: 3;
+  border: 0 solid var(--w-frame-c);
+  transition: transform var(--w-dur) var(--w-ease);
+}
+.w-btn--primary::before, .w-btn--secondary::before { top: var(--w-frame-o); right: var(--w-frame-o); border-top-width: 1px; border-right-width: 1px; }
+.w-btn--primary::after, .w-btn--secondary::after { bottom: var(--w-frame-o); left: var(--w-frame-o); border-bottom-width: 1px; border-left-width: 1px; }
+@keyframes w-tick-flicker { 0%, 100% { opacity: 1; } 25% { opacity: 0.3; } 50% { opacity: 1; } 75% { opacity: 0.3; } }
+
+/* ---- Primary: ice hologram ---- */
+.w-btn--primary {
+  --w-frame-c: var(--w-bracket-accent);
+  --w-frame-s: 16px;
+  --w-frame-o: -8px;
+  --w-edge-hi: rgba(214, 232, 255, 0.98);
+  --w-edge: rgba(156, 200, 255, 0.78);
+  --w-edge-lo: rgba(61, 107, 255, 0.85);
+}
+.w-btn--primary .w-btn__label { text-shadow: 0 0 1px rgba(233, 235, 236, 0.7), 0 0 12px rgba(156, 200, 255, 0.5), 0 0 3px rgba(4, 6, 10, 0.9); }
+/* Red/cyan copies of the caps behind the label; hover splits them for one beat. */
+.w-btn--primary .w-btn__label[data-text]::before,
+.w-btn--primary .w-btn__label[data-text]::after {
+  content: attr(data-text);
+  content: attr(data-text) / ""; /* decorative: kept out of the accessible name */
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  text-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+}
+.w-btn--primary .w-btn__label[data-text]::before { color: rgb(255, 52, 80); }
+.w-btn--primary .w-btn__label[data-text]::after { color: rgb(120, 200, 255); }
+.w-btn__play { position: relative; z-index: 2; flex: none; width: 7px; height: 9px; color: var(--w-ice); filter: drop-shadow(0 0 3px rgba(156, 200, 255, 0.8)); transition: transform var(--w-dur) var(--w-ease); }
+.w-btn[data-size="sm"] .w-btn__play { width: 6px; height: 8px; }
+/* Breathing light (the Sept ticket pulse, in ice): a halo cast by the ring itself, so it
+   follows the chamfers. The filter is static; only opacity animates. */
 .w-btn__glow {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
-  box-shadow: 0 0 26px var(--w-glow), 0 0 64px rgba(61, 107, 255, 0.2);
+  filter: drop-shadow(0 0 4px rgba(61, 107, 255, 0.9)) drop-shadow(0 0 12px rgba(61, 107, 255, 0.5));
   opacity: 0;
-  will-change: opacity;
   animation: w-breathe 4s ease-in-out infinite;
 }
-@keyframes w-breathe { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-.w-btn--primary:hover { transform: scale(1.05); background: linear-gradient(180deg, #5a84ff 0%, #2e58ec 50%, #2142c0 100%); }
-.w-btn--primary:hover::before { inset: -9px; }
-.w-btn--primary:active { transform: scale(1.02); }
+.w-btn__glow::before { content: ""; position: absolute; inset: 0; background: rgb(156, 200, 255); clip-path: var(--w-ring); }
+@keyframes w-breathe { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
+/* ---- Secondary: the same pane, quieter (frost edge, faint scan, no glow) ---- */
 .w-btn--secondary {
-  --w-frame-c: rgba(233, 235, 236, 0.5);
-  --w-frame-s: 10px;
-  background: rgba(27, 33, 44, 0.6);
-  box-shadow: inset 0 0 0 1px var(--w-line-strong);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  --w-frame-c: rgba(233, 235, 236, 0.42);
+  --w-frame-s: 12px;
+  --w-frame-o: -4px;
+  --w-glass: rgba(5, 9, 16, 0.55);
+  --w-glass-hi: rgba(233, 235, 236, 0.07);
+  --w-glass-lo: rgba(233, 235, 236, 0.02);
+  --w-scan: 0.35;
+  --w-edge-hi: rgba(233, 235, 236, 0.5);
+  --w-edge: rgba(233, 235, 236, 0.26);
+  --w-edge-lo: rgba(233, 235, 236, 0.2);
 }
-.w-btn--secondary:hover { color: var(--w-ice); --w-frame-c: var(--w-ice); box-shadow: inset 0 0 0 1px rgba(156, 200, 255, 0.35); }
+
+/* ---- Interaction ---- */
+@media (hover: hover) {
+  .w-btn--primary:hover, .w-btn--secondary:hover { transform: scale(1.03); }
+  .w-btn--primary:hover { --w-glass: rgba(20, 44, 96, 0.5); }
+  .w-btn--secondary:hover {
+    --w-frame-c: var(--w-bracket-accent);
+    --w-edge-hi: rgba(214, 232, 255, 0.9);
+    --w-edge: rgba(156, 200, 255, 0.6);
+    --w-edge-lo: rgba(61, 107, 255, 0.6);
+    --w-glass: rgba(10, 22, 44, 0.55);
+  }
+  .w-btn--primary:hover::before, .w-btn--secondary:hover::before { transform: translate(4px, -4px); animation: w-tick-flicker 0.25s linear; }
+  .w-btn--primary:hover::after, .w-btn--secondary:hover::after { transform: translate(-4px, 4px); animation: w-tick-flicker 0.25s linear; }
+  .w-btn--primary:hover .w-btn__edge, .w-btn--secondary:hover .w-btn__edge { opacity: 1; }
+  .w-btn:hover .w-btn__glass::after { animation: w-btn-sheen 0.9s var(--w-ease) both; }
+  .w-btn--primary:hover .w-btn__label::before { animation: w-split-r 0.36s steps(1, end); }
+  .w-btn--primary:hover .w-btn__label::after { animation: w-split-c 0.36s steps(1, end); }
+  .w-btn--primary:hover .w-btn__play { transform: translateX(3px); }
+}
+.w-btn--primary:active, .w-btn--secondary:active { transform: scale(0.98); transition-duration: 0.08s; }
+.w-btn--primary:focus-visible .w-btn__edge, .w-btn--secondary:focus-visible .w-btn__edge { opacity: 1; }
+@keyframes w-btn-sheen { 0% { opacity: 1; transform: translateX(0) skewX(-20deg); } 100% { opacity: 1; transform: translateX(400%) skewX(-20deg); } }
+@keyframes w-split-r {
+  0% { opacity: 0.75; transform: translateX(-2px); }
+  33% { opacity: 0.6; transform: translateX(1.5px); }
+  66% { opacity: 0.45; transform: translateX(-0.5px); }
+  100% { opacity: 0; transform: none; }
+}
+@keyframes w-split-c {
+  0% { opacity: 0.9; transform: translateX(2px); }
+  33% { opacity: 0.75; transform: translateX(-1.5px); }
+  66% { opacity: 0.6; transform: translateX(0.5px); }
+  100% { opacity: 0; transform: none; }
+}
 
 .w-btn--ghost {
   color: var(--w-mist);
@@ -491,61 +614,84 @@
 @keyframes w-marquee { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 
 /* ==========================================================================
-   GlitchLayer — hover / tap bursts for floating flyer layers.
-   Base gets a stepped chromatic offset (two coloured drop-shadows of the
-   layer's alpha = RGB split along the cut-out edges). Two copies mounted
-   only during the burst run horizontal slice displacement. A scanline band
-   sweeps down. Hover (fine pointer) adds a faint ice glow.
+   GlitchLayer — bursts for the floating flyer layers.
+   Between bursts only the base exists for layout and paint (the effect boxes
+   are display:none). A burst ([data-burst], one attribute) shows:
+   - two silhouettes of the layer (its own alpha via mask), red and cyan,
+     offset sideways under the base = RGB split along the cut-out edges;
+   - one slice copy tearing sideways (stepped clip-path, 4 repaints);
+   - a scan band sweeping down.
+   All motion is transform/opacity. No filter, no blend mode, no isolation:
+   those turned every moving layer into an offscreen pass.
    ========================================================================== */
-.w-glitch { position: relative; display: block; isolation: isolate; --w-gx: 5px; }
+.w-glitch { position: relative; display: block; --w-gx: 5px; }
 .w-glitch[data-intensity="subtle"] { --w-gx: 3px; }
 .w-glitch[data-intensity="strong"] { --w-gx: 9px; }
-.w-glitch__base { position: relative; transition: filter var(--w-dur-slow) var(--w-ease); }
-.w-glitch__base > img, .w-glitch__copy > img { display: block; }
-.w-glitch__copy { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
-.w-glitch__sweep {
+.w-glitch__base { position: relative; z-index: 1; }
+.w-glitch__base > img, .w-glitch__slice > img { display: block; }
+.w-glitch__fringe,
+.w-glitch__slice,
+.w-glitch__sweep { position: absolute; inset: 0; pointer-events: none; display: none; }
+.w-glitch[data-burst] .w-glitch__fringe,
+.w-glitch[data-burst] .w-glitch__slice,
+.w-glitch[data-burst] .w-glitch__sweep { display: block; }
+.w-glitch__fringe {
+  z-index: 0;
+  -webkit-mask: var(--w-glitch-src) 0 0 / 100% 100% no-repeat;
+  mask: var(--w-glitch-src) 0 0 / 100% 100% no-repeat;
+}
+.w-glitch__fringe--r { background: rgb(255, 52, 80); }
+.w-glitch__fringe--c { background: rgb(120, 200, 255); }
+.w-glitch__slice { z-index: 2; }
+.w-glitch__sweep { z-index: 3; overflow: hidden; }
+.w-glitch__sweep::before {
+  content: "";
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  opacity: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 40%;
   background-image:
-    linear-gradient(to bottom, transparent 0%, rgba(233, 235, 236, 0.22) 47%, rgba(156, 200, 255, 0.26) 53%, transparent 100%),
-    repeating-linear-gradient(0deg, rgba(233, 235, 236, 0.07) 0 1px, transparent 1px 3px);
-  background-size: 100% 40%, 100% 3px;
-  background-repeat: no-repeat, repeat;
-  mix-blend-mode: screen;
+    linear-gradient(to bottom, transparent 0%, rgba(233, 235, 236, 0.2) 47%, rgba(156, 200, 255, 0.24) 53%, transparent 100%),
+    repeating-linear-gradient(0deg, rgba(233, 235, 236, 0.08) 0 1px, transparent 1px 3px);
+  transform: translateY(-100%);
 }
-@media (hover: hover) {
-  .w-glitch[data-hover] .w-glitch__base { filter: drop-shadow(0 0 22px rgba(156, 200, 255, 0.22)); }
+.w-glitch[data-burst] .w-glitch__base { animation: w-jit 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__fringe--r { animation: w-fringe-r 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__fringe--c { animation: w-fringe-c 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__slice { animation: w-slice 0.46s steps(1, end) both; }
+.w-glitch[data-burst] .w-glitch__sweep::before { animation: w-sweep 0.46s linear both; }
+@keyframes w-jit {
+  0% { transform: translateX(calc(var(--w-gx) * 0.4)); }
+  18% { transform: translateX(calc(var(--w-gx) * -0.6)); }
+  38% { transform: translateX(calc(var(--w-gx) * 0.25)); }
+  62% { transform: translateX(-1px); }
+  80%, 100% { transform: none; }
 }
-.w-glitch[data-burst] .w-glitch__base { animation: w-rgb 0.46s steps(1, end) both; }
-.w-glitch[data-burst] .w-glitch__copy--a { animation: w-slice-a 0.46s steps(1, end) both; }
-.w-glitch[data-burst] .w-glitch__copy--b { animation: w-slice-b 0.46s steps(1, end) both; }
-.w-glitch[data-burst] .w-glitch__sweep { animation: w-sweep 0.46s linear both; }
-@keyframes w-rgb {
-  0% { transform: translateX(calc(var(--w-gx) * 0.4)); filter: drop-shadow(calc(var(--w-gx) * -1) 0 0 rgba(255, 52, 80, 0.55)) drop-shadow(var(--w-gx) 0 0 rgba(120, 200, 255, 0.7)); }
-  18% { transform: translateX(calc(var(--w-gx) * -0.6)); filter: drop-shadow(var(--w-gx) 0 0 rgba(255, 52, 80, 0.5)) drop-shadow(calc(var(--w-gx) * -1.4) 0 0 rgba(120, 200, 255, 0.65)); }
-  38% { transform: translateX(calc(var(--w-gx) * 0.25)); filter: drop-shadow(calc(var(--w-gx) * -0.5) 0 0 rgba(255, 52, 80, 0.45)) drop-shadow(calc(var(--w-gx) * 0.5) 0 0 rgba(120, 200, 255, 0.6)) brightness(1.25); }
-  62% { transform: translateX(-1px); filter: drop-shadow(1px 0 0 rgba(255, 52, 80, 0.35)) drop-shadow(-1px 0 0 rgba(120, 200, 255, 0.45)); }
-  80%, 100% { transform: none; filter: none; }
+@keyframes w-fringe-r {
+  0% { transform: translateX(calc(var(--w-gx) * -1)); opacity: 0.6; }
+  18% { transform: translateX(var(--w-gx)); opacity: 0.55; }
+  38% { transform: translateX(calc(var(--w-gx) * -0.5)); opacity: 0.5; }
+  62% { transform: translateX(1px); opacity: 0.35; }
+  80%, 100% { transform: none; opacity: 0; }
 }
-@keyframes w-slice-a {
+@keyframes w-fringe-c {
+  0% { transform: translateX(var(--w-gx)); opacity: 0.75; }
+  18% { transform: translateX(calc(var(--w-gx) * -1.4)); opacity: 0.7; }
+  38% { transform: translateX(calc(var(--w-gx) * 0.5)); opacity: 0.6; }
+  62% { transform: translateX(-1px); opacity: 0.45; }
+  80%, 100% { transform: none; opacity: 0; }
+}
+@keyframes w-slice {
   0% { clip-path: inset(12% 0 74% 0); transform: translateX(calc(var(--w-gx) * 2)); opacity: 1; }
   16% { clip-path: inset(58% 0 30% 0); transform: translateX(calc(var(--w-gx) * -2.4)); }
-  32% { clip-path: inset(30% 0 62% 0); transform: translateX(calc(var(--w-gx) * 1.4)); }
+  32% { clip-path: inset(30% 0 62% 0); transform: translateX(calc(var(--w-gx) * 1.4)); opacity: 0.8; }
   50% { clip-path: inset(80% 0 6% 0); transform: translateX(calc(var(--w-gx) * -1)); }
   66%, 100% { clip-path: inset(50% 0 50% 0); transform: none; opacity: 0; }
 }
-@keyframes w-slice-b {
-  0% { clip-path: inset(64% 0 22% 0); transform: translateX(calc(var(--w-gx) * -1.6)); opacity: 1; filter: brightness(1.5) saturate(0.6); }
-  22% { clip-path: inset(6% 0 86% 0); transform: translateX(calc(var(--w-gx) * 2.6)); }
-  40% { clip-path: inset(44% 0 44% 0); transform: translateX(calc(var(--w-gx) * -0.8)); }
-  58%, 100% { clip-path: inset(50% 0 50% 0); transform: none; opacity: 0; }
-}
 @keyframes w-sweep {
-  0% { opacity: 0.8; background-position: 0 -110%, 0 0; }
-  100% { opacity: 0; background-position: 0 220%, 0 0; }
+  0% { opacity: 0.85; transform: translateY(-100%); }
+  100% { opacity: 0; transform: translateY(250%); }
 }
 
 /* ==========================================================================
@@ -558,12 +704,13 @@
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .w-btn__glow { animation: none; opacity: 0.5; }
-  .w-btn--primary:hover { transform: none; }
+  .w-btn--primary:hover, .w-btn--secondary:hover, .w-btn--primary:active, .w-btn--secondary:active { transform: none; }
+  .w-btn:hover .w-btn__glass::after, .w-btn--primary:hover .w-btn__label::before, .w-btn--primary:hover .w-btn__label::after,
+  .w-btn:hover::before, .w-btn:hover::after { animation: none; }
   .w-marquee__track { animation: none; }
-  .w-glitch[data-burst] .w-glitch__base,
-  .w-glitch[data-burst] .w-glitch__copy--a,
-  .w-glitch[data-burst] .w-glitch__copy--b,
-  .w-glitch[data-burst] .w-glitch__sweep { animation: none; }
-  .w-glitch__copy { display: none; }
+  .w-glitch[data-burst] .w-glitch__base { animation: none; }
+  .w-glitch[data-burst] .w-glitch__fringe,
+  .w-glitch[data-burst] .w-glitch__slice,
+  .w-glitch[data-burst] .w-glitch__sweep { display: none; }
   .w-frame[data-interactive]:hover::after { animation: none; }
 }

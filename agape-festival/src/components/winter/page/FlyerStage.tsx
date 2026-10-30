@@ -70,6 +70,26 @@ export function FlyerStage({ layers, scrim, space }: Props) {
     };
   }, []);
 
+  // Decode the layers as soon as they're armed (they sit at opacity 0 below the
+  // fold), so the first frames of the assembly never wait on an image decode.
+  useEffect(() => {
+    if (!armed) return;
+    stageRef.current?.querySelectorAll<HTMLImageElement>(".w-glitch__base img, .wflyer__scrim").forEach((img) => {
+      img.decode?.().catch(() => {});
+    });
+  }, [armed]);
+
+  // Layers are promoted (will-change) only while the section is near the
+  // viewport, so eight GPU layers don't sit around for the rest of the page.
+  useEffect(() => {
+    const stage = stageRef.current;
+    const section = stage?.closest("section");
+    if (!stage || !section) return;
+    const io = new IntersectionObserver(([e]) => stage.toggleAttribute("data-live", e.isIntersecting), { rootMargin: "100% 0px" });
+    io.observe(section);
+    return () => io.disconnect();
+  }, []);
+
   // Cuts in the background footage glitch a few layers at once.
   useEffect(() => {
     const stage = stageRef.current;

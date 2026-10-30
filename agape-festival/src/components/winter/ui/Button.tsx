@@ -6,7 +6,7 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 interface BaseProps {
   children: ReactNode;
-  /** primary = the ticket CTA (one per view). secondary = glass + brackets. ghost = text. link = HUD label + arrow. */
+  /** primary = the hologram ticket CTA (one per view). secondary = quiet hologram. ghost = text. link = HUD label + arrow. */
   variant?: ButtonVariant;
   /** Default: lg for primary, md otherwise. Ignored by `link`. */
   size?: ButtonSize;
@@ -31,14 +31,35 @@ function Arrow() {
   );
 }
 
-/** Renders <a> when `href` is set, otherwise <button type="button">. */
+/** Transport "play" glyph: the primary reads like a deck's ▶ key. */
+function Play() {
+  return (
+    <svg className="w-btn__play" viewBox="0 0 8 10" aria-hidden="true">
+      <path d="M0 0l8 5-8 5z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/**
+ * Hologram buttons: a chamfered pane of ice glass (scanlines + a sheen that
+ * sweeps on hover) inside a 1px luminous edge, with the Sept corner brackets
+ * standing off the two square corners. No fill slab, bevel or drop shadow.
+ * Renders <a> when `href` is set, otherwise <button type="button">.
+ */
 export function Button({ children, variant = "primary", size, className, ...rest }: ButtonProps) {
   const resolvedSize = variant === "link" ? undefined : size ?? (variant === "primary" ? "lg" : "md");
+  const holo = variant === "primary" || variant === "secondary";
   const cls = cx("w-btn", `w-btn--${variant}`, className);
   const inner = (
     <>
       {variant === "primary" && <span className="w-btn__glow" aria-hidden="true" />}
-      <span className="w-btn__label">{children}</span>
+      {holo && <span className="w-btn__glass" aria-hidden="true" />}
+      {holo && <span className="w-btn__edge" aria-hidden="true" />}
+      {variant === "primary" && <Play />}
+      {/* data-text feeds the red/cyan split copies (pseudo-elements, transform/opacity only). */}
+      <span className="w-btn__label" data-text={typeof children === "string" ? children : undefined}>
+        {children}
+      </span>
       {variant === "link" && <Arrow />}
     </>
   );

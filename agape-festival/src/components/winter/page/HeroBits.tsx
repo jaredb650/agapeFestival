@@ -6,6 +6,7 @@ import { afterLoadIdle } from "./idle";
 import { withGsap } from "./loadGsap";
 import { GLITCH_EVENT, GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
+import { onSecondWhileVisible } from "@/components/winter/perf";
 import type { HeroVideo as HeroVideoConfig } from "./media";
 
 // three.js only ships to desktop mice: phones get the CSS GlitchLayer (tap burst)
@@ -75,10 +76,10 @@ const LCD_ON_MS = 1000;
 
 /**
  * DDD:HH:MM:SS LCD readout. The digits are written straight into the DOM once a
- * second (no React state, no re-render), aligned to the wall-clock second, and
- * only while the readout is on screen and the tab is visible. On start the
- * digits decode in left to right from noise. Server HTML (static export) has
- * no "now", so it ships dashes over the unlit 8s.
+ * second (no React state, no re-render) on the page's shared 1 Hz tick, aligned
+ * to the wall-clock second, and only while the readout is on screen and the tab
+ * is visible. On start the digits decode in left to right from noise. Server
+ * HTML (static export) has no "now", so it ships dashes over the unlit 8s.
  */
 export function Countdown({
   targetIso,
@@ -103,13 +104,11 @@ export function Countdown({
     const target = Date.parse(targetIso);
     const cells = Array.from(el.querySelectorAll<HTMLElement>("[data-d]"));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let timer = 0;
-    let running = false;
+    let decodeTimer = 0;
     let decodeEnd = 0;
-    let inView = false;
 
-    const digitsNow = () => {
-      const left = Math.max(0, Math.floor((target - Date.now()) / 1000));
+    const digitsNow = (now = Date.now()) => {
+      const left = Math.max(0, Math.floor((target - now) / 1000));
       const d = Math.min(999, Math.floor(left / 86400));
       el.toggleAttribute("data-short", d < 100);
       el.toggleAttribute("data-done", left === 0);
@@ -119,32 +118,18 @@ export function Countdown({
       for (let i = 0; i < cells.length; i++) if (cells[i].textContent !== s[i]) cells[i].textContent = s[i];
     };
 
-    const tick = () => {
+    // The one-off decode: noisy digits locking in left to right, ~20 fps, then the shared tick takes over.
+    const decodeStep = () => {
+      decodeTimer = 0;
       const { str } = digitsNow();
       const now = performance.now();
-      if (now < decodeEnd) {
-        const locked = Math.max(0, Math.floor((1 - (decodeEnd - now) / DECODE_MS) * cells.length));
-        let noisy = "";
-        for (let i = 0; i < str.length; i++) noisy += i < locked ? str[i] : String((Math.random() * 10) | 0);
-        write(noisy);
-        timer = window.setTimeout(tick, 48);
-        return;
-      }
-      write(str);
-      timer = window.setTimeout(tick, 1000 - (Date.now() % 1000) + 8);
+      if (now >= decodeEnd) return write(str);
+      const locked = Math.max(0, Math.floor((1 - (decodeEnd - now) / DECODE_MS) * cells.length));
+      let noisy = "";
+      for (let i = 0; i < str.length; i++) noisy += i < locked ? str[i] : String((Math.random() * 10) | 0);
+      write(noisy);
+      decodeTimer = window.setTimeout(decodeStep, 48);
     };
-
-    const start = () => {
-      if (running) return;
-      running = true;
-      el.setAttribute("data-live", "");
-      tick();
-    };
-    const stop = () => {
-      running = false;
-      clearTimeout(timer);
-    };
-    const sync = () => (inView && document.visibilityState === "visible" ? start() : stop());
 
     // First reading: decode in (once), and give screen readers a one-off summary.
     const first = digitsNow();
@@ -152,16 +137,19 @@ export function Countdown({
     // The decode waits for the LCD's CSS power-on (~1s after navigation start) so it is seen.
     if (!reduced) decodeEnd = Math.max(performance.now(), LCD_ON_MS) + DECODE_MS;
 
-    const io = new IntersectionObserver(([e]) => {
-      inView = e.isIntersecting;
-      sync();
+    // Digits change once a second on the page's shared, wall-clock-aligned tick, only while the readout is on
+    // screen and the tab is visible (perf/ticker).
+    const off = onSecondWhileVisible(el, (now) => {
+      if (!el.hasAttribute("data-live")) el.setAttribute("data-live", "");
+      if (performance.now() < decodeEnd) {
+        if (!decodeTimer) decodeStep();
+        return;
+      }
+      write(digitsNow(now).str);
     });
-    io.observe(el);
-    document.addEventListener("visibilitychange", sync);
     return () => {
-      stop();
-      io.disconnect();
-      document.removeEventListener("visibilitychange", sync);
+      off();
+      clearTimeout(decodeTimer);
     };
   }, [targetIso]);
 
@@ -349,6 +337,12 @@ export function HeroExit() {
     const undo = withGsap(({ gsap }) => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Past a tween's end its layer sits at opacity 0: flag it so CSS parks the loops inside (hero.css).
+        const parkWhenFaded = (attr: string) => ({
+          onLeave: () => hero.setAttribute(attr, ""),
+          onEnterBack: () => hero.removeAttribute(attr),
+          onRefresh: (self: { progress: number }) => hero.toggleAttribute(attr, self.progress >= 1),
+        });
         const media = hero.querySelector("[data-hero-media]");
         const copy = hero.querySelector("[data-hero-copy]");
         const hud = hero.querySelector("[data-hero-hud]");
@@ -369,14 +363,14 @@ export function HeroExit() {
           y: () => -0.16 * window.innerHeight,
           opacity: 0,
           ease: "none",
-          scrollTrigger: { trigger: hero, start: "top top", end: "45% top", scrub: true, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: hero, start: "top top", end: "45% top", scrub: true, invalidateOnRefresh: true, ...parkWhenFaded("data-faded") },
         });
         if (hud) {
           gsap.to(hud, {
             scale: 1.08,
             opacity: 0,
             ease: "none",
-            scrollTrigger: { trigger: hero, start: "top top", end: "34% top", scrub: true },
+            scrollTrigger: { trigger: hero, start: "top top", end: "34% top", scrub: true, ...parkWhenFaded("data-hud-off") },
           });
         }
         gsap.to(meta, {
@@ -384,6 +378,10 @@ export function HeroExit() {
           ease: "none",
           scrollTrigger: { trigger: hero, start: "top top", end: "30% top", scrub: true },
         });
+        return () => {
+          hero.removeAttribute("data-hud-off");
+          hero.removeAttribute("data-faded");
+        };
       });
       return () => mm.revert();
     });

@@ -38,6 +38,27 @@ export function BioSheet({ open, day, info, wing, entry, index, pending, onClose
     if (open) closeRef.current?.focus({ preventScroll: true });
   }, [open]);
 
+  // A long bio scrolls inside the sheet (never the page). While more text sits below the fold
+  // the body fades out at the bottom and a MORE cue shows, so it never reads as cut off.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!open || !el) return;
+    el.scrollTop = 0;
+    const sync = () => {
+      el.toggleAttribute("data-more", el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+      el.toggleAttribute("data-up", el.scrollTop > 2);
+    };
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", sync);
+      ro.disconnect();
+    };
+  }, [open, entry]);
+
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape") {
       e.stopPropagation();
@@ -121,22 +142,27 @@ export function BioSheet({ open, day, info, wing, entry, index, pending, onClose
             </>,
           ]}
         />
-        <div className="asel-sheet__body" tabIndex={named?.bio ? 0 : undefined}>
-          {named?.bio ? (
-            <p className="asel-sheet__bio">{named.bio}</p>
-          ) : named ? (
-            <p className="asel-window__note">
-              <b>{pending.bio}</b> Photo, footage and bio are on the way.
-            </p>
-          ) : locked ? (
-            <p className="asel-window__note">
-              <b>{pending.locked}</b> This act hasn&rsquo;t been announced yet.
-            </p>
-          ) : (
-            <p className="asel-window__note">
-              <b>{info.dateLong}</b> Tap a Day {day} key to load an artist.
-            </p>
-          )}
+        <div className="asel-sheet__scroll">
+          <div ref={bodyRef} className="asel-sheet__body" tabIndex={named?.bio ? 0 : undefined}>
+            {named?.bio ? (
+              <p className="asel-sheet__bio">{named.bio}</p>
+            ) : named ? (
+              <p className="asel-window__note">
+                <b>{pending.bio}</b> Photo, footage and bio are on the way.
+              </p>
+            ) : locked ? (
+              <p className="asel-window__note">
+                <b>{pending.locked}</b> This act hasn&rsquo;t been announced yet.
+              </p>
+            ) : (
+              <p className="asel-window__note">
+                <b>{info.dateLong}</b> Tap a Day {day} key to load an artist.
+              </p>
+            )}
+          </div>
+          <span className="asel-sheet__more" aria-hidden="true">
+            More <b>▾</b>
+          </span>
         </div>
         {!!named?.socials?.length && (
           <div className="asel-window__actions">

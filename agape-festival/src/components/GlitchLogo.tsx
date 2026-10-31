@@ -85,6 +85,10 @@ function GlitchLogoMesh({
     const element = containerRef.current;
     if (!element) return;
     let activePointer: number | null = null;
+    // Off screen, mouse moves skip the rect read (a forced layout) entirely.
+    let onScreen = true;
+    const io = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+    io.observe(element);
     const updatePointer = (event: PointerEvent) => {
       const rect = element.getBoundingClientRect();
       const x = (event.clientX - rect.left) / rect.width;
@@ -112,6 +116,10 @@ function GlitchLogoMesh({
     };
     const move = (event: PointerEvent) => {
       if (!event.isPrimary) return;
+      if (!onScreen && activePointer === null) {
+        mouse.current.inside = false;
+        return;
+      }
       if (event.pointerType !== "mouse" && event.pointerId !== activePointer) return;
       updatePointer(event);
     };
@@ -125,6 +133,7 @@ function GlitchLogoMesh({
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
     return () => {
+      io.disconnect();
       element.removeEventListener("pointerdown", down);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", end);
@@ -289,8 +298,10 @@ export default function GlitchLogo({ imageSrc }: { imageSrc: string }) {
       {enabled && !failed && <div className="glitch-logo-canvas" aria-hidden="true">
         <LogoBoundary onFailure={() => setFailed(true)}>
           <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 1.5]} frameloop="demand"
-            // Ignore ancestor scale/glitch transforms when sizing the drawing surface.
-            resize={{ offsetSize: true }}
+            // Ignore ancestor scale/glitch transforms when sizing the drawing surface. No scroll tracking:
+            // R3F's default re-measures (and re-renders the scene) on every scroll, but nothing here uses
+            // the canvas's page offset (pointer input is computed from the container's rect).
+            resize={{ offsetSize: true, scroll: false }}
             style={{ width: "100%", height: "100%" }}
             gl={{ alpha: true, antialias: false, powerPreference: "low-power" }}
             fallback={null}

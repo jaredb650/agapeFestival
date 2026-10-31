@@ -599,7 +599,7 @@
 
 /* Idle loops, running only while the board is on screen: the ticker sweep re-runs every ~7s, the meter bounces. */
 .wlu[data-settled] .wlu__sweep { animation: wlu-sweep-idle 7s 0.6s cubic-bezier(0.5, 0, 0.4, 1) infinite paused; }
-.wlu[data-settled] .wlu__eq i { animation: wlu-eq var(--t) ease-in-out infinite alternate paused; }
+.wlu[data-settled] .wlu__eq i { animation: wlu-eq calc(var(--t) * 40) ease-in-out infinite paused; }
 .wlu[data-settled][data-inview] :is(.wlu__sweep, .wlu__eq i) { animation-play-state: running; }
 
 @keyframes wlu-flick {
@@ -625,7 +625,10 @@
 @keyframes wlu-rise { from { opacity: 0; transform: translate3d(0, 14px, 0); } to { opacity: 1; transform: none; } }
 @keyframes wlu-slide { from { opacity: 0; transform: translate3d(-10px, 0, 0); } to { opacity: 1; transform: none; } }
 @keyframes wlu-eq-in { from { transform: scaleY(0); } to { transform: scaleY(var(--h)); } }
-@keyframes wlu-eq { from { transform: scaleY(var(--h)); } to { transform: scaleY(calc(var(--h) * 0.3)); } }
+/* The bounce folds 20 down/up cycles into one iteration (duration 40 x --t, no alternate): with 20 bars on
+   20 periods, per-iteration boundaries were ~25 main-thread frames a second (React listens for
+   animationiteration). Identical motion: ease-in-out applies per keyframe segment. */
+@keyframes wlu-eq { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { transform: scaleY(var(--h)); } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { transform: scaleY(calc(var(--h) * 0.3)); } }
 @keyframes wlu-sweep { from { transform: translateX(-101%); } to { transform: translateX(101%); } }
 @keyframes wlu-sweep-idle {
   0% { transform: translateX(-101%); }

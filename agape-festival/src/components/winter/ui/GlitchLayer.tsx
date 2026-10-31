@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { observeInView } from "@/components/winter/perf/inView";
 import { cx } from "./cx";
 
 /** Dispatch on a GlitchLayer root (`.w-glitch`) to fire one burst from outside. */
@@ -67,7 +68,6 @@ export function GlitchLayer({
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     let timer = 0;
     let maskSrc = "";
-    let onScreen = true;
 
     const fire = () => {
       if (reduced.matches || timer) return;
@@ -96,25 +96,28 @@ export function GlitchLayer({
       el.addEventListener("focusin", fire);
     }
 
-    // Idle bursts, only while on screen and the tab is visible.
+    // Idle bursts, only while on screen and the tab is visible: the timer is armed only while
+    // the layer is in view (one shared observer for every layer), so off screen it costs nothing.
     let idleTimer = 0;
-    let io: IntersectionObserver | null = null;
+    let unobserve = () => {};
     if (idleEvery) {
-      io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting));
-      io.observe(el);
       const loop = () => {
         idleTimer = window.setTimeout(() => {
-          if (onScreen && document.visibilityState === "visible") fire();
+          if (document.visibilityState === "visible") fire();
           loop();
         }, idleEvery * (0.6 + Math.random() * 0.8));
       };
-      loop();
+      unobserve = observeInView(el, (inView) => {
+        clearTimeout(idleTimer);
+        idleTimer = 0;
+        if (inView) loop();
+      });
     }
 
     return () => {
       clearTimeout(timer);
       clearTimeout(idleTimer);
-      io?.disconnect();
+      unobserve();
       unwatch();
       el.removeEventListener(GLITCH_EVENT, fire);
       el.removeEventListener("pointerenter", onEnter);

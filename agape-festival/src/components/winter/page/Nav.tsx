@@ -5,6 +5,7 @@ import { GlitchLayer } from "@/components/winter/ui";
 import { decode } from "@/components/winter/nav/decode";
 import { dateCode, findSections, nycTime, sectorCode, type HudSection } from "@/components/winter/nav/hud";
 import { MenuDialog, useMenu } from "@/components/winter/nav/MenuDialog";
+import { onSecond } from "@/components/winter/perf";
 import "@/styles/sections/nav.css";
 
 interface Props {
@@ -70,13 +71,14 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials, dates }: P
     els.forEach((el) => io.observe(el));
 
     // Scroll meter: one transform + a text node only when the integer changes.
+    // No layout reads per scroll: the scroll range is cached by `measure` (page reflow / resize).
     let raf = 0;
     let lastPct = -1;
     let meterW = 0;
+    let max = document.documentElement.scrollHeight - window.innerHeight;
     let scrolled: boolean | null = null;
     const update = () => {
       raf = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
       if (fillRef.current) fillRef.current.style.transform = `scaleX(${p})`;
       if (headRef.current) headRef.current.style.transform = `translateX(${(p * meterW).toFixed(1)}px)`;
@@ -102,18 +104,21 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials, dates }: P
     const measure = () => {
       measureRaf = 0;
       meterW = fillRef.current?.parentElement?.offsetWidth ?? 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
+      max = document.documentElement.scrollHeight - window.innerHeight;
       if (max <= 0) return;
       const next = els.map((el) => Math.min(1, Math.max(0, (el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.45) / max)));
       setTicks((cur) => (cur.length === next.length && cur.every((v, i) => Math.abs(v - next[i]) < 0.002) ? cur : next));
       update();
     };
-    const ro = new ResizeObserver(() => {
+    const remeasure = () => {
       if (!measureRaf) measureRaf = requestAnimationFrame(measure);
-    });
+    };
+    const ro = new ResizeObserver(remeasure);
     const main = document.getElementById("main");
     if (main) ro.observe(main);
     ro.observe(root);
+    // The viewport height changes the scroll range too (mobile URL bar), without resizing <main>.
+    window.addEventListener("resize", remeasure, { passive: true });
     measureRaf = requestAnimationFrame(measure);
 
     return () => {
@@ -123,22 +128,21 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials, dates }: P
       cancelAnimationFrame(measureRaf);
       cancelAnimationFrame(sectionsRaf);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", remeasure);
     };
   }, [links]);
 
-  // ---- Clock: festival-local time, once a second, written straight to the DOM.
+  // ---- Clock: festival-local time on the page's shared 1 Hz tick (wall-clock aligned,
+  // parked while the tab is hidden), written straight to the DOM. (Readouts hidden by a
+  // breakpoint or the closed menu cost nothing: text in a display:none subtree never lays out.)
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const nodes = root.querySelectorAll<HTMLElement>("[data-clock]");
-    const tick = () => {
-      if (document.hidden) return;
-      const t = nycTime();
+    return onSecond((now) => {
+      const t = nycTime(new Date(now));
       nodes.forEach((n) => (n.textContent = t));
-    };
-    tick();
-    const id = window.setInterval(tick, 1000);
-    return () => clearInterval(id);
+    });
   }, []);
 
   // ---- Sector change: decode the LCD, sweep the notch -----------------------

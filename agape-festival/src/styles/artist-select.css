@@ -777,7 +777,9 @@
   .asel-section { scroll-snap-align: end; }
 
   .asel {
-    --nav: 64px;
+    /* Clearance for the fixed HUD bar on phones: the 56px bar plus the 18px notch hanging under its
+       centre (nav.css --hud-h / --hud-nd), so the bezel's ":: Select artist ::" label sits below it. */
+    --nav: 74px;
     --shell-x: max(8px, calc((100% - 520px) / 2));
     --sqg: 8px;
     /* Key size: fit the width, AND leave the splash ≥ ~180px of the screen height. */
@@ -914,9 +916,10 @@
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--side-lite) 55%, transparent), 0 0 12px -2px var(--side-glow);
     transition: transform 0.12s ease;
   }
-  .asel-screen__cue b { color: var(--side-lite); animation: asel-nudge 1.6s steps(2, end) infinite; }
+  .asel-screen__cue b { color: var(--side-lite); animation: asel-nudge 32s steps(2, end) infinite; }
   .asel-screen__btn:active .asel-screen__cue { transform: scale(0.95); }
-  @keyframes asel-nudge { 50% { transform: translateX(3px); } }
+  /* 20 nudges per iteration (32s): each iteration boundary costs a main-thread frame (React listens for animationiteration). */
+  @keyframes asel-nudge { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { transform: none; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { transform: translateX(3px); } }
 
   /* Day switcher: slim chrome segments, the active day lit in its colour */
   .asel-switch { order: 3; flex: none; display: flex; gap: 4px; height: 36px; }
@@ -1054,7 +1057,42 @@
     text-shadow: 0 0 1px currentColor;
     overflow-wrap: anywhere;
   }
-  .asel-sheet__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--w-steel) transparent; }
+  /* The bio scrolls inside the sheet: the window never grows past the PDA and the page never moves.
+     Touches on the sheet chrome/scrim pan nothing; only the bio pans (and never chains to the page). */
+  .asel-sheet { touch-action: none; }
+  .asel-sheet__scroll { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .asel-sheet__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; scrollbar-color: var(--w-steel) transparent; }
+  /* More text below: fade the last lines out and show a MORE cue, so a long bio never reads as cut off. */
+  .asel-sheet__body[data-more] {
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
+    mask-image: linear-gradient(180deg, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
+  }
+  /* Scrolled: the top edge fades too, so text never looks sliced under the LCD. */
+  .asel-sheet__body[data-up] {
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 22px);
+    mask-image: linear-gradient(180deg, transparent, #000 22px);
+  }
+  .asel-sheet__body[data-up][data-more] {
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 22px, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 22px, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
+  }
+  .asel-sheet__more {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 4px 6px 3px 8px;
+    font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--day-lite);
+    background: rgba(4, 6, 10, 0.82);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--day-lite) 30%, transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--w-dur-fast) ease;
+  }
+  .asel-sheet__more b { font-weight: 400; }
+  .asel-sheet__body[data-more] + .asel-sheet__more { opacity: 1; }
   .asel-sheet__body:focus-visible { outline: 1px solid var(--day-lite); outline-offset: 2px; }
   .asel-sheet__bio { margin: 0; font-size: var(--w-fs-small); line-height: 1.55; color: var(--w-mist); }
   .asel-sheet .w-window__meta { display: flex; align-items: center; align-self: stretch; gap: 10px; opacity: 1; }

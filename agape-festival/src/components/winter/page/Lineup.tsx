@@ -132,7 +132,7 @@ function Row({ row, linked }: { row: BoardRow; linked: boolean }) {
  */
 export function Lineup({ linkToSelect }: { linkToSelect: boolean }) {
   return (
-    <section id="lineup" className="wlu" aria-labelledby="lineup-title" data-bg-dim="0.4" data-linked={linkToSelect || undefined}>
+    <section id="lineup" className="wlu" aria-labelledby="lineup-title" data-bg-dim="0.4" data-linked={linkToSelect || undefined} data-pause-offscreen="">
       <div className="wlu__panel">
         <svg className="wlu__bezel" aria-hidden="true" focusable="false">
           <path className="wlu__bezel-fill" />

@@ -56,7 +56,7 @@ export function Hero() {
       <div className="wh__content" data-hero-copy>
         <h1 id="hero-title" className="wh__logo">
           <span className="w-sr-only">ÄGAPĒ Festival</span>
-          <span className="wh__logo-box" aria-hidden="true">
+          <span className="wh__logo-box" data-boot-logo aria-hidden="true">
             <HeroLogo logo={HERO_LOGO} sizes="(max-width: 600px) 84vw, 510px" />
           </span>
         </h1>
@@ -69,7 +69,7 @@ export function Hero() {
           </p>
         </div>
         <div className="wh__reveal">
-          <div className="wh__divider" aria-hidden="true" />
+          <div className="wh__divider" data-boot-divider aria-hidden="true" />
           {/* Target = WINTER.countdown.targetIso (midnight NY, Feb 19). TODO_CONFIRM: Day 1 doors time (see winter.ts). */}
           <Countdown targetIso={WINTER.countdown.targetIso} label={WINTER.countdown.ariaLabel} />
           <Button href={WINTER.tickets.url} external className="wh__cta" data-hero-cta>

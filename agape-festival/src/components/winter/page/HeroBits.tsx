@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { afterLoadIdle } from "./idle";
 import { withGsap } from "./loadGsap";
-import { GlitchLayer } from "@/components/winter/ui";
+import { GLITCH_EVENT, GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
 import type { HeroVideo as HeroVideoConfig } from "./media";
 
@@ -12,44 +12,193 @@ import type { HeroVideo as HeroVideoConfig } from "./media";
 // and never download WebGL. GlitchLogo itself renders on demand (idle until touched).
 const GlitchLogo = dynamic(() => import("@/components/GlitchLogo"), { ssr: false });
 
-// PNG is the WebGL texture (desktop); phones get the 21 KB WebP of the same art.
-const LOGO = { src: "/assets/logos/aFestWhite.png", webp: "/assets/logos/aFestWhite.webp", width: 586, height: 310 };
+export interface HeroLogoAsset {
+  src: string;
+  srcSet: string;
+  width: number;
+  height: number;
+}
 
-export function HeroLogo() {
+/**
+ * The big centred ÄGAPĒ Festival logo. The static <img> paints on the first
+ * frame (the CSS power-on jitters it, never hides it, so it stays an early
+ * LCP candidate); one glitch burst fires as the HUD assembles. Desktop mice
+ * swap in the WebGL distortion once the intro is done, using the same
+ * (already cached) WebP as its texture.
+ */
+export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }) {
   const [webgl, setWebgl] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const ok =
-      window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)").matches &&
-      navigator.maxTouchPoints === 0;
-    if (!ok) return;
-    const id = window.setTimeout(() => setWebgl(true), 1500);
-    return () => clearTimeout(id);
+    const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+    const burst = motionOk
+      ? window.setTimeout(() => box.current?.querySelector(".w-glitch")?.dispatchEvent(new Event(GLITCH_EVENT)), 560)
+      : 0;
+    const fine =
+      motionOk && window.matchMedia("(hover: hover) and (pointer: fine)").matches && navigator.maxTouchPoints === 0;
+    const swap = fine ? window.setTimeout(() => setWebgl(true), 2400) : 0;
+    return () => {
+      clearTimeout(burst);
+      clearTimeout(swap);
+    };
   }, []);
 
-  if (webgl) return <GlitchLogo imageSrc={LOGO.src} />;
   return (
-    <GlitchLayer intensity="subtle" className="whero__logo-static">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={LOGO.webp} width={LOGO.width} height={LOGO.height} alt="" draggable={false} fetchPriority="high" />
-    </GlitchLayer>
+    <div ref={box} className="wh__logo-box">
+      {webgl ? (
+        <GlitchLogo imageSrc={logo.src} />
+      ) : (
+        <GlitchLayer intensity="medium" idleEvery={9000} className="wh__logo-static">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logo.src}
+            srcSet={logo.srcSet}
+            sizes={sizes}
+            width={logo.width}
+            height={logo.height}
+            alt=""
+            draggable={false}
+            fetchPriority="high"
+          />
+        </GlitchLayer>
+      )}
+    </div>
   );
 }
 
-const noSubscribe = () => () => {};
+// ---- Countdown -----------------------------------------------------------
 
-/** "T–112 DAYS": a date count (not a clock), since doors time isn't announced. */
-export function DaysOut({ startIso, label }: { startIso: string; label: string }) {
-  // Server render (static export) has no "today"; the client fills it in after hydration.
-  const days = useSyncExternalStore(
-    noSubscribe,
-    () => Math.ceil((Date.parse(`${startIso}T00:00:00-05:00`) - Date.now()) / 86_400_000),
-    () => null,
+const pad = (n: number, w: number) => String(n).padStart(w, "0");
+const DECODE_MS = 700;
+const LCD_ON_MS = 1000;
+
+/**
+ * DDD:HH:MM:SS LCD readout. The digits are written straight into the DOM once a
+ * second (no React state, no re-render), aligned to the wall-clock second, and
+ * only while the readout is on screen and the tab is visible. On start the
+ * digits decode in left to right from noise. Server HTML (static export) has
+ * no "now", so it ships dashes over the unlit 8s.
+ */
+export function Countdown({
+  targetIso,
+  label,
+  lead,
+  meta,
+}: {
+  targetIso: string;
+  /** Accessible name of the timer. */
+  label: string;
+  /** Header, left (e.g. "T–MINUS"). */
+  lead: string;
+  /** Header, right (e.g. "DAY 01 ▸ 02.19.27"). */
+  meta: string;
+}) {
+  const root = useRef<HTMLDivElement>(null);
+  const sr = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const target = Date.parse(targetIso);
+    const cells = Array.from(el.querySelectorAll<HTMLElement>("[data-d]"));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let timer = 0;
+    let running = false;
+    let decodeEnd = 0;
+    let inView = false;
+
+    const digitsNow = () => {
+      const left = Math.max(0, Math.floor((target - Date.now()) / 1000));
+      const d = Math.min(999, Math.floor(left / 86400));
+      el.toggleAttribute("data-short", d < 100);
+      el.toggleAttribute("data-done", left === 0);
+      return { left, d, str: pad(d, 3) + pad(Math.floor(left / 3600) % 24, 2) + pad(Math.floor(left / 60) % 60, 2) + pad(left % 60, 2) };
+    };
+    const write = (s: string) => {
+      for (let i = 0; i < cells.length; i++) if (cells[i].textContent !== s[i]) cells[i].textContent = s[i];
+    };
+
+    const tick = () => {
+      const { str } = digitsNow();
+      const now = performance.now();
+      if (now < decodeEnd) {
+        const locked = Math.max(0, Math.floor((1 - (decodeEnd - now) / DECODE_MS) * cells.length));
+        let noisy = "";
+        for (let i = 0; i < str.length; i++) noisy += i < locked ? str[i] : String((Math.random() * 10) | 0);
+        write(noisy);
+        timer = window.setTimeout(tick, 48);
+        return;
+      }
+      write(str);
+      timer = window.setTimeout(tick, 1000 - (Date.now() % 1000) + 8);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      el.setAttribute("data-live", "");
+      tick();
+    };
+    const stop = () => {
+      running = false;
+      clearTimeout(timer);
+    };
+    const sync = () => (inView && document.visibilityState === "visible" ? start() : stop());
+
+    // First reading: decode in (once), and give screen readers a one-off summary.
+    const first = digitsNow();
+    if (sr.current) sr.current.textContent = `${first.d} days, ${Math.floor(first.left / 3600) % 24} hours to go.`;
+    // The decode waits for the LCD's CSS power-on (~1s after navigation start) so it is seen.
+    if (!reduced) decodeEnd = Math.max(performance.now(), LCD_ON_MS) + DECODE_MS;
+
+    const io = new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      sync();
+    });
+    io.observe(el);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      stop();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, [targetIso]);
+
+  const cell = (i: number) => (
+    <span className="wh-lcd__d" data-d={i} key={i}>
+      -
+    </span>
   );
-  if (days === null || days <= 0) return null;
+  const groups: [string, number[]][] = [
+    ["Days", [0, 1, 2]],
+    ["Hrs", [3, 4]],
+    ["Min", [5, 6]],
+    ["Sec", [7, 8]],
+  ];
+
   return (
-    <p className="w-hud whero__count" aria-label={`${days} days until ${label}`}>
-      <span aria-hidden="true">T–{days} days</span>
-    </p>
+    <div ref={root} className="wh-lcd" role="timer" aria-label={label} data-nosnippet>
+      <span className="wh-lcd__bar" aria-hidden="true">
+        <span className="wh-lcd__orb" />
+        <span className="wh-lcd__lead">{lead}</span>
+        <span className="wh-lcd__rule" />
+        <span className="wh-lcd__meta">{meta}</span>
+        <span className="wh-lcd__orb" data-blink />
+      </span>
+      <span className="wh-lcd__screen" aria-hidden="true">
+        <span className="wh-lcd__digits">
+          {groups.map(([unit, idx], g) => (
+            <span key={unit} className="wh-lcd__grp" data-unit={unit.toLowerCase()}>
+              {g > 0 && <span className="wh-lcd__colon">:</span>}
+              <span className="wh-lcd__cells">{idx.map(cell)}</span>
+              <span className="wh-lcd__unit">{unit}</span>
+            </span>
+          ))}
+        </span>
+      </span>
+      <span ref={sr} className="w-sr-only" />
+    </div>
   );
 }
 
@@ -123,7 +272,7 @@ export function HeroVideo({ video }: { video: HeroVideoConfig }) {
   return (
     <video
       ref={ref}
-      className="whero__video"
+      className="wh__video"
       data-playing={playing || undefined}
       src={src}
       muted
@@ -149,7 +298,7 @@ export function HeroVideo({ video }: { video: HeroVideoConfig }) {
   );
 }
 
-/** Pause/play for the hero video (WCAG 2.2.2: motion longer than 5 s can be stopped). */
+/** Pause/play for the hero video (WCAG 2.2.2: motion longer than 5 s can be stopped). A HUD transport chip. */
 export function HeroVideoToggle() {
   const state = useHvState();
   if (state === "off") return null;
@@ -157,7 +306,8 @@ export function HeroVideoToggle() {
   return (
     <button
       type="button"
-      className="whero__toggle"
+      className="wh-chip"
+      data-playing={playing || undefined}
       aria-label={playing ? "Pause background video" : "Play background video"}
       onClick={() => {
         const vid = hvEl;
@@ -171,26 +321,39 @@ export function HeroVideoToggle() {
         }
       }}
     >
+      <span className="wh-chip__led" aria-hidden="true" />
+      <span className="wh-chip__feed" aria-hidden="true">
+        Feed 01
+      </span>
       <svg viewBox="0 0 10 10" aria-hidden="true">
         {playing ? <path d="M1.5 1h2.4v8H1.5zM6.1 1h2.4v8H6.1z" fill="currentColor" /> : <path d="M2 1l7 4-7 4z" fill="currentColor" />}
       </svg>
-      <span aria-hidden="true">{playing ? "Pause" : "Play"}</span>
+      <span className="wh-chip__label" aria-hidden="true">
+        {playing ? "Pause" : "Play"}
+      </span>
     </button>
   );
 }
 
-/** As the hero leaves, the photo sinks and dissolves into the tower behind it; the copy lifts away. */
+/**
+ * Scroll exit: the footage sinks and dissolves into the tower behind it, the
+ * copy lifts away, the HUD pulls back and fades. Also parks the HUD's looping
+ * animations (`data-off`) while the hero is off screen.
+ */
 export function HeroExit() {
   useEffect(() => {
     const hero = document.getElementById("hero");
     if (!hero) return;
-    return withGsap(({ gsap }) => {
+    const io = new IntersectionObserver(([e]) => hero.toggleAttribute("data-off", !e.isIntersecting));
+    io.observe(hero);
+    const undo = withGsap(({ gsap }) => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const media = hero.querySelector("[data-hero-media]");
         const copy = hero.querySelector("[data-hero-copy]");
+        const hud = hero.querySelector("[data-hero-hud]");
         const meta = hero.querySelectorAll("[data-hero-meta]");
-        // Parallax over the whole exit; the photo has fully dissolved by ~48% (and its bottom edge is feathered) so
+        // Parallax over the whole exit; the footage has fully dissolved by ~48% (and its bottom edge is feathered) so
         // the hero's bottom edge never shows as a seam over the tower.
         gsap.to(media, {
           yPercent: 16,
@@ -208,6 +371,14 @@ export function HeroExit() {
           ease: "none",
           scrollTrigger: { trigger: hero, start: "top top", end: "45% top", scrub: true, invalidateOnRefresh: true },
         });
+        if (hud) {
+          gsap.to(hud, {
+            scale: 1.08,
+            opacity: 0,
+            ease: "none",
+            scrollTrigger: { trigger: hero, start: "top top", end: "34% top", scrub: true },
+          });
+        }
         gsap.to(meta, {
           opacity: 0,
           ease: "none",
@@ -216,6 +387,10 @@ export function HeroExit() {
       });
       return () => mm.revert();
     });
+    return () => {
+      io.disconnect();
+      undo();
+    };
   }, []);
   return null;
 }

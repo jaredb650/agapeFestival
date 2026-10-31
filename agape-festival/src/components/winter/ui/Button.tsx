@@ -41,9 +41,11 @@ function Play() {
 }
 
 /**
- * Hologram buttons: a chamfered pane of ice glass (scanlines + a sheen that
- * sweeps on hover) inside a 1px luminous edge, with the Sept corner brackets
- * standing off the two square corners. No fill slab, bevel or drop shadow.
+ * Hologram buttons: a plain rectangle of ice glass (scanlines + a sheen that
+ * sweeps on hover) inside a 1px luminous edge, with targeting brackets on all
+ * four corners that snap inward like a reticle locking on (hover / focus /
+ * press). The primary also pulses: every few seconds its halo flares and a
+ * ring pings outward (opacity/transform only, off under reduced motion).
  * Renders <a> when `href` is set, otherwise <button type="button">.
  */
 export function Button({ children, variant = "primary", size, className, ...rest }: ButtonProps) {
@@ -53,8 +55,17 @@ export function Button({ children, variant = "primary", size, className, ...rest
   const inner = (
     <>
       {variant === "primary" && <span className="w-btn__glow" aria-hidden="true" />}
+      {variant === "primary" && <span className="w-btn__ping" aria-hidden="true" />}
       {holo && <span className="w-btn__glass" aria-hidden="true" />}
       {holo && <span className="w-btn__edge" aria-hidden="true" />}
+      {holo && (
+        <span className="w-btn__lock" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
       {variant === "primary" && <Play />}
       {/* data-text feeds the red/cyan split copies (pseudo-elements, transform/opacity only). */}
       <span className="w-btn__label" data-text={typeof children === "string" ? children : undefined}>

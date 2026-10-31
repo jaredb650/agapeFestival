@@ -84,7 +84,8 @@ and bursts stop under `prefers-reduced-motion`.
 
 | Component | Props | Notes |
 |---|---|---|
-| `Button` | `variant` primary\|secondary\|ghost\|link · `size` sm\|md\|lg (44/52/60px) · `href` + `external` → `<a>`, else `<button>` | **Hologram panes** (Oct 30, after the Y2K refs): a chamfered pane of near-transparent ice glass (top-left + bottom-right corners cut, `--w-cut` 7/8/11px) with fine scanlines, a 1px luminous edge (even-odd clip-path ring, ice→volt), and the Sept corner brackets standing off the two square corners. Orbitron 700 caps at 0.32em. **primary**: ice edge, ▶ transport glyph, breathing halo cast by the ring (static drop-shadow, opacity-only pulse). Hover: holographic sheen sweeps the glass (transform), caps split red/cyan for one beat, brackets step out and flicker, scale 1.03. One per view. **secondary**: same pane, frost edge, faint scan, no glow; edge/brackets go ice on hover. No fill slab, bevel, drop shadow or backdrop-filter. Label AA: frost on a ≥50% ink pane plus a dark text halo. link = HUD caps + arrow. |
+| `Button` | `variant` primary\|secondary\|ghost\|link · `size` sm\|md\|lg (44/52/60px) · `href` + `external` → `<a>`, else `<button>` | **Hologram panes with a lock-on reticle** (round 2, Oct 30, Jared's final CTA call): a **plain rectangle** of near-transparent ice glass with fine scanlines and a 1px luminous edge (even-odd clip-path ring, ice→volt), and **targeting brackets on all four corners** (`.w-btn__lock`, four `<i>`, symmetrical, standing off the box by `--w-frame-o`). Hover (fine pointers), keyboard focus and press: the brackets **snap inward** by `--w-lock` with an overshoot curve and a stepped flicker, like a reticle acquiring a target; the sheen sweeps the glass, the caps split red/cyan for a beat, scale 1.03. Orbitron 700 caps at 0.32em. **primary**: ice edge, ▶ transport glyph, and a **periodic pulse** every `--w-pulse` (4.8s): the halo (static box-shadow) flares on opacity, a ring (`.w-btn__ping`) scales outward and fades, and the bracket wrapper tightens. All transform/opacity; off under reduced motion (halo static at 50%, brackets still step in without overshoot). One per view. **secondary**: same rectangle and lock, frost edge/brackets (ice on hover), faint scan, no pulse. No fill slab, bevel, drop shadow or backdrop-filter. Label AA: frost on a ≥50% ink pane plus a dark text halo. link = HUD caps + arrow. Retired: the chamfered pane / two-corner brackets (`--w-cut`). |
+| `FloatingCta` (page, `page/FloatingCta.tsx`) | `href`, `label`, `meta` {left,right} | **Floating Get tickets dock** at the bottom centre of the viewport (replaces the nav CTA): primary `Button` md in HUD chrome (ice rails with tick marks + pixel readouts, a ▲ pip, a dark legibility pool with an ice bloom on the pulse beat). Docks once the hero's `[data-hero-cta]` has scrolled away; steps aside while `#tickets`, `#footer` or any `[data-cta-hide]` element reaches the lower screen (phones also `#flyer`, `#artists`). IntersectionObserver + a data attribute (no React state); hidden = `inert` + `visibility:hidden`. Safe-area aware (`env(safe-area-inset-bottom)`; needs `viewport-fit=cover` to take effect). 48px tall on phones. |
 | `Frame` | `accent`, `hairline`, `size` md\|lg, `interactive` (bracket flicker on hover), `as` | Corner brackets from one `::after`. Accent only for selected/interactive. |
 | `HudLabel` | `tone` mist\|frost\|fog\|ice · `font` orbitron\|pixel · `size` micro\|nano · `index` ("03") · `rule` | Section kickers, readouts, badges. ice only for live/selected. |
 | `SectionHeading` | `title`, `label`, `index`, `children` (lead), `align`, `size` display\|h1\|h2, `as`, `id` | Kicker → heading → lead, 24px gaps. |
@@ -97,6 +98,15 @@ and bursts stop under `prefers-reduced-motion`.
 | `cx` | `(...classes)` | class join helper |
 
 Shared state class: `.w-selected` (ice ring + volt halo), for tiles, tabs, the day switch.
+
+**Hero (round 2, `page/Hero.tsx` + `styles/sections/hero.css`, classes `wh-*`):** the ÄGAPĒ Festival logo big and centred
+(1233px master, `HERO_LOGO` in media.ts; WebGL glitch on desktop mice after the intro), WINTER EDITION (per-glyph CSS
+decode), dates + venue, the **countdown LCD** (`Countdown` in HeroBits: DDD:HH:MM:SS in Chonky Pixels over unlit 8s,
+chamfered chrome bezel, orbs, blinking colons; DOM-written once a second, aligned to the clock, only while on screen;
+decodes in from noise; target `WINTER.countdown.targetIso`, TODO_CONFIRM doors time) and Get tickets dead centre. A
+decorative targeting HUD sits over the footage: viewfinder corners, a reticle ringing the lockup (two counter-rotating
+HTML layers, never SVG-internal transforms), axis lines, pitch rulers, a heading tape with the scroll cue, pixel data
+blocks, a scan band. It assembles on load in CSS (no JS), pulls back on scroll (HeroExit) and its loops park off screen.
 
 ## Usage rules for the page builder
 

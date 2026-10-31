@@ -323,43 +323,38 @@
 .wh-decode__c::before { content: attr(data-g); position: absolute; left: 0; top: 0; color: var(--w-ice); opacity: 0; }
 
 /* ---- Countdown LCD ----------------------------------------------------------
-   Secondary to Get tickets (hierarchy: logo > CTA > timer > meta): a compact
-   instrument plaque, narrower than the CTA's lock-on frame, with a lighter
-   chrome edge and a softer glow so the button keeps the light. */
+   Secondary to Get tickets (hierarchy: logo > CTA > timer > meta): a slim, wide
+   one-line HUD strip, about half the CTA's height. T–MINUS lead, the recessed
+   digit window (unit letters beside the digits), then the DAY 01 meta. A dim
+   hairline with the video chip's two corner ticks (the CTA keeps the four-corner
+   lock-on and the light), so it reads as a readout, not a second button. */
 .wh-lcd {
-  --lcd-fs: clamp(20px, 0.7rem + 1vw, 26px);
-  --cut: 8px;
+  --lcd-fs: 17px;
   position: relative;
   margin-top: clamp(12px, 2.4svh, 22px);
-  padding: 6px 8px 8px;
+  padding: 4px 10px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: linear-gradient(180deg, rgba(42, 48, 59, 0.74) 0%, rgba(20, 24, 32, 0.8) 50%, rgba(12, 15, 21, 0.84) 100%);
-  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+  align-items: center;
+  gap: 9px;
+  background: linear-gradient(180deg, rgba(20, 24, 32, 0.6) 0%, rgba(8, 11, 16, 0.72) 100%);
+  box-shadow: inset 0 0 0 1px var(--wh-line-dim), 0 0 16px rgba(110, 170, 255, 0.06);
 }
-/* Chamfered 1px chrome edge (even-odd ring) */
-.wh-lcd::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(227, 230, 234, 0.4) 0%, rgba(149, 156, 168, 0.18) 50%, rgba(156, 200, 255, 0.24) 100%);
-  clip-path: polygon(evenodd,
-    var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut), var(--cut) 0,
-    calc(var(--cut) + 0.41px) 1px, 1px calc(var(--cut) + 0.41px), 1px calc(100% - var(--cut) - 0.41px), calc(var(--cut) + 0.41px) calc(100% - 1px),
-    calc(100% - var(--cut) - 0.41px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--cut) - 0.41px), calc(100% - 1px) calc(var(--cut) + 0.41px),
-    calc(100% - var(--cut) - 0.41px) 1px, calc(var(--cut) + 0.41px) 1px);
-}
-.wh-lcd__bar { display: flex; align-items: center; gap: 7px; padding-inline: 2px; }
-.wh-lcd__lead { font: 700 8px / 1 var(--w-font-hud); letter-spacing: 0.26em; text-transform: uppercase; color: var(--w-mist); white-space: nowrap; }
-.wh-lcd__rule { flex: 1; min-width: 10px; height: 5px; background: linear-gradient(var(--wh-line-dim), var(--wh-line-dim)) center / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--wh-line) 0 1px, transparent 1px 6px); }
-.wh-lcd__meta { font: 400 10px / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-ice); opacity: 0.85; white-space: nowrap; }
+.wh-lcd::before, .wh-lcd::after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--w-ice); opacity: 0.8; pointer-events: none; }
+.wh-lcd::before { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.wh-lcd::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+/* One line: the header's parts flow around the digit window (orb, lead, rule | screen | meta, orb). */
+.wh-lcd__bar { display: contents; }
+.wh-lcd__screen { order: 1; }
+.wh-lcd__meta { order: 2; }
+.wh-lcd__orb[data-blink] { order: 3; }
+.wh-lcd__lead { font: 700 8px / 1 var(--w-font-hud); letter-spacing: 0.26em; margin-right: -0.26em; text-transform: uppercase; color: var(--w-mist); white-space: nowrap; }
+.wh-lcd__rule { flex: none; width: 14px; height: 5px; background: linear-gradient(var(--wh-line-dim), var(--wh-line-dim)) center / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--wh-line) 0 1px, transparent 1px 4px); }
+.wh-lcd__meta { font: 400 10px / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-ice); opacity: 0.8; white-space: nowrap; }
 .wh-lcd__orb {
   position: relative;
   flex: none;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: radial-gradient(circle at 34% 30%, rgba(233, 235, 236, 0.5) 0 12%, #4a5566 32%, #1b212c 72%, #0b0e14 100%);
   box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.7);
@@ -370,31 +365,28 @@
   inset: 0;
   border-radius: 50%;
   background: radial-gradient(circle at 34% 30%, #fff 0 10%, #cfe6ff 22%, #7ab8ff 44%, #2f62ff 74%, #0d2a99 100%);
-  box-shadow: 0 0 5px rgba(110, 170, 255, 0.6);
+  box-shadow: 0 0 4px rgba(110, 170, 255, 0.55);
 }
 .wh-lcd__screen {
   position: relative;
   display: block;
-  padding: 7px 12px 6px;
+  padding: 3px 8px;
   overflow: hidden;
   background: linear-gradient(180deg, #04070c 0%, #0a1220 100%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(156, 200, 255, 0.16), 0 1px 0 rgba(233, 235, 236, 0.08);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(156, 200, 255, 0.14);
 }
 .wh-lcd__screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.32) 0 1px, transparent 1px 3px); }
-.wh-lcd__digits { position: relative; display: flex; align-items: flex-start; justify-content: center; }
-.wh-lcd__grp { display: grid; grid-template-columns: auto auto; justify-items: center; }
-.wh-lcd__colon { grid-row: 1; grid-column: 1; padding-inline: 0.16em; font: 400 var(--lcd-fs) / 1 var(--w-font-pixel); color: var(--w-ice); text-shadow: 0 0 5px rgba(156, 200, 255, 0.45); }
-.wh-lcd__cells { grid-row: 1; grid-column: 2; display: flex; }
-.wh-lcd__unit {
-  grid-row: 2;
-  grid-column: 2;
-  margin-top: 4px;
-  font: 700 8px / 1 var(--w-font-hud);
-  letter-spacing: 0.26em;
-  margin-right: -0.26em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-}
+.wh-lcd__digits { position: relative; display: flex; align-items: baseline; }
+.wh-lcd__grp { display: flex; align-items: baseline; }
+.wh-lcd__colon { padding-inline: 0.22em; font: 400 var(--lcd-fs) / 1 var(--w-font-pixel); color: var(--w-ice); text-shadow: 0 0 4px rgba(156, 200, 255, 0.4); }
+.wh-lcd__cells { display: flex; }
+/* Unit letters (D H M S) beside the digits; the full words stay in the markup. */
+.wh-lcd__unit { margin-left: 2px; font-size: 0; }
+.wh-lcd__unit::before { font: 700 8px / 1 var(--w-font-hud); color: var(--w-mist); }
+.wh-lcd__grp[data-unit="days"] .wh-lcd__unit::before { content: "D"; }
+.wh-lcd__grp[data-unit="hrs"] .wh-lcd__unit::before { content: "H"; }
+.wh-lcd__grp[data-unit="min"] .wh-lcd__unit::before { content: "M"; }
+.wh-lcd__grp[data-unit="sec"] .wh-lcd__unit::before { content: "S"; }
 .wh-lcd__d {
   position: relative;
   display: block;
@@ -402,7 +394,7 @@
   font: 400 var(--lcd-fs) / 1 var(--w-font-pixel);
   text-align: center;
   color: var(--w-ice);
-  text-shadow: 0 0 6px rgba(156, 200, 255, 0.45), 0 0 1px rgba(214, 232, 255, 0.7);
+  text-shadow: 0 0 5px rgba(156, 200, 255, 0.4), 0 0 1px rgba(214, 232, 255, 0.7);
 }
 /* Unlit segments behind every digit */
 .wh-lcd__d::before { content: "8"; position: absolute; inset: 0; color: rgba(156, 200, 255, 0.08); text-shadow: none; }
@@ -602,8 +594,8 @@
   .wh-chip__feed { display: none; }
 }
 @media (max-width: 640px) {
-  .wh-lcd { --lcd-fs: clamp(20px, 5.6vw, 24px); }
-  .wh-lcd__screen { padding: 7px 10px 6px; }
+  .wh-lcd { --lcd-fs: 16px; gap: 8px; padding-inline: 9px; }
+  .wh-lcd__meta, .wh-lcd__rule { display: none; }
   .wh__edition { gap: 12px; letter-spacing: 0.5em; }
   .wh__edition .wh-decode { margin-right: -0.5em; }
   .wh__rule { width: 22px; }

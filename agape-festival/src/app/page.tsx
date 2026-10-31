@@ -1,26 +1,19 @@
 import { preload } from "react-dom";
-import { winterFontVariables } from "@/components/winter/fonts";
-import { Grain } from "@/components/winter/ui";
-import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
+import { mono } from "@/components/winter/catalog/fonts";
+import { NAV_ITEMS } from "@/components/winter/catalog/data";
+import { Footer } from "@/components/winter/catalog/Footer";
+import { GettingHere } from "@/components/winter/catalog/GettingHere";
+import { Hero } from "@/components/winter/catalog/Hero";
+import { Nav } from "@/components/winter/catalog/Nav";
+import { Reveal } from "@/components/winter/catalog/Reveal";
+import { Roster } from "@/components/winter/catalog/Roster";
+import { Faq, Lineup, Lockers, Merch, Tickets } from "@/components/winter/catalog/Sections";
 import { FlyerSection } from "@/components/winter/page/FlyerSection";
-import { FloatingCta } from "@/components/winter/page/FloatingCta";
-import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
-import { Hero } from "@/components/winter/page/Hero";
-import { Faq } from "@/components/winter/page/Faq";
-import { GettingHere } from "@/components/winter/page/GettingHere";
-import { Lockers } from "@/components/winter/page/Lockers";
-import { Lineup } from "@/components/winter/page/Lineup";
-import { Merch } from "@/components/winter/page/Merch";
-import { Nav } from "@/components/winter/page/Nav";
-import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
-import { Tickets } from "@/components/winter/page/Tickets";
-import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
-import { Preloader } from "@/components/winter/preloader/Preloader";
-import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
-import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
-import "@/styles/winter.css";
-import "@/styles/winter-page.css";
+import { FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
+import { ARTISTS, LOCKERS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
+import "@/components/winter/catalog/flyer.css";
+import "@/components/winter/catalog/catalog.css";
 
 const SITE = "https://agape-festival.com";
 
@@ -53,8 +46,13 @@ const jsonLd = {
   offers: { "@type": "Offer", url: TICKETS.url, availability: "https://schema.org/InStock" },
 };
 
+/**
+ * v4-mono ("Catalog"): the old landing page carried into a full page, set like
+ * a techno label's sleeve listing. No preloader, no scroll-scrubbed
+ * background: flat black under everything.
+ */
 export default function Home() {
-  // Only the hero still is preloaded (it is the LCP); everything else loads lazily or after idle.
+  // Only the hero still is preloaded (it is the LCP); everything else loads lazily.
   if (HERO.mobile.src === HERO.desktop.src) {
     preload(HERO.desktop.src, { as: "image", fetchPriority: "high" });
   } else {
@@ -63,37 +61,32 @@ export default function Home() {
   }
 
   return (
-    <div className={`winter wpage ${winterFontVariables}`}>
-      <a className="wskip" href="#main">
+    <div className={`cat ${mono.variable}`}>
+      <a className="cat-skip" href="#main">
         Skip to content
       </a>
-      <Preloader />
       <GestureRescue />
-      <ScrollBackground media={BG} startTime={BG_TIMES.top} endTime={BG_TIMES.end} />
       <Nav
-        links={NAV_LINKS}
+        items={NAV_ITEMS.map(({ href, label, cat }) => ({ href, label, cat }))}
         ticketsUrl={WINTER.tickets.url}
         ticketsLabel={WINTER.tickets.cta}
         mark={FLYER.mark}
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
-        dates={WINTER.dates}
+        when={`${WINTER.dates.display} · ${WINTER.venue.full}`}
       />
       <main id="main" tabIndex={-1}>
         <Hero />
         <FlyerSection />
-        {/* Preview: the explorable profiler first, then the plain lineup for anyone who skips it. */}
-        {SHOW_ARTIST_SELECT && <ArtistSelectSection bgAt={BG_TIMES.afterLineup} />}
-        <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
-        <Tickets bgAt={SHOW_ARTIST_SELECT ? undefined : BG_TIMES.afterLineup} />
+        {SHOW_ARTIST_SELECT && <Roster />}
+        <Lineup />
+        <Tickets />
         <Merch />
         <Faq />
         {LOCKERS.enabled && <Lockers />}
         <GettingHere />
       </main>
-      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
-      <Footer links={NAV_LINKS} />
-      <Grain animated />
-      <OffscreenPauser />
+      <Footer />
+      <Reveal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

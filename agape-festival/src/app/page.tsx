@@ -1,26 +1,24 @@
 import { preload } from "react-dom";
-import { winterFontVariables } from "@/components/winter/fonts";
-import { Grain } from "@/components/winter/ui";
-import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
 import { FlyerSection } from "@/components/winter/page/FlyerSection";
-import { FloatingCta } from "@/components/winter/page/FloatingCta";
-import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
-import { Hero } from "@/components/winter/page/Hero";
-import { Faq } from "@/components/winter/page/Faq";
-import { GettingHere } from "@/components/winter/page/GettingHere";
-import { Lockers } from "@/components/winter/page/Lockers";
-import { Lineup } from "@/components/winter/page/Lineup";
-import { Merch } from "@/components/winter/page/Merch";
-import { Nav } from "@/components/winter/page/Nav";
-import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
-import { Tickets } from "@/components/winter/page/Tickets";
-import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
-import { Preloader } from "@/components/winter/preloader/Preloader";
-import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
-import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
-import "@/styles/winter.css";
-import "@/styles/winter-page.css";
+import { HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
+import { posterSans } from "@/components/winter/poster/fonts";
+import { Faq } from "@/components/winter/poster/Faq";
+import { FlyerBackdrop } from "@/components/winter/poster/FlyerBackdrop";
+import { Footer } from "@/components/winter/poster/Footer";
+import { GettingHere } from "@/components/winter/poster/GettingHere";
+import { Hero } from "@/components/winter/poster/Hero";
+import { Lineup } from "@/components/winter/poster/Lineup";
+import { Lockers } from "@/components/winter/poster/Lockers";
+import { Merch } from "@/components/winter/poster/Merch";
+import { Nav, type NavLink } from "@/components/winter/poster/Nav";
+import { Reveal } from "@/components/winter/poster/Reveal";
+import { RosterSection } from "@/components/winter/poster/RosterSection";
+import { Tickets } from "@/components/winter/poster/Tickets";
+import { ARTISTS, LOCKERS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
+import manifest from "../../public/assets/winter/manifest.json";
+import "@/styles/poster.css";
+import "@/styles/poster-flyer.css";
 
 const SITE = "https://agape-festival.com";
 
@@ -53,47 +51,58 @@ const jsonLd = {
   offers: { "@type": "Offer", url: TICKETS.url, availability: "https://schema.org/InStock" },
 };
 
+// Content sections in page order; each one's number is its place in this list (the numbered rules and the menu).
+const SECTIONS = [
+  { key: "roster", label: "Roster", href: "#artists", on: SHOW_ARTIST_SELECT, nav: true },
+  { key: "lineup", label: "Lineup", href: "#lineup", on: true, nav: true },
+  { key: "tickets", label: "Tickets", href: "#tickets", on: true, nav: true },
+  { key: "merch", label: "Merch", href: "#merch", on: true, nav: true },
+  { key: "faq", label: "FAQ", href: "#faq", on: true, nav: true },
+  { key: "lockers", label: "Lockers", href: "#lockers", on: LOCKERS.enabled, nav: false },
+  { key: "getting-here", label: "Getting here", href: "#getting-here", on: true, nav: true },
+]
+  .filter((s) => s.on)
+  .map((s, i) => ({ ...s, index: String(i + 1).padStart(2, "0") }));
+const { src, width, height } = manifest.flyer.backgroundStill;
+const FLYER_STILL = { src, width, height };
+const idx = (key: string) => SECTIONS.find((s) => s.key === key)?.index ?? "";
+const MENU: NavLink[] = SECTIONS.map(({ label, href, index }) => ({ label, href, index }));
+const NAV = MENU.filter((l) => SECTIONS.find((s) => s.href === l.href)?.nav);
+
 export default function Home() {
   // Only the hero still is preloaded (it is the LCP); everything else loads lazily or after idle.
-  if (HERO.mobile.src === HERO.desktop.src) {
-    preload(HERO.desktop.src, { as: "image", fetchPriority: "high" });
-  } else {
-    preload(HERO.mobile.src, { as: "image", fetchPriority: "high", media: HERO_PORTRAIT_QUERY });
-    preload(HERO.desktop.src, { as: "image", fetchPriority: "high", media: `not all and ${HERO_PORTRAIT_QUERY}` });
-  }
+  preload(HERO.mobile.src, { as: "image", fetchPriority: "high", media: HERO_PORTRAIT_QUERY });
+  preload(HERO.desktop.src, { as: "image", fetchPriority: "high", media: `not all and ${HERO_PORTRAIT_QUERY}` });
 
   return (
-    <div className={`winter wpage ${winterFontVariables}`}>
-      <a className="wskip" href="#main">
+    <div className={`pp ${posterSans.variable}`}>
+      <a className="pp-skip" href="#main">
         Skip to content
       </a>
-      <Preloader />
       <GestureRescue />
-      <ScrollBackground media={BG} startTime={BG_TIMES.top} endTime={BG_TIMES.end} />
       <Nav
-        links={NAV_LINKS}
+        links={NAV}
+        menu={MENU}
         ticketsUrl={WINTER.tickets.url}
         ticketsLabel={WINTER.tickets.cta}
-        mark={FLYER.mark}
+        provider={WINTER.tickets.provider}
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
-        dates={WINTER.dates}
       />
       <main id="main" tabIndex={-1}>
         <Hero />
-        <FlyerSection />
-        {/* Preview: the explorable profiler first, then the plain lineup for anyone who skips it. */}
-        {SHOW_ARTIST_SELECT && <ArtistSelectSection bgAt={BG_TIMES.afterLineup} />}
-        <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
-        <Tickets bgAt={SHOW_ARTIST_SELECT ? undefined : BG_TIMES.afterLineup} />
-        <Merch />
-        <Faq />
-        {LOCKERS.enabled && <Lockers />}
-        <GettingHere />
+        <FlyerBackdrop still={FLYER_STILL}>
+          <FlyerSection />
+        </FlyerBackdrop>
+        {SHOW_ARTIST_SELECT && <RosterSection index={idx("roster")} />}
+        <Lineup index={idx("lineup")} linkToSelect={SHOW_ARTIST_SELECT} />
+        <Tickets index={idx("tickets")} />
+        <Merch index={idx("merch")} />
+        <Faq index={idx("faq")} />
+        {LOCKERS.enabled && <Lockers index={idx("lockers")} />}
+        <GettingHere index={idx("getting-here")} />
       </main>
-      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
-      <Footer links={NAV_LINKS} />
-      <Grain animated />
-      <OffscreenPauser />
+      <Footer links={NAV.map(({ label, href }) => ({ label, href }))} />
+      <Reveal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

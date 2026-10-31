@@ -71,6 +71,7 @@ export default function Home() {
         ticketsLabel={WINTER.tickets.cta}
         mark={FLYER.mark}
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
+        dates={WINTER.dates}
       />
       <main id="main" tabIndex={-1}>
         <Hero />

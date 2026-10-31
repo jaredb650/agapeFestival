@@ -1,0 +1,747 @@
+/* ==========================================================================
+   ÄGAPĒ WINTER — HUD BAR + MECH MENU (Nav.tsx, nav/MenuDialog.tsx)
+   The artist select's language on the top bar: a chrome frame hung from the
+   top edge with a notch under its centre (live sector LCD), a scroll meter
+   with a tick per section, glass orbs, pixel LCD readouts. The mobile menu
+   unfolds out of the bar: plates flip down on hinges, brackets snap, a scan
+   band sweeps, labels decode, orbs boot.
+   Classes: whud-*, keyframes: whud-*. Motion is transform/opacity only.
+   (Replaces the old .wnav / .wmenu rules in winter-page.css, now unused.)
+   ========================================================================== */
+
+.whud {
+  --hud-h: 56px;
+  --hud-nw: 228px;      /* notch width, slopes included */
+  --hud-nd: 18px;       /* notch depth below the bar */
+  --hud-cap: 20px;
+  --hud-pad: 24px;
+  --hud-fill: rgba(6, 9, 14, 0.9);
+  --hud-line: rgba(233, 235, 236, 0.26);
+  --hud-inner: rgba(156, 200, 255, 0.16);
+  --hud-glass: rgba(156, 200, 255, 0.16);
+  --hud-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.32) 0 1px, transparent 1px 3px);
+  --hud-silver: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: var(--hud-h);
+  pointer-events: none;
+  color: var(--w-frost);
+}
+@media (min-width: 1100px) {
+  .whud { --hud-h: 64px; --hud-nw: 300px; --hud-nd: 22px; --hud-pad: max(28px, var(--w-gutter)); }
+}
+
+/* Over the hero: a soft top scrim; it goes once the page moves. */
+.whud::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -56px 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(4, 6, 10, 0.62), transparent);
+  transition: opacity var(--w-dur) ease;
+}
+.whud[data-scrolled]::before { opacity: 0; }
+
+/* ---- Shell: caps + runs + the gap over the notch --------------------------- */
+.whud__shell { position: absolute; inset: 0 0 auto; height: var(--hud-h); display: flex; }
+.whud__shell > * { opacity: 0.74; transition: opacity var(--w-dur-slow) ease; }
+.whud[data-scrolled] .whud__shell > * { opacity: 1; }
+.whud__cap { position: relative; flex: none; width: var(--hud-cap); height: 100%; }
+/* Silver clamps where the frame hangs from the top edge. */
+.whud__cap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 22px;
+  background: linear-gradient(90deg, #7d8592, #eef0f3 45%, #959ca8);
+  box-shadow: 0 1px 0 rgba(4, 6, 10, 0.8);
+}
+.whud__cap--l::after { left: 7px; }
+.whud__cap--r::after { right: 7px; }
+.whud__cap svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.whud__run { flex: 1; min-width: 0; background: var(--hud-scan), var(--hud-fill); box-shadow: inset 0 -1px 0 var(--hud-line); }
+.whud-fill { fill: var(--hud-fill); }
+.whud-stroke { fill: none; stroke: var(--hud-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+/* ---- Notch: a chrome housing hung under the centre (glass orbs + sector LCD) -- */
+.whud-notch {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--hud-h) - 1px);
+  width: var(--hud-nw);
+  height: calc(var(--hud-nd) + 1px);
+  margin-left: calc(var(--hud-nw) / -2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 calc(var(--hud-nw) * 0.08 + 3px) 1px;
+  transform-origin: 50% 0;
+}
+.whud-notch__body {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+  background:
+    linear-gradient(180deg, rgba(4, 6, 10, 0.55) 0, transparent 2px),
+    var(--hud-silver);
+  box-shadow: inset 0 -1px 0 rgba(4, 6, 10, 0.4);
+}
+.whud-notch__edge { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+.whud-notch__edge path { fill: none; stroke: rgba(4, 6, 10, 0.85); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.whud-notch__lcd {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: calc(100% - 6px);
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #03050a 0%, #0a1220 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(156, 200, 255, 0.18), 0 1px 0 rgba(255, 255, 255, 0.55);
+  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px);
+}
+.whud-notch__lcd::after { content: ""; position: absolute; inset: 0; background: var(--hud-scan); pointer-events: none; }
+.whud-notch__text {
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--w-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.55);
+  contain: layout paint;
+}
+.whud-notch .whud-orb { box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.7), 0 1px 0 rgba(255, 255, 255, 0.7); }
+/* Sector-change sweep (WAAPI moves the inner span). */
+.whud__sweep { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.whud__sweep > span {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(156, 200, 255, 0.2) 70%, rgba(233, 235, 236, 0.6) 98%, transparent 100%);
+}
+
+/* ---- Scroll meter: inner hairline + ice fill + a tick per section --------- */
+.whud__meter {
+  position: absolute;
+  left: calc(var(--hud-cap) + 4px);
+  right: calc(var(--hud-cap) + 4px);
+  top: calc(var(--hud-h) - 5px);
+  height: 1px;
+  background: var(--hud-inner);
+}
+.whud__fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(61, 107, 255, 0.7), var(--w-ice));
+  box-shadow: 0 0 6px rgba(110, 170, 255, 0.55);
+  will-change: transform;
+}
+/* Instrument ruler above the meter: fine ticks every 8px. */
+.whud__meter::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, rgba(233, 235, 236, 0.13) 0 1px, transparent 1px 8px);
+}
+/* The meter's leading glint. */
+.whud__head {
+  position: absolute;
+  left: -5px;
+  top: -2px;
+  width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 6px 2px rgba(156, 200, 255, 0.9), 0 0 14px 3px rgba(61, 107, 255, 0.55);
+  will-change: transform;
+}
+.whud__tick { position: absolute; top: -3px; width: 1px; height: 7px; background: rgba(233, 235, 236, 0.32); transition: background-color var(--w-dur) ease; }
+.whud__tick[data-lit] { background: var(--w-ice); }
+
+/* ---- Bar content ------------------------------------------------------------ */
+.whud__bar {
+  position: relative;
+  height: var(--hud-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--w-s-4);
+  padding-inline: var(--hud-pad);
+}
+.whud__bar a, .whud__bar button { pointer-events: auto; }
+.whud__start, .whud__end { display: flex; align-items: center; min-width: 0; }
+.whud__end { justify-content: flex-end; gap: var(--w-s-4); }
+
+.whud-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; flex: none; color: var(--w-frost); text-decoration: none; }
+.whud-brand__glitch { width: 20px; flex: none; }
+.whud-brand__mark { display: block; width: 20px; height: auto; }
+.whud-brand__word {
+  /* Orbitron, plain E: the face has no Ē. */
+  font: 700 12px / 1 var(--w-font-hud);
+  letter-spacing: 0.32em;
+  margin-right: -0.32em;
+  text-shadow: 0 0 1px rgba(233, 235, 236, 0.5);
+  transition: color var(--w-dur-fast) ease;
+}
+.whud-brand:hover .whud-brand__word { color: var(--w-ice); }
+
+.whud__sep { flex: none; width: 1px; height: 28px; margin-inline: 16px; background: linear-gradient(180deg, transparent, var(--hud-line) 30%, var(--hud-line) 70%, transparent); }
+.whud__status { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.whud__stack { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.whud__px {
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
+  letter-spacing: 0.08em;
+  color: var(--w-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.45);
+  white-space: nowrap;
+}
+.whud__nano { font: 700 var(--w-fs-nano) / 1 var(--w-font-hud); letter-spacing: 0.24em; color: var(--w-mist); white-space: nowrap; }
+.whud__nano b, .whud__lcd b, .whud-menu__clock b { font-weight: inherit; font-variant-numeric: tabular-nums; }
+.whud__nano--date { display: none; }
+
+/* Links: the original hover (mist → ice) and active underline, verbatim. */
+.whud__links { position: relative; display: none; }
+.whud__links ul { display: flex; gap: var(--w-s-6); margin: 0; padding: 0; list-style: none; }
+.whud__links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--w-mist);
+  text-decoration: none;
+  transition: color var(--w-dur-fast) ease;
+}
+.whud__links a:hover { color: var(--w-ice); }
+.whud__links a[aria-current] { color: var(--w-frost); }
+.whud__links a[aria-current]::after { content: ""; position: absolute; left: 0; right: 0.24em; bottom: 10px; height: 1px; background: currentColor; }
+
+/* Lock-on bracket: [ LINK ] slides to the current sector. */
+.whud__reticle { --rx: 0px; --rw: 0px; position: absolute; left: 0; top: 50%; height: 24px; margin-top: -12px; opacity: 0; pointer-events: none; transition: opacity var(--w-dur) ease; }
+.whud__reticle[data-on] { opacity: 1; }
+.whud__reticle i { position: absolute; top: 0; left: 0; width: 5px; height: 100%; border: 1px solid var(--w-bracket-accent); transition: transform 0.55s var(--w-ease); }
+.whud__reticle i:first-child { border-right: 0; transform: translateX(calc(var(--rx) - 11px)); }
+.whud__reticle i:last-child { border-left: 0; transform: translateX(calc(var(--rx) + var(--rw) + 6px)); }
+
+/* Recessed LCD: NYC clock + scan %. */
+.whud__lcd {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  width: 112px;
+  padding: 6px 10px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #05080e 0%, #0a1220 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--hud-glass), 0 1px 0 rgba(233, 235, 236, 0.08);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
+  letter-spacing: 0.06em;
+  color: var(--w-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.45);
+  white-space: nowrap;
+  contain: layout paint;
+}
+.whud__lcd::after { content: ""; position: absolute; inset: 0; background: var(--hud-scan); pointer-events: none; }
+.whud__lcd i, .whud-menu__lcd i { font-style: normal; color: rgba(156, 200, 255, 0.45); }
+.whud__lcd > span { display: flex; justify-content: space-between; gap: 6px; }
+
+/* Signal bars */
+.whud__bars { display: none; align-items: flex-end; gap: 2px; height: 14px; }
+.whud__bars i { width: 3px; background: var(--w-ice); box-shadow: 0 0 4px rgba(110, 170, 255, 0.6); }
+.whud__bars i:nth-child(1) { height: 5px; }
+.whud__bars i:nth-child(2) { height: 8px; }
+.whud__bars i:nth-child(3) { height: 11px; }
+.whud__bars i:nth-child(4) { height: 14px; animation: whud-signal 5.2s steps(1, end) infinite; }
+@keyframes whud-signal { 0%, 100% { opacity: 1; } 62% { opacity: 0.2; } 66% { opacity: 1; } 70% { opacity: 0.2; } 80% { opacity: 1; } }
+
+/* ---- Glass orbs (the artist select's, self-contained here) ----------------- */
+.whud-orb {
+  --d: 10px;
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(233, 235, 236, 0.5) 0 12%, #4a5566 32%, #1b212c 72%, #0b0e14 100%);
+  box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.7), 0 1px 0 rgba(233, 235, 236, 0.1);
+}
+.whud-orb[data-size="sm"] { --d: 8px; }
+.whud-orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fff 0 10%, #cfe6ff 22%, #7ab8ff 44%, #2f62ff 74%, #0d2a99 100%);
+  box-shadow: 0 0 8px 1px rgba(110, 170, 255, 0.75), 0 0 2px rgba(156, 200, 255, 0.9);
+  opacity: 0;
+  transition: opacity var(--w-dur) ease;
+}
+.whud-orb[data-lit]::after { opacity: 1; }
+.whud__beat::after { animation: whud-beat 2.4s ease-in-out infinite; }
+@keyframes whud-beat { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* ---- Hologram key (MENU / CLOSE): chamfered ice glass + 1px edge ----------- */
+.whud-btn {
+  --cut: 8px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 16px 0 14px;
+  border: 0;
+  margin: 0;
+  background: none;
+  color: var(--w-frost);
+  font: 700 10px / 1 var(--w-font-hud);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  cursor: pointer;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.whud-btn > span:last-child { margin-right: -0.3em; position: relative; }
+.whud-btn__glass {
+  position: absolute;
+  inset: 4px 0;
+  z-index: -1;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    repeating-linear-gradient(180deg, rgba(156, 200, 255, 0.1) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(156, 200, 255, 0.2) 0%, rgba(156, 200, 255, 0.05) 50%, rgba(61, 107, 255, 0.14) 100%),
+    rgba(5, 10, 20, 0.55);
+}
+.whud-btn__glass::after {
+  /* 1px luminous edge (even-odd chamfered ring, as on the hologram buttons) */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(214, 232, 255, 0.9), rgba(156, 200, 255, 0.55) 52%, rgba(61, 107, 255, 0.75));
+  clip-path: polygon(evenodd,
+    var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut), var(--cut) 0,
+    calc(var(--cut) + 0.414px) 1px, 1px calc(var(--cut) + 0.414px), 1px calc(100% - 1px),
+    calc(100% - var(--cut) - 0.414px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--cut) - 0.414px),
+    calc(100% - 1px) 1px, calc(var(--cut) + 0.414px) 1px);
+}
+.whud-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 2px; }
+.whud-btn:active { transform: translateY(1px); }
+
+.whud__burger { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; width: 16px; }
+.whud__burger i { display: block; width: 16px; height: 1px; background: currentColor; transition: transform var(--w-dur) var(--w-ease); }
+.whud__burger i:nth-child(2) { width: 10px; background: var(--w-ice); box-shadow: 0 0 4px rgba(156, 200, 255, 0.8); }
+@media (hover: hover) {
+  .whud__menu:hover .whud__burger i:nth-child(1) { transform: translateX(-3px); }
+  .whud__menu:hover .whud__burger i:nth-child(3) { transform: translateX(3px); }
+}
+
+/* ---- Breakpoints ------------------------------------------------------------ */
+@media (max-width: 1099px) { .whud__sep { margin-inline: 12px; } .whud__menu { padding: 0 14px 0 12px; } }
+@media (max-width: 399px) { .whud__nano--clock { display: none; } }
+@media (max-width: 339px) { .whud__sep, .whud__status { display: none; } }
+@media (min-width: 1100px) {
+  .whud__bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .whud__links { display: block; }
+  .whud__menu { display: none; }
+  .whud__sep, .whud__status { display: none; }
+  .whud__nano--clock { display: none; }
+  .whud__nano--date { display: block; }
+}
+@media (min-width: 1100px) and (max-width: 1599px) { .whud__links ul { gap: 28px; } }
+@media (min-width: 1100px) and (max-width: 1359px) { .whud__links ul { gap: var(--w-s-5); } }
+@media (min-width: 1220px) { .whud__lcd { display: flex; } .whud__bars { display: flex; } }
+@media (min-width: 1400px) { .whud__sep, .whud__status { display: flex; } }
+
+/* ---- Boot (page load): shell flickers on, modules slide in, notch unfolds -- */
+@media (prefers-reduced-motion: no-preference) {
+  .whud__shell { animation: whud-flicker 0.7s steps(1, end) 0.05s backwards; }
+  .whud__meter { animation: whud-grow-x 0.8s var(--w-ease) 0.2s backwards; }
+  .whud__notch { animation: whud-unfold 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.32s backwards; --from: perspective(260px) rotateX(-92deg); --over: perspective(260px) rotateX(10deg); }
+  .whud__start { animation: whud-slide 0.6s var(--w-ease) 0.15s backwards; --sx: -24px; }
+  .whud__end { animation: whud-slide 0.6s var(--w-ease) 0.28s backwards; --sx: 24px; }
+  .whud__links li { animation: whud-drop 0.5s var(--w-ease) backwards; animation-delay: calc(0.3s + var(--i, 0) * 0.05s); }
+}
+@keyframes whud-flicker { 0% { opacity: 0; } 18% { opacity: 0.7; } 28% { opacity: 0.1; } 44% { opacity: 1; } 58% { opacity: 0.35; } 70% { opacity: 1; } }
+@keyframes whud-grow-x { from { transform: scaleX(0); opacity: 0; } 40% { opacity: 1; } }
+@keyframes whud-slide { from { transform: translateX(var(--sx, -110%)); opacity: 0; } }
+@keyframes whud-drop { from { transform: translateY(-8px); opacity: 0; } }
+@keyframes whud-unfold {
+  0% { transform: var(--from); opacity: 0; }
+  30% { opacity: 1; }
+  70% { transform: var(--over, none); }
+  100% { transform: none; opacity: 1; }
+}
+
+/* Scroll lock while the menu is up. */
+html.whud-lock { overflow: hidden; }
+
+/* ==========================================================================
+   THE MENU — full-screen modal dialog, styled as an artist-select window
+   ========================================================================== */
+.whud-menu {
+  --hud-h: 56px;
+  --hud-nw: 228px;
+  --hud-nd: 18px;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: transparent;
+  color: var(--w-frost);
+  font-family: var(--w-font-body);
+  pointer-events: auto;
+}
+.whud-menu::backdrop { background: transparent; }
+
+.whud-menu__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% 0%, rgba(40, 64, 112, 0.32), transparent 70%),
+    linear-gradient(rgba(156, 200, 255, 0.035) 1px, transparent 1px) 0 0 / 100% 32px,
+    linear-gradient(90deg, rgba(156, 200, 255, 0.035) 1px, transparent 1px) 0 0 / 32px 100%,
+    #04060a;
+}
+.whud-menu__body {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px max(16px, env(safe-area-inset-bottom));
+}
+@media (min-width: 600px) { .whud-menu__body { width: min(560px, 100%); margin-inline: auto; } }
+
+/* Head: the bar redrawn in place, with the notch reading SECTOR SELECT. */
+.whud-menu__head {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--hud-h);
+  margin-inline: -16px;
+  padding-inline: 24px;
+  box-shadow: inset 0 -1px 0 var(--hud-line);
+}
+.whud-menu__notch { z-index: 1; }
+.whud-menu__close { gap: 10px; }
+.whud-menu__x { position: relative; color: var(--w-ice); }
+
+/* The window: chamfered bezel, corner brackets, silver title bar. */
+.whud-menu__win { position: relative; flex: none; margin-top: calc(var(--hud-nd) + 18px); padding: 6px 6px 0; }
+.whud-menu__bezel {
+  --c: 14px;
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 0;
+  clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
+  background: var(--hud-scan), linear-gradient(180deg, rgba(36, 42, 53, 0.92) 0%, rgba(18, 22, 30, 0.96) 40%, rgba(10, 13, 19, 0.98) 100%);
+}
+.whud-menu__bezel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(233, 235, 236, 0.5) 0%, rgba(156, 200, 255, 0.24) 30%, rgba(233, 235, 236, 0.16) 100%);
+  clip-path: polygon(evenodd,
+    var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
+    calc(var(--c) + 0.414px) 1px, 1px calc(var(--c) + 0.414px), 1px calc(100% - var(--c) - 0.414px), calc(var(--c) + 0.414px) calc(100% - 1px),
+    calc(100% - var(--c) - 0.414px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--c) - 0.414px), calc(100% - 1px) calc(var(--c) + 0.414px),
+    calc(100% - var(--c) - 0.414px) 1px, calc(var(--c) + 0.414px) 1px);
+}
+.whud-menu__brk { position: absolute; z-index: 2; width: 14px; height: 14px; border: 0 solid var(--w-bracket-accent); pointer-events: none; }
+.whud-menu__brk:nth-of-type(1) { --snap: translate(-10px, -10px) scale(1.6); top: -8px; left: -8px; border-top-width: 1px; border-left-width: 1px; }
+.whud-menu__brk:nth-of-type(2) { --snap: translate(10px, -10px) scale(1.6); top: -8px; right: -8px; border-top-width: 1px; border-right-width: 1px; }
+.whud-menu__brk:nth-of-type(3) { --snap: translate(-10px, 10px) scale(1.6); bottom: -8px; left: -8px; border-bottom-width: 1px; border-left-width: 1px; }
+.whud-menu__brk:nth-of-type(4) { --snap: translate(10px, 10px) scale(1.6); bottom: -8px; right: -8px; border-bottom-width: 1px; border-right-width: 1px; }
+
+.whud-menu__title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 26px;
+  padding: 0 6px 0 10px;
+  background: var(--hud-silver);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(4, 6, 10, 0.35), 0 1px 0 rgba(4, 6, 10, 0.9);
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #0b0e14;
+  white-space: nowrap;
+}
+.whud-menu__title::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--w-accent-line); }
+.whud-menu__led { width: 6px; height: 6px; flex: none; background: var(--w-ice); box-shadow: 0 0 6px var(--w-volt), inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
+.whud-menu__title-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.whud-menu__meta { opacity: 0.75; }
+.whud-menu__ctrl { display: flex; gap: 4px; }
+.whud-menu__ctrl i { display: block; width: 13px; height: 11px; background: linear-gradient(180deg, #f4f6f8, #a7aeb8); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(4, 6, 10, 0.55); }
+
+.whud-menu__lcd {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 10px 4px 0;
+  padding: 9px 12px;
+  overflow: hidden;
+  transform-origin: 50% 0;
+  background: linear-gradient(180deg, #05080e 0%, #0a1220 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--hud-glass), 0 1px 0 rgba(233, 235, 236, 0.08);
+  font: 400 var(--w-fs-micro) / 1.15 var(--w-font-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--w-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.45);
+  white-space: nowrap;
+}
+.whud-menu__lcd::after { content: ""; position: absolute; inset: 0; background: var(--hud-scan); pointer-events: none; }
+.whud-menu__lcd > span { position: relative; overflow: hidden; text-overflow: ellipsis; }
+.whud-menu__lcd > span + span { color: rgba(156, 200, 255, 0.8); }
+.whud-menu__lcd b { font-weight: 400; color: var(--w-ice); }
+
+/* Sector plates */
+.whud-menu__list { display: flex; flex-direction: column; gap: 6px; margin: 10px 4px 0; padding: 0; list-style: none; perspective: 900px; }
+.whud-menu__item { transform-origin: 50% 0; backface-visibility: hidden; }
+.whud-menu__link {
+  --cut: 10px;
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  height: clamp(46px, 6.4svh, 58px);
+  padding: 0 12px 0 8px;
+  color: var(--w-frost);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--w-dur-fast) var(--w-ease);
+}
+.whud-menu__link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background: var(--hud-scan), linear-gradient(180deg, rgba(42, 48, 59, 0.85) 0%, rgba(22, 27, 35, 0.9) 55%, rgba(12, 15, 21, 0.94) 100%);
+}
+.whud-menu__item { position: relative; z-index: 0; }
+.whud-menu__ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(233, 235, 236, 0.2);
+  clip-path: polygon(evenodd,
+    var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut), var(--cut) 0,
+    calc(var(--cut) + 0.414px) 1px, 1px calc(var(--cut) + 0.414px), 1px calc(100% - 1px),
+    calc(100% - var(--cut) - 0.414px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--cut) - 0.414px),
+    calc(100% - 1px) 1px, calc(var(--cut) + 0.414px) 1px);
+  transition: background-color var(--w-dur-fast) ease;
+}
+.whud-menu__idx {
+  display: grid;
+  place-items: center;
+  height: 22px;
+  background: var(--hud-silver);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%);
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
+  letter-spacing: 0.04em;
+  color: #0b0e14;
+}
+.whud-menu__label {
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--w-font-display);
+  font-weight: 800;
+  font-size: clamp(1.0625rem, 5.2vw, 1.5rem);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 0 1px currentColor;
+  transition: color var(--w-dur-fast) ease;
+}
+.whud-menu__state { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-fog); white-space: nowrap; }
+.whud-menu__link[aria-current] .whud-menu__ring { background: linear-gradient(180deg, rgba(214, 232, 255, 0.95), rgba(156, 200, 255, 0.7) 50%, rgba(61, 107, 255, 0.9)); }
+.whud-menu__link[aria-current]::before {
+  background: linear-gradient(180deg, rgba(156, 200, 255, 0.22), transparent 40%), var(--hud-scan), linear-gradient(180deg, rgba(40, 60, 96, 0.9) 0%, rgba(20, 28, 44, 0.94) 100%);
+}
+.whud-menu__link[aria-current] .whud-menu__state {
+  padding: 5px 7px;
+  background: var(--w-volt);
+  color: var(--w-frost);
+  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
+  letter-spacing: 0.2em;
+  box-shadow: 0 0 14px rgba(61, 107, 255, 0.65), inset 0 1px 0 rgba(156, 200, 255, 0.6);
+}
+.whud-menu__link:active { transform: translateX(4px); }
+.whud-menu__link:active .whud-menu__ring { background: var(--w-ice); }
+.whud-menu__link:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 3px; }
+@media (hover: hover) {
+  .whud-menu__link:hover .whud-menu__label { color: var(--w-ice); }
+  .whud-menu__link:hover .whud-menu__ring { background: rgba(156, 200, 255, 0.6); }
+}
+
+.whud-menu__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px -6px 0;
+  padding: 9px 16px 10px;
+  border-top: 1px solid var(--w-line);
+  background: rgba(4, 6, 10, 0.5);
+  transform-origin: 50% 100%;
+  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
+  letter-spacing: 0.24em;
+  color: var(--w-fog);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px));
+}
+.whud-menu__orbs { display: flex; gap: 5px; }
+.whud-menu__count { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-mist); }
+.whud-menu__clock { color: var(--w-mist); white-space: nowrap; }
+.whud-menu__clock b { color: var(--w-ice); }
+
+.whud-menu__foot { margin-top: auto; padding-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+.whud-menu__cta { width: 100%; }
+.whud-menu__meta-row { display: flex; flex-direction: column; gap: 2px; }
+.whud-menu__socials { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 18px; margin: 0; padding: 0; list-style: none; }
+.whud-menu__socials a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--w-mist);
+  text-decoration: none;
+  transition: color var(--w-dur-fast) ease;
+}
+.whud-menu__socials a:hover { color: var(--w-ice); }
+.whud-menu__date { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-fog); white-space: nowrap; }
+.whud-menu__date i { font-style: normal; color: rgba(156, 200, 255, 0.45); }
+
+/* Side rails: tick rulers in the gutters. */
+.whud-menu__rail {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--hud-h) + 12px);
+  bottom: 16px;
+  width: 4px;
+  transform-origin: 50% 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(233, 235, 236, 0.3) 0 1px, transparent 1px 8px);
+}
+.whud-menu__rail--l { left: 4px; border-left: 1px solid rgba(233, 235, 236, 0.14); }
+.whud-menu__rail--r { right: 4px; border-right: 1px solid rgba(233, 235, 236, 0.14); }
+
+.whud-menu__scan {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 26%;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(156, 200, 255, 0.08) 70%, rgba(233, 235, 236, 0.45) 99%, transparent 100%);
+}
+.whud-menu__flash { position: absolute; z-index: 3; inset: 0; opacity: 0; pointer-events: none; background: rgba(156, 200, 255, 0.12); }
+
+/* ---- UNFOLD (opening) ------------------------------------------------------ */
+.whud-menu[data-phase="opening"] .whud-menu__veil { animation: whud-fade 0.26s ease both; }
+.whud-menu[data-phase="opening"] .whud-menu__head > :not(.whud-menu__notch) { animation: whud-flicker 0.36s steps(1, end) 0.04s both; }
+.whud-menu[data-phase="opening"] .whud-menu__head { animation: whud-line 0.3s ease both; }
+.whud-menu[data-phase="opening"] .whud-menu__notch { --from: perspective(260px) rotateX(-92deg); --over: perspective(260px) rotateX(10deg); animation: whud-unfold 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both; }
+.whud-menu[data-phase="opening"] .whud-menu__rail { animation: whud-grow-y 0.62s var(--w-ease) 0.1s both; }
+.whud-menu[data-phase="opening"] .whud-menu__bezel { animation: whud-grow-y 0.56s var(--w-ease) 0.16s both; }
+.whud-menu[data-phase="opening"] .whud-menu__brk { animation: whud-snap 0.38s ease-out both; animation-delay: calc(0.26s + var(--k) * 0.05s); }
+.whud-menu[data-phase="opening"] .whud-menu__title { animation: whud-grow-x 0.38s var(--w-ease) 0.2s both; }
+.whud-menu[data-phase="opening"] .whud-menu__lcd { --from: perspective(600px) rotateX(-90deg); --over: perspective(600px) rotateX(8deg); animation: whud-unfold 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) 0.28s both; }
+.whud-menu[data-phase="opening"] .whud-menu__item {
+  --from: rotateX(-96deg);
+  --over: rotateX(9deg);
+  animation: whud-unfold 0.48s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(0.3s + var(--i) * 0.055s);
+}
+.whud-menu[data-phase="opening"] .whud-menu__idx { --sx: -150%; animation: whud-slide 0.34s var(--w-ease) both; animation-delay: calc(0.4s + var(--i) * 0.055s); }
+.whud-menu[data-phase="opening"] .whud-menu__state { animation: whud-flicker 0.34s steps(1, end) both; animation-delay: calc(0.5s + var(--i) * 0.055s); }
+.whud-menu[data-phase="opening"] .whud-menu__status { --from: perspective(600px) rotateX(90deg); --over: perspective(600px) rotateX(-8deg); animation: whud-unfold 0.38s cubic-bezier(0.2, 0.7, 0.2, 1) 0.68s both; }
+.whud-menu[data-phase="opening"] .whud-menu__orbs .whud-orb { animation: whud-flicker 0.3s steps(1, end) both; animation-delay: calc(0.76s + var(--k) * 0.045s); }
+.whud-menu[data-phase="opening"] .whud-menu__foot { animation: whud-rise 0.38s var(--w-ease) 0.76s both; }
+.whud-menu[data-phase="opening"] .whud-menu__scan { animation: whud-scan 0.78s cubic-bezier(0.5, 0, 0.3, 1) 0.26s both; }
+.whud-menu[data-phase="opening"] .whud-menu__flash { animation: whud-flash 0.42s ease-out 0.24s both; }
+
+/* ---- FOLD (closing): the same parts, reversed, bottom first --------------- */
+.whud-menu[data-phase="closing"] .whud-menu__foot { animation: whud-sink 0.18s ease-in both; }
+.whud-menu[data-phase="closing"] .whud-menu__status { --from: perspective(600px) rotateX(90deg); animation: whud-fold 0.22s ease-in both; }
+.whud-menu[data-phase="closing"] .whud-menu__item {
+  --from: rotateX(-92deg);
+  animation: whud-fold 0.24s cubic-bezier(0.5, 0, 0.75, 0) both;
+  animation-delay: calc((var(--n, 7) - 1 - var(--i)) * 0.028s);
+}
+.whud-menu[data-phase="closing"] .whud-menu__lcd { --from: perspective(600px) rotateX(-90deg); animation: whud-fold 0.2s ease-in 0.2s both; }
+.whud-menu[data-phase="closing"] .whud-menu__title { animation: whud-shrink-x 0.2s ease-in 0.23s both; }
+.whud-menu[data-phase="closing"] .whud-menu__brk { animation: whud-unsnap 0.16s ease-in 0.16s both; }
+.whud-menu[data-phase="closing"] .whud-menu__bezel { animation: whud-shrink-y 0.26s cubic-bezier(0.7, 0, 0.84, 0) 0.22s both; }
+.whud-menu[data-phase="closing"] .whud-menu__rail { animation: whud-shrink-y 0.26s cubic-bezier(0.7, 0, 0.84, 0) 0.2s both; }
+.whud-menu[data-phase="closing"] .whud-menu__notch { --from: perspective(260px) rotateX(-92deg); animation: whud-fold 0.2s ease-in 0.3s both; }
+.whud-menu[data-phase="closing"] .whud-menu__scan { animation: whud-scan-up 0.42s cubic-bezier(0.5, 0, 0.3, 1) both; }
+.whud-menu[data-phase="closing"] .whud-menu__head > :not(.whud-menu__notch) { animation: whud-fade-out 0.16s ease-in 0.34s both; }
+.whud-menu[data-phase="closing"] .whud-menu__veil { animation: whud-fade-out 0.2s ease-in 0.3s both; }
+
+@keyframes whud-fade { from { opacity: 0; } }
+@keyframes whud-fade-out { to { opacity: 0; } }
+@keyframes whud-line { from { box-shadow: inset 0 -1px 0 transparent; } }
+@keyframes whud-grow-y { from { transform: scaleY(0); } }
+@keyframes whud-shrink-y { to { transform: scaleY(0); } }
+@keyframes whud-shrink-x { to { transform: scaleX(0); opacity: 0; } }
+@keyframes whud-rise { from { transform: translateY(18px); opacity: 0; } }
+@keyframes whud-sink { to { transform: translateY(14px); opacity: 0; } }
+@keyframes whud-fold { from { transform: none; opacity: 1; } 70% { opacity: 1; } to { transform: var(--from); opacity: 0; } }
+@keyframes whud-snap { 0% { opacity: 0; transform: var(--snap); } 30% { opacity: 1; } 45% { opacity: 0.2; } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes whud-unsnap { to { opacity: 0; transform: var(--snap); } }
+@keyframes whud-scan { from { transform: translateY(-100%); opacity: 1; } 85% { opacity: 1; } to { transform: translateY(400%); opacity: 0; } }
+@keyframes whud-scan-up { from { transform: translateY(400%); opacity: 0; } 15% { opacity: 1; } to { transform: translateY(-100%); opacity: 1; } }
+@keyframes whud-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---- Reduced motion: a plain fade, no boot, no sweeps --------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .whud-menu *, .whud-menu *::before, .whud-menu *::after { animation: none !important; }
+  .whud-menu[data-phase="opening"] { animation: whud-fade 0.2s ease both; }
+  .whud-menu[data-phase="closing"] { animation: whud-fade-out 0.2s ease both; }
+  .whud-menu__scan, .whud-menu__flash { display: none; }
+  .whud__beat::after, .whud__bars i { animation: none; }
+  .whud__reticle i, .whud-menu__link, .whud__burger i { transition: none; }
+}

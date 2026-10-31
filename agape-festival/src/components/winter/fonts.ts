@@ -3,25 +3,34 @@
 // `.winter` root) once.
 //
 // Display face = Orbitron black, the September site's heading face. It is the
-// same variable file as the HUD labels (one 12 KB woff2, wght 400–900), so the
-// display type costs no extra download. winter.css resolves the display face
-// as `var(--font-display, var(--font-hud))`: to swap it later (e.g. ABC Whyte
+// same variable file as the HUD labels (wght 400–900), so the display type
+// costs no extra download. winter.css resolves the display face as
+// `var(--font-display, var(--font-hud))`: to swap it later (e.g. ABC Whyte
 // Inktrap once licensed), add a font here with `variable: "--font-display"`
 // and list it in `winterFontVariables`. Nothing else needs to change.
-import { Orbitron, Outfit } from "next/font/google";
+//
+// The files are self-hosted subsets (context/winter-redesign/media-scripts/
+// p3_fonts.py): only the glyphs the site sets, with the same outlines, metrics
+// and OpenType features the Google Fonts files had. Orbitron 11.8 → 9.5 KB;
+// Outfit 47 KB in two files (latin + latin-ext) → 21 KB in one. Rerun the
+// script after adding copy with new characters.
 import localFont from "next/font/local";
 
-// Variable axis (no fixed weights) so display can sit at 800/900 and labels at 400/700.
-export const hudFont = Orbitron({
-  subsets: ["latin"],
+// Variable axis so display can sit at 800/900 and labels at 400/700.
+export const hudFont = localFont({
+  src: "./load/fonts/orbitron.woff2",
+  weight: "400 900",
+  style: "normal",
   display: "swap",
   variable: "--font-hud",
 });
 
 // Body copy sits below the hero, so it isn't preloaded (keeps the hero image's bandwidth on mobile).
-export const bodyFont = Outfit({
-  subsets: ["latin", "latin-ext"],
-  weight: ["300", "400", "500"],
+// The weight axis is trimmed to the 300–500 the page uses.
+export const bodyFont = localFont({
+  src: "./load/fonts/outfit.woff2",
+  weight: "300 500",
+  style: "normal",
   display: "swap",
   preload: false,
   variable: "--font-body",

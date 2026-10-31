@@ -51,6 +51,16 @@ interface Props {
 
 const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(4)}%`;
 
+/**
+ * `sizes` for a layer: its share of the flyer box, whose width is
+ * min(max(100vw, 56.25vh), 90vh) (winter-page.css .wflyer__box), so the browser
+ * picks the 0.5x / 0.75x / full file by the size it is actually drawn at.
+ */
+const layerSizes = (w: number, of: number) => {
+  const k = (n: number) => `${((n * w) / of).toFixed(2)}`;
+  return `(max-aspect-ratio: 9/16) ${k(56.25)}vh, (max-aspect-ratio: 9/10) ${k(100)}vw, ${k(90)}vh`;
+};
+
 export function FlyerStage({ layers, scrim, space }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   // The layers (~500 KB) sit just below the hero, inside the browser's lazy-load
@@ -202,7 +212,16 @@ export function FlyerStage({ layers, scrim, space }: Props) {
               idleEvery={l.id === "logo-mark" ? 7000 : undefined}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={armed ? l.src : undefined} width={l.width} height={l.height} alt="" decoding="async" draggable={false} />
+              <img
+                sizes={l.srcSet ? layerSizes(l.width, space.width) : undefined}
+                srcSet={armed ? l.srcSet : undefined}
+                src={armed ? l.src : undefined}
+                width={l.width}
+                height={l.height}
+                alt=""
+                decoding="async"
+                draggable={false}
+              />
             </GlitchLayer>
           </div>
         ))}

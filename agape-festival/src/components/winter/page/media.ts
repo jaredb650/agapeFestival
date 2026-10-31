@@ -3,6 +3,8 @@
 // Import this from server components only and pass plain props down, so the
 // manifest never ships in a client bundle.
 import manifest from "../../../../public/assets/winter/manifest.json";
+import type { FramePack } from "../load/framePacks";
+import type { VideoSet } from "../load/videoSource";
 
 export interface Still {
   src: string;
@@ -13,9 +15,20 @@ export interface Still {
 export interface HeroVideo {
   /** H.264 MP4, muted, no audio track, faststart. */
   src: string;
-  /** Optional portrait encode for phones. */
+  /** Optional portrait encode for phones (H.264). */
   srcMobile?: string;
+  /** AV1 / HEVC / H.264 of `src`, best first: pick with load/videoSource's pickVideoSource. */
+  set?: VideoSet;
+  /** The same for `srcMobile`. */
+  setMobile?: VideoSet;
 }
+
+type ManifestVideo = { src: string; type: string; width: number; height: number; bitrate: number };
+/** Manifest sources (best first, H.264 last) → a VideoSet. */
+const videoSet = (sources: ManifestVideo[], fps: number): VideoSet => {
+  const h264 = sources[sources.length - 1];
+  return { sources: sources.map(({ src, type }) => ({ src, type })), width: h264.width, height: h264.height, fps, bitrate: h264.bitrate };
+};
 
 export interface HeroMedia {
   /** The still under the video (or the hero itself when there's no video). The LCP element. */
@@ -41,13 +54,23 @@ export const HERO_PHOTO: HeroMedia = {
   video: null,
 };
 
-/** The Kobosil/FRONTROW clip "for now" (Jared, Oct 30). Credit unknown, so none is shown. */
+/**
+ * The Kobosil/FRONTROW clip "for now" (Jared, Oct 30). Credit unknown, so none is shown.
+ * Portrait screens get a 864x1080 crop of the poster and clip (x 236 of 1440): with
+ * objectPositionMobile 41% it shows exactly the pixels the full frame shows there, for
+ * about a third of the bytes.
+ */
 export const HERO_VIDEO: HeroMedia = {
-  desktop: { src: hv.poster.src, width: hv.poster.width, height: hv.poster.height, objectPosition: hv.objectPosition },
-  mobile: { src: hv.poster.src, width: hv.poster.width, height: hv.poster.height, objectPosition: hv.objectPositionMobile },
+  desktop: { src: hv.posterWebp.src, width: hv.posterWebp.width, height: hv.posterWebp.height, objectPosition: hv.objectPosition },
+  mobile: { src: hv.posterMobile.src, width: hv.posterMobile.width, height: hv.posterMobile.height, objectPosition: hv.objectPositionMobile },
   alt: hv.alt,
   credit: hv.credit,
-  video: { src: hv.src },
+  video: {
+    src: hv.src,
+    srcMobile: hv.mobile.sources[hv.mobile.sources.length - 1].src,
+    set: videoSet(hv.sources, hv.fps),
+    setMobile: videoSet(hv.mobile.sources, hv.fps),
+  },
 };
 
 /** The live hero. Switch back to the photo with `HERO = HERO_PHOTO`. */
@@ -81,10 +104,29 @@ export interface BgRange {
 
 export interface BgMedia {
   duration: number;
-  video: { src: string; width: number; height: number; fps: number };
+  video: {
+    /** H.264 (the fallback). */
+    src: string;
+    width: number;
+    height: number;
+    fps: number;
+    /** AV1 / HEVC / H.264, best first, all with the same GOP. */
+    sources?: VideoSet["sources"];
+    /** H.264 average bits per second (for MediaCapabilities). */
+    bitrate: number;
+  };
   /** Seconds between keyframes in the desktop encode (seeks there decode one frame). */
   keyframeStep: number;
-  frames: { dir: string; count: number; width: number; height: number; /** seconds per frame */ step: number };
+  frames: {
+    dir: string;
+    count: number;
+    width: number;
+    height: number;
+    /** seconds per frame */
+    step: number;
+    /** The playable frames' files concatenated into a few requests (load/framePacks.ts). */
+    packs?: FramePack[];
+  };
   posterDesktop: Still;
   posterMobile: Still;
   /** Time shown by the posters. */
@@ -98,9 +140,18 @@ export interface BgMedia {
   placeholder: string;
 }
 
+const bgVideo = videoSet(bg.desktop.sources, bg.desktop.fps);
+
 export const BG: BgMedia = {
   duration: bg.duration,
-  video: { src: bg.desktop.src, width: bg.desktop.width, height: bg.desktop.height, fps: bg.desktop.fps },
+  video: {
+    src: bg.desktop.src,
+    width: bg.desktop.width,
+    height: bg.desktop.height,
+    fps: bg.desktop.fps,
+    sources: bgVideo.sources,
+    bitrate: bgVideo.bitrate,
+  },
   keyframeStep: bg.desktop.gop / bg.desktop.fps,
   frames: {
     dir: bg.frames.dir,
@@ -108,6 +159,7 @@ export const BG: BgMedia = {
     width: bg.frames.width,
     height: bg.frames.height,
     step: bg.frames.sourceFrameStep / bg.desktop.fps,
+    packs: bg.frames.packs.map(({ src, bytes, frames }) => ({ src, bytes, frames })),
   },
   posterDesktop: { src: bg.posterDesktop.src, width: bg.posterDesktop.width, height: bg.posterDesktop.height },
   posterMobile: { src: bg.posterMobile.src, width: bg.posterMobile.width, height: bg.posterMobile.height },
@@ -145,12 +197,18 @@ export interface FlyerLayer extends Still {
   id: string;
   x: number;
   y: number;
+  /** 0.5x / 0.75x / 1x `w` candidates of `src` (P3), when the manifest has them. */
+  srcSet?: string;
 }
 
 const fl = manifest.flyer;
 const layer = (id: keyof typeof fl.layers): FlyerLayer => {
   const l = fl.layers[id];
-  return { id, src: l.src, x: l.x, y: l.y, width: l.width, height: l.height };
+  const variants = "variants" in l ? l.variants : [];
+  const srcSet = variants.length
+    ? [...variants.map((v) => `${v.src} ${v.width}w`), `${l.src} ${l.width}w`].join(", ")
+    : undefined;
+  return { id, src: l.src, x: l.x, y: l.y, width: l.width, height: l.height, srcSet };
 };
 
 export const FLYER = {
@@ -172,7 +230,8 @@ export const FLYER = {
   date: layer("date"),
   /** 640px copy of the date scrawl for the hero (J4). */
   dateSmall: { src: fl.dateSmall.src, width: fl.dateSmall.width, height: fl.dateSmall.height },
-  mark: layer("logo-mark"),
+  /** The Ä mark for the nav, where it shows 20 CSS px wide (64 px file instead of 170 px). */
+  mark: { src: fl.navMark.src, width: fl.navMark.width, height: fl.navMark.height },
   logos: layer("logos"),
   story: { src: fl.storyFlyer.src, width: fl.storyFlyer.width, height: fl.storyFlyer.height },
 };

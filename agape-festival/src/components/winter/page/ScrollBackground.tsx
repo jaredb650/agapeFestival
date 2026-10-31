@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { streamFramePack } from "../load/framePacks";
+import { pickVideoSource } from "../load/videoSource";
 import { BG_GLITCH_EVENT } from "./events";
 import { afterLoadIdle } from "./idle";
 import { withGsap } from "./loadGsap";
@@ -20,10 +22,13 @@ import type { BgMedia } from "./media";
  *   One seek in flight, at most one per frame, issued from the frame loop (never
  *   inside a media event). Frame-exact while seeks keep up; snapped to keyframes
  *   (one decode each, ≈2× the seek rate) when the picture falls behind.
+ *   The file is AV1 or HEVC where the device decodes it in hardware, else H.264
+ *   (load/videoSource.ts); all three share the 4-frame GOP.
  * - Touch / small screens: the WebP frame sequence on a canvas (immune to iOS
- *   Low Power Mode). Frames are fetched as blobs and decoded off the main
- *   thread (createImageBitmap) in a small window around the playhead, so a
- *   draw is a blit, never a synchronous decode. The canvas is never cleared:
+ *   Low Power Mode). Frames arrive in ~11-frame packs (load/framePacks.ts: the
+ *   original files concatenated, split as they stream in) and are decoded off
+ *   the main thread (createImageBitmap) in a small window around the playhead,
+ *   so a draw is a blit, never a synchronous decode. The canvas is never cleared:
  *   if the wanted frame isn't ready, the nearest ready one (or the last one)
  *   stays up.
  * - Reduced motion or Save-Data: the poster only. Nothing loads, nothing moves.
@@ -44,6 +49,8 @@ interface Props {
 }
 
 const CONCURRENCY = 4;
+/** Frame packs streaming at once (each counts as one of the CONCURRENCY slots). */
+const PACK_CONCURRENCY = 2;
 /** Frames fetched before the first scroll (hero exit + sparse coverage). */
 const IDLE_BUDGET = 14;
 /** Decoded frames kept either side of the playhead (720×1280 ≈ 3.7 MB each). */
@@ -65,6 +72,8 @@ declare global {
       decoded: number;
       seeks: number;
       live: boolean;
+      /** The video file in use (video mode). */
+      src?: string;
     };
   }
 }
@@ -235,7 +244,7 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
         debug.live = true;
         setLive(true);
       };
-      const debug = { mode, time: tOf(current), target: tOf(target), frame: -1, loaded: 0, decoded: 0, seeks: 0, live: false };
+      const debug: NonNullable<Window["__winterBg"]> = { mode, time: tOf(current), target: tOf(target), frame: -1, loaded: 0, decoded: 0, seeks: 0, live: false };
       window.__winterBg = debug;
 
       const applyScroll = (y: number) => {
@@ -307,6 +316,15 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
       }
       const playList = Array.from({ length: count }, (_, i) => i).filter((i) => playable[i]);
       const useBitmaps = typeof window.createImageBitmap === "function" && typeof fetch === "function";
+      // Packs (bitmap path only): frame → pack index. A failed pack drops the
+      // rest of the load back to single-frame requests.
+      const packs = useBitmaps && canvas ? (media.frames.packs ?? []) : [];
+      const packOf = new Int16Array(count).fill(-1);
+      packs.forEach((p, n) => p.frames.forEach((i) => i < count && (packOf[i] = n)));
+      const packState = new Uint8Array(packs.length); // 0 idle, 1 streaming, 2 done, 3 failed
+      let packsOk = packs.length > 0;
+      let packInflight = 0;
+      const abort = typeof AbortController === "function" ? new AbortController() : null;
       const blobs: (Blob | null)[] = new Array(count).fill(null);
       const imgs: (HTMLImageElement | null)[] = new Array(count).fill(null);
       const bitmaps: (ImageBitmap | null)[] = new Array(count).fill(null);
@@ -333,6 +351,12 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
           }
         };
         push(first);
+        if (packsOk) {
+          // Pack 0 already holds the sparse coverage: continue outward from the
+          // playhead (ahead first), which streams the packs as timeline runs.
+          [...playList].sort((a, b) => (a >= first ? a - first : (first - a) * 2) - (b >= first ? b - first : (first - b) * 2)).forEach(push);
+          return out;
+        }
         for (const stride of [16, 8, 4, 2, 1]) for (let k = 0; k < playList.length; k += stride) push(playList[k]);
         return out;
       };
@@ -391,20 +415,69 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
         }
       };
 
+      const frameReady = (i: number) => {
+        fetchState[i] = 2;
+        loadedCount++;
+        debug.loaded = loadedCount;
+        decodeAround();
+        wake();
+      };
+
+      /** Stream pack `n`; each frame becomes ready the moment its bytes are in. */
+      const startPack = (n: number) => {
+        const pack = packs[n];
+        packState[n] = 1;
+        packInflight++;
+        inflight++;
+        for (const i of pack.frames) {
+          if (fetchState[i]) continue;
+          fetchState[i] = 1;
+          budget--;
+        }
+        streamFramePack(
+          pack,
+          (i, blob) => {
+            if (disposed || fetchState[i] === 2) return;
+            blobs[i] = blob;
+            frameReady(i);
+          },
+          abort?.signal,
+        )
+          .then(() => {
+            packState[n] = 2;
+          })
+          .catch(() => {
+            packState[n] = 3;
+            packsOk = false;
+            // Whatever didn't arrive goes back to the single-frame path.
+            for (const i of pack.frames) if (fetchState[i] === 1) fetchState[i] = 0;
+          })
+          .finally(() => {
+            packInflight--;
+            inflight--;
+            if (disposed) return;
+            if (!packsOk) queue = priorityOrder(frameAt(tOf(current)));
+            pump();
+          });
+      };
+
       const pump = () => {
         while (inflight < CONCURRENCY && budget > 0 && queue.length) {
           const i = queue.shift()!;
           if (fetchState[i]) continue;
+          const n = packsOk ? packOf[i] : -1;
+          if (n >= 0 && !packState[n]) {
+            if (packInflight >= PACK_CONCURRENCY) {
+              queue.unshift(i);
+              break;
+            }
+            startPack(n);
+            continue;
+          }
           fetchState[i] = 1;
           inflight++;
           budget--;
-          const done = () => {
-            fetchState[i] = 2;
-            loadedCount++;
-            debug.loaded = loadedCount;
-            decodeAround();
-            wake();
-          };
+          const done = () => frameReady(i);
           const job = useBitmaps
             ? fetch(url(i))
                 .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
@@ -582,8 +655,14 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
           video.addEventListener("seeked", onSeeked);
           video.addEventListener("error", onVideoFail);
           video.addEventListener("emptied", onVideoFail);
-          video.src = media.video.src;
-          video.load();
+          const { sources, width, height, fps: vfps, bitrate } = media.video;
+          const pick = sources?.length ? pickVideoSource({ sources, width, height, fps: vfps, bitrate }) : Promise.resolve(media.video.src);
+          pick.then((src) => {
+            if (disposed) return;
+            debug.src = src;
+            video.src = src;
+            video.load();
+          });
         } else {
           queue = priorityOrder(frameAt(tOf(current)));
           pump();
@@ -619,6 +698,7 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
           video.removeAttribute("src");
           video.load();
         }
+        abort?.abort();
         bitmaps.forEach((bm) => bm?.close());
         wrap.style.transform = "";
         scrim.style.opacity = "";

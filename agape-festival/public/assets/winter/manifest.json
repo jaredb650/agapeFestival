@@ -15,7 +15,37 @@
       "gop": 4,
       "bframes": 0,
       "crf": 27.5,
-      "notes": "Portrait 1280x2276. Keyframe every 4 frames, no B-frames: currentTime seeks decode <=3 extra frames. Display object-fit: cover; can pan vertically."
+      "notes": "Portrait 1280x2276. Keyframe every 4 frames, no B-frames: currentTime seeks decode <=3 extra frames. Display object-fit: cover; can pan vertically.",
+      "sources": [
+        {
+          "src": "/assets/winter/bg/desktop.av1.mp4",
+          "type": "video/mp4; codecs=\"av01.0.12M.10\"",
+          "codec": "av1",
+          "width": 1280,
+          "height": 2276,
+          "bytes": 7046099,
+          "bitrate": 2813750
+        },
+        {
+          "src": "/assets/winter/bg/desktop.hevc.mp4",
+          "type": "video/mp4; codecs=\"hvc1.1.6.L150.B0\"",
+          "codec": "hevc",
+          "width": 1280,
+          "height": 2276,
+          "bytes": 7933816,
+          "bitrate": 3168246
+        },
+        {
+          "src": "/assets/winter/bg/desktop.mp4",
+          "type": "video/mp4; codecs=\"avc1.640032\"",
+          "codec": "h264",
+          "width": 1280,
+          "height": 2276,
+          "bytes": 13881270,
+          "bitrate": 5543269
+        }
+      ],
+      "sourcesNote": "Added by P3 (perf): same 4-frame GOP in every file (AV1 SVT crf 38 + film-grain synthesis / HEVC x265 slow crf 29, no B-frames or reordering, so a seek still decodes <= 3 extra frames). Best first; the page plays AV1/HEVC only where MediaCapabilities reports a hardware (powerEfficient) decoder, else the H.264. Grain and VMAF vs the lossless mezzanine match the H.264. Made by context/winter-redesign/media-scripts/p3_enc_video.sh."
     },
     "frames": {
       "dir": "/assets/winter/bg/frames/",
@@ -28,7 +58,151 @@
       "sourceFrameStep": 4,
       "totalBytes": 4719058,
       "timeOfIndex": "index * 4 / 30 seconds (index 150 = 20.0s, last frame)",
-      "notes": "Mobile canvas scrub. Zero-padded 3 digits, f-000..f-150."
+      "notes": "Mobile canvas scrub. Zero-padded 3 digits, f-000..f-150.",
+      "packs": [
+        {
+          "src": "/assets/winter/bg/packs/p0.c4fe1de08e.bin",
+          "bytes": 648550,
+          "frames": [
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            44,
+            52,
+            67,
+            90,
+            98,
+            106,
+            114,
+            122,
+            130,
+            138
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p1.84f190b6bf.bin",
+          "bytes": 378970,
+          "frames": [
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            45,
+            46,
+            47,
+            48
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p2.c769aa2b87.bin",
+          "bytes": 328048,
+          "frames": [
+            49,
+            50,
+            51,
+            53,
+            54,
+            55,
+            63,
+            64,
+            65,
+            66,
+            68
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p3.a4e6a42ab0.bin",
+          "bytes": 360204,
+          "frames": [
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            91,
+            92,
+            93,
+            94,
+            95
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p4.b44633e527.bin",
+          "bytes": 401834,
+          "frames": [
+            96,
+            97,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            107,
+            108
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p5.8285d8940d.bin",
+          "bytes": 379954,
+          "frames": [
+            109,
+            110,
+            111,
+            112,
+            113,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p6.1aa544cf72.bin",
+          "bytes": 419554,
+          "frames": [
+            121,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            131,
+            132,
+            133
+          ]
+        },
+        {
+          "src": "/assets/winter/bg/packs/p7.9b1df943de.bin",
+          "bytes": 261966,
+          "frames": [
+            134,
+            135,
+            136,
+            137,
+            139,
+            140,
+            141,
+            142
+          ]
+        }
+      ],
+      "packsNote": "Added by P3 (perf): the playable frames' WebP files concatenated (RIFF-delimited, byte-identical), so the scrub needs ~9 requests instead of ~90 and splits/decodes frame by frame as each pack streams in. Pack 0 = the window around the page-top time + a stride-8 sample of the timeline; the rest are timeline runs. Content-hashed names (immutable). Regenerate with context/winter-redesign/media-scripts/p3_frame_packs.py after changing frames, segments or BG_TIMES.top. The single frames stay for the artist select and as a fallback."
     },
     "posterDesktop": {
       "src": "/assets/winter/bg/poster-desktop.webp",
@@ -279,7 +453,90 @@
     "objectPositionMobile": "41% 50%",
     "credit": null,
     "alt": "A packed warehouse crowd under tall factory windows, lit by a single stage beam",
-    "notes": "Hero video 'for now' (Jared, 2026-10-30): web encode of 05 KOBOSIL.mp4 (FRONTROW, not shot at ÄGAPĒ; the FRONTROW banner at ~12-14 s is accepted). Same file as the winter landing v1 background. Photographer/videographer unknown, so no credit is shown. objectPositionMobile keeps the DJ (x ~42-46% of the frame in the deck shots at 0, 11-15 s) inside a 390x844 portrait crop. Switch back to the photo hero with HERO = HERO_PHOTO in src/components/winter/page/media.ts."
+    "notes": "Hero video 'for now' (Jared, 2026-10-30): web encode of 05 KOBOSIL.mp4 (FRONTROW, not shot at ÄGAPĒ; the FRONTROW banner at ~12-14 s is accepted). Same file as the winter landing v1 background. Photographer/videographer unknown, so no credit is shown. objectPositionMobile keeps the DJ (x ~42-46% of the frame in the deck shots at 0, 11-15 s) inside a 390x844 portrait crop. Switch back to the photo hero with HERO = HERO_PHOTO in src/components/winter/page/media.ts.",
+    "sources": [
+      {
+        "src": "/assets/videos/winter-kobosil.av1.mp4",
+        "type": "video/mp4; codecs=\"av01.0.08M.10\"",
+        "codec": "av1",
+        "width": 1440,
+        "height": 1080,
+        "bytes": 7174000,
+        "bitrate": 3669565
+      },
+      {
+        "src": "/assets/videos/winter-kobosil.hevc.mp4",
+        "type": "video/mp4; codecs=\"hvc1.1.6.L120.B0\"",
+        "codec": "hevc",
+        "width": 1440,
+        "height": 1080,
+        "bytes": 8381485,
+        "bitrate": 4287205
+      },
+      {
+        "src": "/assets/videos/winter-kobosil.mp4",
+        "type": "video/mp4; codecs=\"avc1.640028\"",
+        "codec": "h264",
+        "width": 1440,
+        "height": 1080,
+        "bytes": 11016464,
+        "bitrate": 5635020
+      }
+    ],
+    "mobile": {
+      "crop": {
+        "x": 236,
+        "y": 0,
+        "width": 864,
+        "height": 1080
+      },
+      "sources": [
+        {
+          "src": "/assets/videos/winter-kobosil-m.av1.mp4",
+          "type": "video/mp4; codecs=\"av01.0.05M.10\"",
+          "codec": "av1",
+          "width": 864,
+          "height": 1080,
+          "bytes": 2505702,
+          "bitrate": 1281689
+        },
+        {
+          "src": "/assets/videos/winter-kobosil-m.hevc.mp4",
+          "type": "video/mp4; codecs=\"hvc1.1.6.L93.B0\"",
+          "codec": "hevc",
+          "width": 864,
+          "height": 1080,
+          "bytes": 3292230,
+          "bitrate": 1684005
+        },
+        {
+          "src": "/assets/videos/winter-kobosil-m.mp4",
+          "type": "video/mp4; codecs=\"avc1.640028\"",
+          "codec": "h264",
+          "width": 864,
+          "height": 1080,
+          "bytes": 4137821,
+          "bitrate": 2116532
+        }
+      ],
+      "notes": "Added by P3 (perf): portrait crop at full source resolution for (max-aspect-ratio: 3/4). With objectPositionMobile 41% the crop shows exactly the pixels the full frame shows on any screen up to 4:5 (x = 0.41 * (1440 - 864) = 236)."
+    },
+    "posterWebp": {
+      "src": "/assets/videos/posters/winter-crowd.webp",
+      "width": 1440,
+      "height": 1080,
+      "bytes": 31062,
+      "time": 6.5,
+      "notes": "Added by P3: the poster frame re-cut from the source (05 KOBOSIL 18.5 s), WebP q60. Replaces the JPEG on the page."
+    },
+    "posterMobile": {
+      "src": "/assets/videos/posters/winter-crowd-m.webp",
+      "width": 864,
+      "height": 1080,
+      "bytes": 18724,
+      "time": 6.5,
+      "notes": "Added by P3: portrait crop of posterWebp (x 236, same rule as mobile.crop)."
+    }
   },
   "flyer": {
     "coordinateSpace": {
@@ -329,7 +586,21 @@
         "y": 957,
         "width": 170,
         "height": 239,
-        "bytes": 7168
+        "bytes": 7168,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/logo-mark-91w.webp",
+            "width": 91,
+            "height": 128,
+            "bytes": 4316
+          },
+          {
+            "src": "/assets/winter/flyer/layers/logo-mark-133w.webp",
+            "width": 133,
+            "height": 187,
+            "bytes": 6542
+          }
+        ]
       },
       "logo-festival": {
         "src": "/assets/winter/flyer/layers/logo-festival.webp",
@@ -337,7 +608,21 @@
         "y": 987,
         "width": 355,
         "height": 203,
-        "bytes": 24426
+        "bytes": 24426,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/logo-festival-180w.webp",
+            "width": 180,
+            "height": 103,
+            "bytes": 9676
+          },
+          {
+            "src": "/assets/winter/flyer/layers/logo-festival-271w.webp",
+            "width": 271,
+            "height": 155,
+            "bytes": 18078
+          }
+        ]
       },
       "title": {
         "src": "/assets/winter/flyer/layers/title.webp",
@@ -345,7 +630,21 @@
         "y": 1292,
         "width": 1342,
         "height": 146,
-        "bytes": 46554
+        "bytes": 46554,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/title-671w.webp",
+            "width": 671,
+            "height": 73,
+            "bytes": 22176
+          },
+          {
+            "src": "/assets/winter/flyer/layers/title-1011w.webp",
+            "width": 1011,
+            "height": 110,
+            "bytes": 36948
+          }
+        ]
       },
       "day1-label": {
         "src": "/assets/winter/flyer/layers/day1-label.webp",
@@ -353,7 +652,21 @@
         "y": 1522,
         "width": 211,
         "height": 92,
-        "bytes": 5290
+        "bytes": 5290,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/day1-label-110w.webp",
+            "width": 110,
+            "height": 48,
+            "bytes": 2996
+          },
+          {
+            "src": "/assets/winter/flyer/layers/day1-label-156w.webp",
+            "width": 156,
+            "height": 68,
+            "bytes": 4188
+          }
+        ]
       },
       "day1-names": {
         "src": "/assets/winter/flyer/layers/day1-names.webp",
@@ -361,7 +674,21 @@
         "y": 1614,
         "width": 1357,
         "height": 266,
-        "bytes": 98378
+        "bytes": 98378,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/day1-names-684w.webp",
+            "width": 684,
+            "height": 134,
+            "bytes": 44114
+          },
+          {
+            "src": "/assets/winter/flyer/layers/day1-names-1010w.webp",
+            "width": 1010,
+            "height": 198,
+            "bytes": 75326
+          }
+        ]
       },
       "day2-label": {
         "src": "/assets/winter/flyer/layers/day2-label.webp",
@@ -369,7 +696,21 @@
         "y": 1980,
         "width": 244,
         "height": 103,
-        "bytes": 5906
+        "bytes": 5906,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/day2-label-128w.webp",
+            "width": 128,
+            "height": 54,
+            "bytes": 3552
+          },
+          {
+            "src": "/assets/winter/flyer/layers/day2-label-180w.webp",
+            "width": 180,
+            "height": 76,
+            "bytes": 4838
+          }
+        ]
       },
       "day2-names": {
         "src": "/assets/winter/flyer/layers/day2-names.webp",
@@ -377,7 +718,21 @@
         "y": 2083,
         "width": 1494,
         "height": 343,
-        "bytes": 176024
+        "bytes": 176024,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/day2-names-749w.webp",
+            "width": 749,
+            "height": 172,
+            "bytes": 80264
+          },
+          {
+            "src": "/assets/winter/flyer/layers/day2-names-1115w.webp",
+            "width": 1115,
+            "height": 256,
+            "bytes": 134480
+          }
+        ]
       },
       "date": {
         "src": "/assets/winter/flyer/layers/date.webp",
@@ -385,7 +740,21 @@
         "y": 2513,
         "width": 1024,
         "height": 203,
-        "bytes": 39878
+        "bytes": 39878,
+        "variants": [
+          {
+            "src": "/assets/winter/flyer/layers/date-520w.webp",
+            "width": 520,
+            "height": 103,
+            "bytes": 20558
+          },
+          {
+            "src": "/assets/winter/flyer/layers/date-772w.webp",
+            "width": 772,
+            "height": 153,
+            "bytes": 32420
+          }
+        ]
       }
     },
     "layersNote": "Text-only (alpha = text coverage, grain kept in colour). 'logos' = both logos together; 'logo-mark' (Ä) and 'logo-festival' are the same pixels split for independent motion - use either 'logos' or the two sub-layers, not all three. Reassembly: scrim + logos + title + day1-label + day1-names + day2-label + day2-names + date at their x/y reproduces overlay-full (mean abs diff ~0.1/255).",
@@ -424,7 +793,15 @@
       "height": 127,
       "bytes": 25326,
       "notes": "Added by J4: the date scrawl layer at 640px wide (PIL LANCZOS, WebP q90/alpha 100) for the hero, where it shows at <=300 CSS px."
-    }
+    },
+    "navMark": {
+      "src": "/assets/winter/flyer/layers/logo-mark-64w.webp",
+      "width": 64,
+      "height": 90,
+      "bytes": 2928,
+      "notes": "Added by P3: logo-mark for the nav (shown 20 CSS px wide)."
+    },
+    "variantsNote": "Added by P3 (perf): each layer's `variants` are 0.5x/0.75x copies (premultiplied Lanczos, WebP q90/alpha 100) for srcset, so phones and 1x desktops skip the 2160-space files. Made by context/winter-redesign/media-scripts/p3_stills.py."
   },
   "og": {
     "image": {

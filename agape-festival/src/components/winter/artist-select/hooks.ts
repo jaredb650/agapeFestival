@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /** Live `matchMedia` flag (false during SSR and the first client render). */
 export function useMedia(query: string) {
@@ -17,33 +17,8 @@ export function useMedia(query: string) {
 
 export const useReducedMotion = () => useMedia("(prefers-reduced-motion: reduce)");
 
-/**
- * `near`: latched true once the element comes within `margin` of the viewport (lazy media).
- * `inView`: live, for pausing footage when the section is off screen.
- */
-export function useViewport(ref: RefObject<HTMLElement | null>, margin = "900px 0px") {
-  const [near, setNear] = useState(false);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const nearIo = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        setNear(true);
-        nearIo.disconnect();
-      }
-    }, { rootMargin: margin });
-    const viewIo = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: "80px 0px" });
-    nearIo.observe(el);
-    viewIo.observe(el);
-    return () => {
-      nearIo.disconnect();
-      viewIo.disconnect();
-    };
-  }, [ref, margin]);
-  return { near, inView };
-}
-
+// Deprecated: the roster no longer uses the decode effect. Kept only while the Merch, FAQ and Getting here
+// sections still import it; delete it (and this note) once nothing does.
 const GLYPHS = "ÄĒ#%&*+/<>=?@[]_\\|01:";
 
 /**

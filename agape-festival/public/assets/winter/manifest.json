@@ -4,206 +4,6 @@
   "colorSpace": "sRGB (stills ICC-tagged; videos H.264 High 8-bit yuv420p, BT.709 tagged, no audio, faststart)",
   "background": {
     "source": "agapeFest_Assets/WinterAnimation/AGAPE WINTER FEST LINE UP 001 PLAIN V1.mp4 (2160x3840, 30fps, 20.03s, BT.709)",
-    "desktop": {
-      "src": "/assets/winter/bg/desktop.mp4",
-      "width": 1280,
-      "height": 2276,
-      "duration": 20.033,
-      "fps": 30.0,
-      "frames": 601,
-      "bytes": 13881270,
-      "gop": 4,
-      "bframes": 0,
-      "crf": 27.5,
-      "notes": "Portrait 1280x2276. Keyframe every 4 frames, no B-frames: currentTime seeks decode <=3 extra frames. Display object-fit: cover; can pan vertically.",
-      "sources": [
-        {
-          "src": "/assets/winter/bg/desktop.av1.mp4",
-          "type": "video/mp4; codecs=\"av01.0.12M.10\"",
-          "codec": "av1",
-          "width": 1280,
-          "height": 2276,
-          "bytes": 7046099,
-          "bitrate": 2813750
-        },
-        {
-          "src": "/assets/winter/bg/desktop.hevc.mp4",
-          "type": "video/mp4; codecs=\"hvc1.1.6.L150.B0\"",
-          "codec": "hevc",
-          "width": 1280,
-          "height": 2276,
-          "bytes": 7933816,
-          "bitrate": 3168246
-        },
-        {
-          "src": "/assets/winter/bg/desktop.mp4",
-          "type": "video/mp4; codecs=\"avc1.640032\"",
-          "codec": "h264",
-          "width": 1280,
-          "height": 2276,
-          "bytes": 13881270,
-          "bitrate": 5543269
-        }
-      ],
-      "sourcesNote": "Added by P3 (perf): same 4-frame GOP in every file (AV1 SVT crf 38 + film-grain synthesis / HEVC x265 slow crf 29, no B-frames or reordering, so a seek still decodes <= 3 extra frames). Best first; the page plays AV1/HEVC only where MediaCapabilities reports a hardware (powerEfficient) decoder, else the H.264. Grain and VMAF vs the lossless mezzanine match the H.264. Made by context/winter-redesign/media-scripts/p3_enc_video.sh."
-    },
-    "frames": {
-      "dir": "/assets/winter/bg/frames/",
-      "pattern": "f-{000}.webp",
-      "first": "f-000.webp",
-      "count": 151,
-      "width": 720,
-      "height": 1280,
-      "fps": 7.5,
-      "sourceFrameStep": 4,
-      "totalBytes": 4719058,
-      "timeOfIndex": "index * 4 / 30 seconds (index 150 = 20.0s, last frame)",
-      "notes": "Mobile canvas scrub. Zero-padded 3 digits, f-000..f-150.",
-      "packs": [
-        {
-          "src": "/assets/winter/bg/packs/p0.c4fe1de08e.bin",
-          "bytes": 648550,
-          "frames": [
-            28,
-            29,
-            30,
-            31,
-            32,
-            33,
-            34,
-            35,
-            36,
-            44,
-            52,
-            67,
-            90,
-            98,
-            106,
-            114,
-            122,
-            130,
-            138
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p1.84f190b6bf.bin",
-          "bytes": 378970,
-          "frames": [
-            37,
-            38,
-            39,
-            40,
-            41,
-            42,
-            43,
-            45,
-            46,
-            47,
-            48
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p2.c769aa2b87.bin",
-          "bytes": 328048,
-          "frames": [
-            49,
-            50,
-            51,
-            53,
-            54,
-            55,
-            63,
-            64,
-            65,
-            66,
-            68
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p3.a4e6a42ab0.bin",
-          "bytes": 360204,
-          "frames": [
-            69,
-            70,
-            71,
-            72,
-            73,
-            74,
-            91,
-            92,
-            93,
-            94,
-            95
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p4.b44633e527.bin",
-          "bytes": 401834,
-          "frames": [
-            96,
-            97,
-            99,
-            100,
-            101,
-            102,
-            103,
-            104,
-            105,
-            107,
-            108
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p5.8285d8940d.bin",
-          "bytes": 379954,
-          "frames": [
-            109,
-            110,
-            111,
-            112,
-            113,
-            115,
-            116,
-            117,
-            118,
-            119,
-            120
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p6.1aa544cf72.bin",
-          "bytes": 419554,
-          "frames": [
-            121,
-            123,
-            124,
-            125,
-            126,
-            127,
-            128,
-            129,
-            131,
-            132,
-            133
-          ]
-        },
-        {
-          "src": "/assets/winter/bg/packs/p7.9b1df943de.bin",
-          "bytes": 261966,
-          "frames": [
-            134,
-            135,
-            136,
-            137,
-            139,
-            140,
-            141,
-            142
-          ]
-        }
-      ],
-      "packsNote": "Added by P3 (perf): the playable frames' WebP files concatenated (RIFF-delimited, byte-identical), so the scrub needs ~9 requests instead of ~90 and splits/decodes frame by frame as each pack streams in. Pack 0 = the window around the page-top time + a stride-8 sample of the timeline; the rest are timeline runs. Content-hashed names (immutable). Regenerate with context/winter-redesign/media-scripts/p3_frame_packs.py after changing frames, segments or BG_TIMES.top. The single frames stay for the artist select and as a fallback."
-    },
     "posterDesktop": {
       "src": "/assets/winter/bg/poster-desktop.webp",
       "width": 1280,
@@ -462,40 +262,6 @@
       "objectPosition": "45% 50%",
       "alt": "A DJ raises one arm against icy blue stage light at ÄGAPĒ Festival"
     },
-    "mobile": {
-      "src": "/assets/winter/hero/hero-1200.webp",
-      "width": 1200,
-      "height": 2133,
-      "bytes": 214952,
-      "aspect": "9:16",
-      "objectPosition": "40% 40%"
-    },
-    "alternates": [
-      {
-        "src": "/assets/winter/hero/alt-1.webp",
-        "width": 2400,
-        "height": 1600,
-        "bytes": 129934,
-        "aspect": "3:2",
-        "objectPosition": "62% 50%",
-        "source": "09052026_AGAPEFESTIVAL_@EMILYGUZZ-128.jpg",
-        "artist": null,
-        "credit": "Photo: @EMILYGUZZ",
-        "note": "Same DJ from behind, both hands up, facing the crowd; violet haze."
-      },
-      {
-        "src": "/assets/winter/hero/alt-2.webp",
-        "width": 2400,
-        "height": 1600,
-        "bytes": 153660,
-        "aspect": "3:2",
-        "objectPosition": "50% 40%",
-        "source": "FLASHGEA AGAPE FESTIVAL/09052026_AGAPEFESTIVAL_@EMILYGUZZ-197.jpg",
-        "artist": "Flash Gea",
-        "credit": "Photo: @EMILYGUZZ",
-        "note": "Flash Gea (Winter Day 2) at the decks, arm raised, blue beams."
-      }
-    ],
     "mobileLight": {
       "src": "/assets/winter/hero/hero-1080.webp",
       "width": 1080,
@@ -617,42 +383,7 @@
       "height": 3840,
       "note": "Layer x/y/w/h are in this space; scale all by (rendered flyer width / 2160)."
     },
-    "overlayFull": {
-      "src": "/assets/winter/flyer/overlay-full.webp",
-      "width": 2160,
-      "height": 3840,
-      "bytes": 498154,
-      "notes": "Repaired designer overlay incl. soft dark scrim (logo replaced, ONLYNUMBERS rebuilt)."
-    },
-    "overlayFull1080": {
-      "src": "/assets/winter/flyer/overlay-full-1080.webp",
-      "width": 1080,
-      "height": 1920,
-      "bytes": 206476
-    },
-    "scrim": {
-      "src": "/assets/winter/flyer/scrim.webp",
-      "width": 2160,
-      "height": 3840,
-      "bytes": 191762,
-      "notes": "Black with alpha = designer's soft scrim. Composite under the text layers."
-    },
-    "textFull": {
-      "src": "/assets/winter/flyer/text-full.webp",
-      "width": 2160,
-      "height": 3840,
-      "bytes": 431404,
-      "notes": "All text, scrim removed, full 2160x3840 canvas."
-    },
     "layers": {
-      "logos": {
-        "src": "/assets/winter/flyer/layers/logos.webp",
-        "x": 781,
-        "y": 957,
-        "width": 595,
-        "height": 239,
-        "bytes": 30784
-      },
       "logo-mark": {
         "src": "/assets/winter/flyer/layers/logo-mark.webp",
         "x": 781,
@@ -831,19 +562,6 @@
       }
     },
     "layersNote": "Text-only (alpha = text coverage, grain kept in colour). 'logos' = both logos together; 'logo-mark' (Ä) and 'logo-festival' are the same pixels split for independent motion - use either 'logos' or the two sub-layers, not all three. Reassembly: scrim + logos + title + day1-label + day1-names + day2-label + day2-names + date at their x/y reproduces overlay-full (mean abs diff ~0.1/255).",
-    "storyFlyer": {
-      "src": "/assets/winter/flyer/flyer-story-1080.jpg",
-      "width": 1080,
-      "height": 1920,
-      "bytes": 663838,
-      "source": "~/Downloads/AgapeFestWinter_Flyers_v3_OnlyNumbersFixed/digital/story-9x16_1080x1920.jpg"
-    },
-    "storyFlyerWebp": {
-      "src": "/assets/winter/flyer/flyer-story-1080.webp",
-      "width": 1080,
-      "height": 1920,
-      "bytes": 163064
-    },
     "backgroundStill": {
       "src": "/assets/winter/flyer/bg-still-1080.webp",
       "width": 1080,
@@ -859,13 +577,6 @@
       "height": 960,
       "bytes": 26784,
       "notes": "Added by J4 (page assembly): scrim.webp downscaled 4x (PIL LANCZOS, WebP q90/alpha 100). The scrim is a soft gradient, so it is visually identical at page sizes and ~1/10 the bytes."
-    },
-    "dateSmall": {
-      "src": "/assets/winter/flyer/layers/date-640.webp",
-      "width": 640,
-      "height": 127,
-      "bytes": 25326,
-      "notes": "Added by J4: the date scrawl layer at 640px wide (PIL LANCZOS, WebP q90/alpha 100) for the hero, where it shows at <=300 CSS px."
     },
     "navMark": {
       "src": "/assets/winter/flyer/layers/logo-mark-64w.webp",

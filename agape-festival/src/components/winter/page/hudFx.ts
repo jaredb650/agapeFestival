@@ -10,6 +10,41 @@ export const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
+ * rootMargin for "is this section live" observers. IntersectionObserver counts an
+ * edge-adjacent target (0px visible, e.g. the next section right after a nav jump)
+ * as intersecting, which left loops running unseen; 8px in from each edge fixes that.
+ */
+export const LIVE_MARGIN = "-8px 0px";
+
+// ---- Shared 1 Hz ticker ------------------------------------------------------
+// One timer for every on-screen clock/countdown in the bottom half (tickets
+// T-minus, footer CONTINUE?). Subscribers join only while their panel is
+// visible; with no subscribers there is no timer at all. Ticks land just after
+// each wall-clock second, so countdown digits change on the second.
+// (Local stand-in for a site-wide perf util; safe to merge into one later.)
+const secondSubs = new Set<() => void>();
+let secondTimer = 0;
+function scheduleSecond() {
+  secondTimer = window.setTimeout(() => {
+    secondSubs.forEach((fn) => fn());
+    if (secondSubs.size) scheduleSecond();
+    else secondTimer = 0;
+  }, 1000 - (Date.now() % 1000) + 8);
+}
+/** Call `fn` once a second until the returned unsubscribe runs. */
+export function onSecond(fn: () => void): () => void {
+  secondSubs.add(fn);
+  if (!secondTimer) scheduleSecond();
+  return () => {
+    secondSubs.delete(fn);
+    if (!secondSubs.size && secondTimer) {
+      clearTimeout(secondTimer);
+      secondTimer = 0;
+    }
+  };
+}
+
+/**
  * Decode `el` to `text`: characters cycle through pixel glyphs and resolve
  * left to right over `ms`. Returns a cancel function that snaps to the final
  * text. Under reduced motion it just sets the text.

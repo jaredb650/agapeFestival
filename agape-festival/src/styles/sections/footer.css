@@ -216,6 +216,8 @@
 .wft__legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px var(--w-s-5); }
 .wft__legal p { margin: 0; font: 400 var(--w-fs-nano) / 1.5 var(--w-font-hud); letter-spacing: 0.26em; text-transform: uppercase; color: var(--w-fog); }
 .wft__eot i { display: inline-block; width: 0.6em; height: 1em; margin-left: 6px; vertical-align: -0.2em; background: var(--w-ice); animation: wft-blink 1.1s steps(1, end) infinite; }
+/* Off screen the cursor blink is removed (not paused: a paused animation still holds a layer). */
+.wft__shell:not([data-live]) .wft__eot i { animation: none; }
 
 /* ---- Entrance ------------------------------------------------------------ */
 .wft__shell[data-armed]:not([data-in]) :is(.wft__join > *, .wft__emblem > *, .wft__rule, .wft__h, .wft__nav li, .wft__slots li, .wft__readout, .wft__credits dl > div, .wft__base) { opacity: 0; }

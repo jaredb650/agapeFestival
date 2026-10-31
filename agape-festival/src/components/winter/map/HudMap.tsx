@@ -166,19 +166,27 @@ export function HudMap({ mode, onPick, lines }: HudMapProps) {
       <div className="wgh-grid" aria-hidden="true" />
 
       <div ref={worldRef} className="wgh-world" aria-hidden="true">
-        <svg className="wgh-svg" viewBox={`${WORLD.x} ${WORLD.y} ${WORLD.w} ${WORLD.h}`} focusable="false">
+        {/* The blueprint is three stacked SVGs (same viewBox, same box), in the original paint
+            order. The heavy static fills (hatched bay, ~400 block tiles) sit in their own SVGs whose
+            boot fade/flicker is a composited opacity, so the line draw-ins (one SVG, promoted to its
+            own layer while they run) never re-raster the hatch and the blocks every frame. */}
+        <svg className="wgh-svg wgh-l--water" viewBox={`${WORLD.x} ${WORLD.y} ${WORLD.w} ${WORLD.h}`} focusable="false">
           <defs>
             <pattern id="wgh-hatch" width="15" height="15" patternUnits="userSpaceOnUse" patternTransform={`rotate(${ST_ANGLE})`}>
               <path className="wgh-svg__hatch" d="M0 0V15" />
             </pattern>
           </defs>
-          <g className="wgh-l wgh-l--water">
-            <path className="wgh-water-tint" d={WATER} />
-            <path className="wgh-water" d={WATER} fill="url(#wgh-hatch)" />
-            <path className="wgh-piers" d={PIERS} />
-            <path className="wgh-shore" d={SHORELINE} pathLength={1} />
-          </g>
-          <path className="wgh-l wgh-blocks" d={BLOCKS} />
+          <path className="wgh-water-tint" d={WATER} />
+          <path className="wgh-water" d={WATER} fill="url(#wgh-hatch)" />
+          <path className="wgh-piers" d={PIERS} />
+        </svg>
+        <svg className="wgh-svg wgh-l--blocks" viewBox={`${WORLD.x} ${WORLD.y} ${WORLD.w} ${WORLD.h}`} focusable="false">
+          <path className="wgh-blocks" d={BLOCKS} />
+        </svg>
+        <svg className="wgh-svg wgh-l--lines" viewBox={`${WORLD.x} ${WORLD.y} ${WORLD.w} ${WORLD.h}`} focusable="false">
+          {/* The shoreline never overlaps the blocks (they stop 4 m short), so drawing it here,
+              above them, is pixel-identical; it keeps the bay's fade-in via its own animation. */}
+          <path className="wgh-shore" d={SHORELINE} pathLength={1} />
           <g className="wgh-l wgh-streets">
             {STREETS.map((s, i) => (
               <path key={s.id} d={s.d} pathLength={1} data-major={s.major || undefined} style={{ "--i": i } as CSSProperties} />
@@ -271,7 +279,11 @@ export function HudMap({ mode, onPick, lines }: HudMapProps) {
             <svg className="wgh-ret__svg" viewBox="-60 -60 120 120" focusable="false">
               <circle className="wgh-ret__ring" r="34" />
               <path className="wgh-ret__cross" d="M0 -26V-10M0 10V26M-26 0H-10M10 0H26" />
-              <circle className="wgh-ret__dot" r="2.4" />
+            </svg>
+            {/* The blinking centre dot is its own tiny <svg> box, so its opacity loop is
+                composited instead of repainting the reticle SVG. Same 120-unit scale. */}
+            <svg className="wgh-ret__dot" viewBox="-3 -3 6 6" focusable="false">
+              <circle r="2.4" />
             </svg>
             <span className="wgh-ret__box">
               <i />

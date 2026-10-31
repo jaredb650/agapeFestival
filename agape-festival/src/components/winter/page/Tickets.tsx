@@ -127,15 +127,22 @@ export function Tickets({ bgAt }: { bgAt?: number }) {
 
           {/* ---- Centre: the pass on its targeting ring ---------------------- */}
           <div className="tk-stage" data-tk-anchor>
-            <svg className="tk-reticle tk-in" data-in="lock" style={d(0.45)} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-              <circle className="tk-reticle__ring" cx="50" cy="50" r="49" />
-              <g className="tk-reticle__spin tk-loop">
+            {/* Three stacked SVGs in the original paint order. The dashed ring spins as its own
+                <svg> box, so the rotation is a compositor transform (a <g> inside one SVG re-ran
+                SVG layout + repaint of the whole reticle every frame). */}
+            <span className="tk-reticle tk-in" data-in="lock" style={d(0.45)} aria-hidden="true">
+              <svg className="tk-reticle__svg" viewBox="0 0 100 100" focusable="false">
+                <circle className="tk-reticle__ring" cx="50" cy="50" r="49" />
+              </svg>
+              <svg className="tk-reticle__svg tk-reticle__spin tk-loop" viewBox="0 0 100 100" focusable="false">
                 <circle className="tk-reticle__dash" cx="50" cy="50" r="45" />
-              </g>
-              <circle className="tk-reticle__ring tk-reticle__ring--in" cx="50" cy="50" r="34" />
-              <path className="tk-reticle__cross" d="M50 0v7M50 93v7M0 50h7M93 50h7" />
-              <path className="tk-reticle__tick" d="M14.6 14.6l3.5 3.5M85.4 14.6l-3.5 3.5M14.6 85.4l3.5-3.5M85.4 85.4l-3.5-3.5" />
-            </svg>
+              </svg>
+              <svg className="tk-reticle__svg" viewBox="0 0 100 100" focusable="false">
+                <circle className="tk-reticle__ring tk-reticle__ring--in" cx="50" cy="50" r="34" />
+                <path className="tk-reticle__cross" d="M50 0v7M50 93v7M0 50h7M93 50h7" />
+                <path className="tk-reticle__tick" d="M14.6 14.6l3.5 3.5M85.4 14.6l-3.5 3.5M14.6 85.4l3.5-3.5M85.4 85.4l-3.5-3.5" />
+              </svg>
+            </span>
             <span className="tk-lockon tk-in" data-in="lockon" style={d(0.95)} aria-hidden="true">
               <i />
               <i />

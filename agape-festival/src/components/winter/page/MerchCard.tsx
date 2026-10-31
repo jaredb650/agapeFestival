@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, type CSSProperties, type Ref } from "react";
+import { memo, type CSSProperties } from "react";
 import { toClipPath, toSvgPoints } from "@/components/winter/artist-select/geometry";
 import { MerchImg } from "@/components/winter/merch/MerchImg";
 import { pad2, SLOT_SHAPES, type Gear, type Side } from "@/components/winter/merch/loadout";
@@ -14,7 +14,8 @@ interface MerchCardProps {
   tabbable: boolean;
   /** id of the inspect window this slot loads. */
   controls: string;
-  slotRef: Ref<HTMLButtonElement>;
+  /** Stable (index, element) ref registrar from the armory (keeps this memo effective). */
+  registerSlot: (i: number, el: HTMLButtonElement | null) => void;
   onHover: (i: number) => void;
   onLeave: () => void;
   onFocusSlot: (i: number) => void;
@@ -28,7 +29,7 @@ interface MerchCardProps {
  * inspect window. Two outlines are drawn (wide desktop slot, phone rail tile);
  * CSS shows the one for the layout.
  */
-export const MerchCard = memo(function MerchCard({ gear, side, order, selected, tabbable, controls, slotRef, onHover, onLeave, onFocusSlot, onPress }: MerchCardProps) {
+export const MerchCard = memo(function MerchCard({ gear, side, order, selected, tabbable, controls, registerSlot, onHover, onLeave, onFocusSlot, onPress }: MerchCardProps) {
   const i = gear.n - 1;
   const desk = SLOT_SHAPES.desk[side];
   const rail = SLOT_SHAPES.rail[side];
@@ -37,7 +38,7 @@ export const MerchCard = memo(function MerchCard({ gear, side, order, selected, 
   return (
     <div className="wmx-slot" style={style} data-side={side} data-selected={selected || undefined} data-merch-slot={i}>
       <button
-        ref={slotRef}
+        ref={(el) => registerSlot(i, el)}
         type="button"
         className="wmx-slot__btn"
         tabIndex={tabbable ? 0 : -1}

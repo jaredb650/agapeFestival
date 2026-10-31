@@ -3,7 +3,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { Button, GLITCH_EVENT, GlitchLayer, Marquee } from "@/components/winter/ui";
 import { HudBezel } from "./HudBezel";
-import { armEntrance, decodeText, prefersReducedMotion } from "./hudFx";
+import { armEntrance, decodeText, LIVE_MARGIN, onSecond, prefersReducedMotion } from "./hudFx";
 import "@/styles/sections/footer.css";
 
 /** Crisp lockup exports (see public/assets/winter/logos/). */
@@ -87,25 +87,26 @@ export function FooterHud(p: FooterHudProps) {
     if (!shell) return;
     const timers: number[] = [];
     let cancelTitle = () => {};
-    let tick = 0;
-    let onScreen = false;
+    let stopTick: (() => void) | null = null;
 
-    // CONTINUE? 9…0 while the panel is on screen (one textContent write a second).
+    // CONTINUE? 9…0 while the panel is on screen (one textContent write a second, shared 1 Hz ticker).
     const count = countRef.current;
     let n = 9;
-    const io = new IntersectionObserver(([e]) => {
-      onScreen = e.isIntersecting;
-      if (onScreen && !tick && count && !prefersReducedMotion()) {
-        tick = window.setInterval(() => {
+    const io = new IntersectionObserver((entries) => {
+      const onScreen = entries[entries.length - 1].isIntersecting;
+      // CSS loops (the end-of-transmission cursor) only run while the panel is on screen.
+      shell.toggleAttribute("data-live", onScreen);
+      if (onScreen && !stopTick && count && !prefersReducedMotion()) {
+        stopTick = onSecond(() => {
           n = n <= 0 ? 9 : n - 1;
           count.textContent = String(n);
           count.toggleAttribute("data-zero", n === 0);
-        }, 1000);
-      } else if (!onScreen && tick) {
-        clearInterval(tick);
-        tick = 0;
+        });
+      } else if (!onScreen && stopTick) {
+        stopTick();
+        stopTick = null;
       }
-    });
+    }, { rootMargin: LIVE_MARGIN });
     io.observe(shell);
 
     const disarm = armEntrance(shell, () => {
@@ -116,7 +117,8 @@ export function FooterHud(p: FooterHudProps) {
       disarm();
       cancelTitle();
       io.disconnect();
-      clearInterval(tick);
+      shell.removeAttribute("data-live");
+      stopTick?.();
       timers.forEach(clearTimeout);
       cancelReadout.current();
     };

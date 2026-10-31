@@ -12,7 +12,8 @@ const DOORS = Array.from({ length: 12 }, (_, i) => i);
 /** "STORAGE UNIT / LOCKER TERMINAL": a compact chrome strip. Rendered only when LOCKERS.enabled (page.tsx). */
 export function Lockers() {
   const ref = useRef<HTMLElement>(null);
-  useBoot(ref, 0.5);
+  // The intro is over by ~1.1 s (doors + rise); detach it after that.
+  useBoot(ref, 0.5, 1400);
 
   return (
     <section ref={ref} id="lockers" className="wlk" aria-labelledby="lockers-title">

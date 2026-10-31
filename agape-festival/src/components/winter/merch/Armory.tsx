@@ -3,8 +3,9 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { Button } from "@/components/winter/ui";
 import { toClipPath } from "@/components/winter/artist-select/geometry";
-import { useReducedMotion, useViewport } from "@/components/winter/artist-select/hooks";
+import { useReducedMotion } from "@/components/winter/artist-select/hooks";
 import { MerchCard } from "@/components/winter/page/MerchCard";
+import { LIVE_MARGIN } from "@/components/winter/page/hudFx";
 import { Inspect } from "./Inspect";
 import { MerchBezel } from "./MerchBezel";
 import { Orb } from "./Orb";
@@ -57,7 +58,16 @@ export function Armory({ headingId, title, body, gear, shopUrl, blank }: ArmoryP
   const pointerIn = useRef(false);
 
   const reduced = useReducedMotion();
-  const { inView } = useViewport(rootRef);
+  // Loops + the auto-flip run only while the armory is actually on screen (no pre-roll margin:
+  // paused CSS loops resume where they stopped, so nothing visibly restarts).
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((entries) => setInView(entries[entries.length - 1].isIntersecting), { rootMargin: LIVE_MARGIN });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const live = inView && !reduced;
 
   // ---- Arrival: arm the hidden state, assemble once ~a quarter is on screen ----
@@ -188,9 +198,11 @@ export function Armory({ headingId, title, body, gear, shopUrl, blank }: ArmoryP
   };
 
   const cur = gear[sel];
-  const slotRef = (i: number) => (el: HTMLButtonElement | null) => {
+  // One stable registrar: a fresh ref closure per slot per render broke MerchCard's memo,
+  // so every auto-flip re-rendered all the slots.
+  const registerSlot = useCallback((i: number, el: HTMLButtonElement | null) => {
     slotEls.current[i] = el;
-  };
+  }, []);
 
   return (
     <div
@@ -267,7 +279,7 @@ export function Armory({ headingId, title, body, gear, shopUrl, blank }: ArmoryP
                         selected={g.n - 1 === sel}
                         tabbable={g.n - 1 === sel}
                         controls={windowId}
-                        slotRef={slotRef(g.n - 1)}
+                        registerSlot={registerSlot}
                         onHover={onHover}
                         onLeave={onLeave}
                         onFocusSlot={onFocusSlot}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { GLITCH_EVENT } from "@/components/winter/ui";
+import { LIVE_MARGIN, onSecond } from "@/components/winter/page/hudFx";
 import { withGsap } from "@/components/winter/page/loadGsap";
 
 const GLYPHS = "#%&*+/<>=?@[]_|01:";
@@ -14,7 +15,8 @@ const pad = (n: number, w = 2) => String(n).padStart(w, "0");
  *   terminal is on screen plays the CSS choreography once (CRT line, frame
  *   flicker, glitch-in, pass print) and decodes every `[data-tk-decode]`
  *   (textContent writes in one rAF loop, no React renders).
- * - `data-live` while on screen: CSS loops (foil, float, blink) pause without it.
+ * - `data-live` while on screen: CSS loops (foil, float, blink) pause without it; once
+ *   `data-settled` (intro over) they are removed off screen instead, freeing their layers.
  * - Countdown: textContent into `[data-u]` once a second, only while live.
  * - Desktop mouse: the pass tilts toward the pointer and the foil + glare slide
  *   (GSAP quickTo on transforms). Phones get the CSS idle sway instead.
@@ -55,25 +57,36 @@ export function TerminalShell({ children, className, targetIso }: { children: Re
     };
     tick();
 
+    // Seconds tick on the shared 1 Hz ticker; reduced motion hides seconds, so a slow timer will do.
     let timer = 0;
+    let stopTick: (() => void) | null = null;
     let live = false;
+    const stop = () => {
+      clearInterval(timer);
+      stopTick?.();
+      stopTick = null;
+    };
     const setLive = (on: boolean) => {
       if (on === live) return;
       live = on;
       root.toggleAttribute("data-live", on);
-      clearInterval(timer);
+      stop();
       if (on) {
         tick();
-        timer = window.setInterval(tick, reduced ? 30000 : 1000);
+        if (reduced) timer = window.setInterval(tick, 30000);
+        else stopTick = onSecond(tick);
       }
     };
-    cleanups.push(() => clearInterval(timer));
+    cleanups.push(stop);
 
     // ---- Boot ------------------------------------------------------------
     let raf = 0;
+    let settleTimer = 0;
     const decodes: { el: HTMLElement; text: string }[] = [];
     const boot = () => {
       root.dataset.state = "on";
+      // Intro done (last piece ~2.8 s): from here CSS drops off-screen loops instead of pausing them.
+      settleTimer = window.setTimeout(() => root.setAttribute("data-settled", ""), 3200);
       const els = Array.from(root.querySelectorAll<HTMLElement>("[data-tk-decode]"));
       const start = performance.now();
       const jobs = els.map((el) => {
@@ -106,6 +119,7 @@ export function TerminalShell({ children, className, targetIso }: { children: Re
     };
     cleanups.push(() => {
       cancelAnimationFrame(raf);
+      clearTimeout(settleTimer);
       decodes.forEach(({ el, text }) => (el.textContent = text));
     });
 
@@ -117,7 +131,7 @@ export function TerminalShell({ children, className, targetIso }: { children: Re
         setLive(e.isIntersecting);
         if (root.dataset.state === "armed" && e.intersectionRatio >= 0.28) boot();
       },
-      { threshold: [0, 0.28, 0.5] },
+      { threshold: [0, 0.28, 0.5], rootMargin: LIVE_MARGIN },
     );
     io.observe(root);
     cleanups.push(() => io.disconnect());
@@ -197,6 +211,7 @@ export function TerminalShell({ children, className, targetIso }: { children: Re
     return () => {
       cleanups.forEach((fn) => fn());
       delete root.dataset.state;
+      root.removeAttribute("data-settled");
       root.removeAttribute("data-live");
     };
   }, [targetIso]);

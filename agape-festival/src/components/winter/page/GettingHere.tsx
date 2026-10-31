@@ -59,7 +59,8 @@ export function GettingHere() {
   // NAVIGATE opens Apple Maps on iPhone/iPad, Google Maps everywhere else (server HTML: Google).
   const apple = useSyncExternalStore(noSubscribe, isIos, () => false);
   const reduced = useReducedMotion();
-  useBoot(rootRef);
+  // The map intro (and its layer hold) is over by ~3.8 s; detach it at 4.2 s.
+  useBoot(rootRef, 0.3, 4200);
 
 
   const route = ROUTES.find((r) => r.mode === mode) ?? ROUTES[0];

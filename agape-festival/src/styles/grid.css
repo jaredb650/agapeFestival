@@ -101,7 +101,7 @@ ul.g-row, ol.g-row { margin: 0; list-style: none; }
 .g-link:active { background-color: var(--c-wash); }
 /* In a list row the <li> is the cell and the link fills it. */
 .g-cell--li { padding: 0; }
-.g-cell--li > .g-link { flex: 1 1 auto; padding: var(--g-pad); }
+.g-cell--li > .g-link { flex: 1 1 auto; align-self: stretch; padding: var(--g-pad); }
 .g-link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
 
 /* Primary link cell: the flat red fill (the ticket cell). */

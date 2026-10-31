@@ -23,8 +23,6 @@
 @media (min-width: 768px) {
   .lu-act { --cell-h: var(--g-row-3); }
 }
-/* A centred list cell would shrink its link to the name; stretch it so the hover wash fills the cell. */
-.lu-act > .g-link { align-self: stretch; }
 .lu-act .w-title,
 .lu-act .g-link__value { overflow-wrap: break-word; }
 .lu-act__tba { font-size: var(--t-body); line-height: 1.3; color: var(--c-fg-3); }

@@ -21,10 +21,10 @@ const CONFIG: BootConfig = {
   holdCss: HOLD_CSS,
   // fonts, hero poster, festival logo, window load, scroll-scrub engine
   w: [0.16, 0.3, 0.22, 0.14, 0.18],
-  // Log line i finishes typing at 120 + i*120 + 300 ms (styles.ts .wb-log li).
-  lines: [420, 540, 660, 780, 900],
-  // Glitch before the doors part, full exit, quick exit (styles.ts exit keyframes + a frame of slack).
-  exit: [230, 820, 330],
+  // Log line i has faded up (and may take its status) by 120 + i*90 + 250 ms (styles.ts .wb-log li).
+  lines: [370, 460, 550, 640, 730],
+  // Stow before the doors part, full exit, quick exit (styles.ts exit keyframes + a frame of slack).
+  exit: [160, 780, 330],
 };
 
 /**
@@ -32,9 +32,9 @@ const CONFIG: BootConfig = {
  * whose markup, critical CSS and runtime are all inline in the initial HTML,
  * so it paints with the first frame (no JS, no request) while the page renders
  * and hydrates underneath at full speed. It counts real readiness (fonts, hero
- * poster + logo decoded, load, scrub engine), holds 0.9–2.5 s, then glitches
- * out and parts like hatch doors onto the hero, whose intro starts right then
- * (`w:boot-done`). Repeat visits this session get a quick shutter; reduced
+ * poster + logo decoded, load, scrub engine), holds 0.9–2.5 s, then stows its
+ * content and parts like hatch doors onto the hero, whose intro starts right
+ * then (`w:boot-done`). Repeat visits this session get a quick shutter; reduced
  * motion gets a plain fade; without JS it fades itself out after ~4 s.
  * Decorative: aria-hidden, no focusable content; any key/click/scroll skips it.
  */
@@ -64,7 +64,6 @@ export function Preloader() {
     ],
     build: `WNTR.${yy}`,
     coords: `${lat}  ${lon}`,
-    vtext: `ÄGAPE Festival — ${WINTER.edition} — ${WINTER.venue.location} — ${WINTER.year}`,
   });
   const script = `(${wBoot.toString()})(${JSON.stringify(CONFIG).replace(/</g, "\\u003c")})`;
   const html = `<style>${BOOT_CSS}</style>${markup}<script id="wboot-js">${script}</script>`;

@@ -12,12 +12,12 @@
 //    it at the handover. Nothing touches React-owned elements.
 //  - Tracks real readiness: document fonts, the hero poster and festival logo
 //    decoded, window load, the scroll-scrub engine (or its poster) requested.
-//  - Drives the pixel LCD counter, ring segments, gauge and log statuses from a
+//  - Drives the pixel LCD counter, gauge, umlaut dots and log statuses from a
 //    smoothed, monotonic progress value: never faster than `min`, never past
 //    `max`, never backwards. A 20 Hz timer, only while booting (no rAF: a
 //    pending rAF forces a main-thread frame every vsync); DOM writes only when
 //    a value changes, the gauge glides between them with a CSS transition.
-//  - Exits with the glitch + shutter (CSS), releases the page intro (event +
+//  - Exits with the stow + hatch doors (CSS), releases the page intro (event +
 //    window.__wboot) as the doors part, then removes the overlay and every
 //    listener/observer/timer it started.
 import type { BootState } from "./boot";
@@ -37,7 +37,7 @@ export interface BootConfig {
   w: number[];
   /** When each log line has finished typing (CSS), ms after first paint. */
   lines: number[];
-  /** Exit timings, ms: [glitch before the doors part, full exit length, quick exit length]. */
+  /** Exit timings, ms: [stow before the doors part, full exit length, quick exit length]. */
   exit: [number, number, number];
 }
 
@@ -76,7 +76,6 @@ export function wBoot(c: BootConfig): void {
 
   const all = (s: string) => Array.prototype.slice.call(root.querySelectorAll(s)) as Element[];
   const digits = all("[data-dg]");
-  const segs = all("[data-seg]");
   const lines = all("[data-ln]");
   const orbs = all("[data-orb]");
   const pips = all("[data-pip]");
@@ -90,7 +89,6 @@ export function wBoot(c: BootConfig): void {
   };
   let shown = 0;
   let pct = -1;
-  let lit = -1;
   let logged = 0;
   let tick = 0;
   let last = t0;
@@ -110,12 +108,8 @@ export function wBoot(c: BootConfig): void {
       else digits[i].removeAttribute("data-lead");
     }
     if (fill) fill.style.transform = "translate3d(" + (n - 100) + "%,0,0)";
+    // The umlaut dots light in chrome at 50 % and at 100 %.
     if (n >= 50 && orbs[0]) orbs[0].setAttribute("data-lit", "");
-    const k = Math.floor((n / 100) * segs.length + 1e-6);
-    if (k !== lit) {
-      lit = k;
-      for (let i = 0; i < k; i++) segs[i].setAttribute("data-on", "");
-    }
   };
 
   const logLine = (i: number) => {
@@ -229,8 +223,8 @@ export function wBoot(c: BootConfig): void {
     if ((shown >= 1 && logged >= lines.length) || t >= c.max) {
       root.setAttribute("data-ready", "");
       if (orbs[1]) orbs[1].setAttribute("data-lit", "");
-      // A beat for the second orb to light, then the handover.
-      later(() => exit(false), 110);
+      // A beat for the second dot to light, then the handover.
+      later(() => exit(false), 150);
       return;
     }
     tick = w.setTimeout(frame, 50);

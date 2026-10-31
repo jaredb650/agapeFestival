@@ -1,4 +1,9 @@
-@import "tailwindcss";
+/* Tailwind only for the two utility-styled pages (404 and the error boundary). Scanning the whole app
+   generated stray utilities from ordinary words in the source (.block, .hidden, .table, .sticky…) into
+   every page's inline CSS. */
+@import "tailwindcss" source(none);
+@source "./not-found.tsx";
+@source "./error.tsx";
 
 /* Site-wide base. Page styling lives in src/styles/winter.css (kit) and
    src/styles/winter-page.css (home page). The old single-screen landing's

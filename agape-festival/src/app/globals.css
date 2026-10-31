@@ -4,12 +4,6 @@
    src/styles/winter-page.css (home page). The old single-screen landing's
    scroll lock and styles are archived in archive/winter-landing-v1/. */
 
-@font-face {
-  font-family: "Chonky Pixels";
-  src: url("/assets/fonts/ChonkyPixels.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
 :root { color-scheme: dark; background: #04060a; color: #e9ebec; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; }

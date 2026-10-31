@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { afterLoadIdle } from "./idle";
+import { pickHeroVideo } from "../load/videoSource";
 import { withGsap } from "./loadGsap";
 import { GLITCH_EVENT, GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
@@ -222,7 +223,7 @@ export function HeroVideo({ video }: { video: HeroVideoConfig }) {
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
     if (reduced.matches || conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType ?? "")) return;
     const portrait = window.matchMedia("(max-aspect-ratio: 3/4)").matches;
-    const cancel = afterLoadIdle(() => setSrc(portrait && video.srcMobile ? video.srcMobile : video.src), 200);
+    const cancel = afterLoadIdle(() => void pickHeroVideo(video, portrait).then(setSrc), 200);
     const onMotion = () => reduced.matches && setSrc(null);
     reduced.addEventListener("change", onMotion);
     return () => {

@@ -42,7 +42,7 @@
   --w-font-display: var(--font-display, var(--font-hud, var(--font-orbitron, sans-serif))), sans-serif;
   --w-font-hud: var(--font-hud, var(--font-orbitron, sans-serif)), sans-serif;
   --w-font-body: var(--font-body, var(--font-outfit, system-ui)), system-ui, sans-serif;
-  --w-font-pixel: var(--font-pixel, "Chonky Pixels"), "Chonky Pixels", monospace;
+  --w-font-pixel: var(--font-pixel), monospace;
 
   /* ---- Type scale (fluid, 390 → 1440) ----
      Orbitron is wide (caps ≈ 0.9em + tracking), so display sizes run ~30% under

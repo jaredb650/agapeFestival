@@ -370,7 +370,80 @@
         18.9
       ]
     ],
-    "segmentsNote": "Added by J5: the footage the scroll scrub may show. Frame luma (mobile frames, phone crop) is under ~25/255 (reads as black under the vignette) at 0.8-2.93 s (platform underside), 10.0-11.87 s (underside again) and from 19.07 s (fade to black), and 7.47-8.27 s sits at 22-28. The scrub jumps across the gaps (as cuts, firing a glitch burst) instead of playing through them. Segment ends sit on scene cuts: 3.667, 7.267, 9.9 and 11.967 (whiteout)."
+    "segmentsNote": "Added by J5: the footage the scroll scrub may show. Frame luma (mobile frames, phone crop) is under ~25/255 (reads as black under the vignette) at 0.8-2.93 s (platform underside), 10.0-11.87 s (underside again) and from 19.07 s (fade to black), and 7.47-8.27 s sits at 22-28. The scrub jumps across the gaps (as cuts, firing a glitch burst) instead of playing through them. Segment ends sit on scene cuts: 3.667, 7.267, 9.9 and 11.967 (whiteout).",
+    "loop": {
+      "notes": "G0 grid redesign: the page background as a plain muted loop (no scrub). ~9.2 s cut from the same footage (frames 126-217, 376-438, 457-566, 115-125 @30fps): no black stretches, no glitch shots, seamless loop point. Opens on the existing poster frame (t=4.2 s). Normal 2 s GOP. Made by context/winter-redesign/media-scripts/g0_bg_loop.sh.",
+      "fps": 30,
+      "cuts": [
+        3.067,
+        5.167,
+        8.833
+      ],
+      "landscape": {
+        "sources": [
+          {
+            "src": "/assets/winter/bg-loop/loop-1080.av1.mp4",
+            "type": "video/mp4; codecs=\"av01.0.08M.08\"",
+            "codec": "av1",
+            "width": 1080,
+            "height": 1920,
+            "bytes": 1632682,
+            "bitrate": 1419723
+          },
+          {
+            "src": "/assets/winter/bg-loop/loop-1080.hevc.mp4",
+            "type": "video/mp4; codecs=\"hvc1.1.6.L120.B0\"",
+            "codec": "hevc",
+            "width": 1080,
+            "height": 1920,
+            "bytes": 1762059,
+            "bitrate": 1532225
+          },
+          {
+            "src": "/assets/winter/bg-loop/loop-1080.mp4",
+            "type": "video/mp4; codecs=\"avc1.640029\"",
+            "codec": "h264",
+            "width": 1080,
+            "height": 1920,
+            "bytes": 2799925,
+            "bitrate": 2434717
+          }
+        ],
+        "duration": 9.2
+      },
+      "portrait": {
+        "sources": [
+          {
+            "src": "/assets/winter/bg-loop/loop-720.av1.mp4",
+            "type": "video/mp4; codecs=\"av01.0.05M.08\"",
+            "codec": "av1",
+            "width": 720,
+            "height": 1280,
+            "bytes": 804440,
+            "bitrate": 699513
+          },
+          {
+            "src": "/assets/winter/bg-loop/loop-720.hevc.mp4",
+            "type": "video/mp4; codecs=\"hvc1.1.6.L93.B0\"",
+            "codec": "hevc",
+            "width": 720,
+            "height": 1280,
+            "bytes": 785302,
+            "bitrate": 682871
+          },
+          {
+            "src": "/assets/winter/bg-loop/loop-720.mp4",
+            "type": "video/mp4; codecs=\"avc1.64001F\"",
+            "codec": "h264",
+            "width": 720,
+            "height": 1280,
+            "bytes": 1258259,
+            "bitrate": 1094138
+          }
+        ],
+        "duration": 9.2
+      }
+    }
   },
   "hero": {
     "type": "photo",

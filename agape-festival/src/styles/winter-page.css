@@ -1,37 +1,33 @@
 /* ==========================================================================
-   ÄGAPĒ WINTER — home page layout ("the flyer, as a website").
-   Built on the kit in winter.css: tokens, type, Button/Frame/GlassWindow.
-   Page classes are prefixed w + section (wbg, wflyer, ...). Each section's own
-   styles live in styles/sections/*.css (the old wnav/whero/wlineup/wticket/
-   was/wmerch/wfaq/wlockers/wgh__/wfoot rules were dead and are gone).
-   Scroll-driven code only writes transform / opacity.
+   ÄGAPĒ WINTER — the home page frame (grid redesign).
+   Page root, skip link, the looping background (LoopBackground.tsx), the
+   frozen hero + flyer region (.wposter) and the flyer stage. Sections build
+   from grid.css; each section's own styles live in styles/sections/*.css.
    ========================================================================== */
 
 .wpage { position: relative; isolation: isolate; min-height: 100vh; overflow-x: clip; }
-.wpage main, .wpage footer { position: relative; z-index: 1; }
+.wpage main, .wpage footer { position: relative; z-index: var(--z-content); }
 .wpage main:focus { outline: none; }
 :where(.wpage) a:focus-visible,
 :where(.wpage) button:focus-visible,
-:where(.wpage) summary:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 4px; }
+:where(.wpage) summary:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 .wskip {
   position: fixed;
-  left: var(--w-s-4);
+  left: var(--g-margin);
   top: -120px;
-  z-index: 100;
-  padding: 14px 18px;
-  background: var(--w-ink);
-  color: var(--w-frost);
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+  z-index: var(--z-skip);
+  padding: var(--s-3) var(--s-4);
+  background: var(--c-ink);
+  border: 1px solid var(--c-rule-control);
+  color: var(--c-fg);
+  font: 500 var(--t-small) / 1.2 var(--f-ui);
   text-decoration: none;
-  box-shadow: inset 0 0 0 1px var(--w-ice);
 }
-.wskip:focus { top: var(--w-s-4); }
+.wskip:focus { top: var(--s-2); }
 
 /* ==========================================================================
-   Fixed, scroll-scrubbed background
+   The background: a fixed, muted loop with a gentle parallax.
    ========================================================================== */
 .wbg {
   position: fixed;
@@ -40,58 +36,65 @@
   width: 100%;
   height: 100vh;
   height: 100lvh;
-  z-index: 0;
+  z-index: var(--z-bg);
   overflow: hidden;
   pointer-events: none;
-  /* The inline ~0.5 KB still (ScrollBackground sets background-image) under everything: never plain black. */
-  background-color: var(--w-ink);
+  /* The inline ~0.5 KB still (set by LoopBackground) under everything: never plain black. */
+  background-color: var(--c-ink);
   background-size: cover;
   background-position: 50% 50%;
   contain: strict;
-  /* Red hybrid grade: the footage is the flyer's steel-blue tower; pull it most of the way to neutral (no darkening: the footage must stay visible) so
-     the red reads as the only colour. One static filter on the fixed layer (applied by the compositor; the
-     scrub logic is untouched). */
+  /* The footage is steel blue; most of the way to neutral so red stays the only colour. */
   filter: saturate(0.3);
 }
-/* Landscape: the 9:16 footage is shown full-width and panned vertically by scroll. */
-.wbg__media { position: absolute; left: 0; top: 0; width: 100%; height: max(100%, calc(100vw * 2276 / 1280)); will-change: transform; }
-.wbg[data-mode="poster"] .wbg__media { top: 50%; transform: translateY(-50%); will-change: auto; }
+/* Taller than the screen so the parallax has slack: the full-width portrait clip on landscape screens,
+   130% of the height on portrait ones. */
+.wbg__media { position: absolute; left: 0; top: 0; width: 100%; height: max(130%, calc(100vw * 2276 / 1280)); will-change: transform; }
+.wbg[data-motion="off"] .wbg__media { top: 50%; transform: translateY(-50%); will-change: auto; }
 .wbg__media picture,
 .wbg__poster,
-.wbg__video,
-.wbg__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wbg__poster, .wbg__video { object-fit: cover; object-position: 50% 50%; }
-/* The poster stays under the live layer for good: if the video stalls or errors, it is what shows. */
-.wbg__video, .wbg__canvas { opacity: 0; transition: opacity var(--w-dur-slow) ease; }
-.wbg[data-live] .wbg__video, .wbg[data-live] .wbg__canvas { opacity: 1; }
-.wbg__scrim { position: absolute; inset: 0; background: var(--w-ink); opacity: 0; will-change: opacity; }
+.wbg__video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 50% 50%; }
+/* Playing-gated: a blocked or paused video is never visible (iOS Low Power Mode), the poster under it is. */
+.wbg__video { opacity: 0; transition: opacity 600ms var(--m-ease); }
+.wbg[data-live] .wbg__video { opacity: 1; }
+/* The flyer's own still, on the box the old scrub used (so the poster crop matches the flyer layers). */
+.wbg__still {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: max(100%, calc(100vw * 2276 / 1280));
+  display: block;
+  object-fit: cover;
+  object-position: 50% 50%;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+.wbg__scrim { position: absolute; inset: 0; background: rgba(0, 0, 0, var(--g-scrim)); opacity: 0; will-change: opacity; }
+/* The flyer region's vignette (unchanged); it fades out as the scrim comes in. */
 .wbg__vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 35%, rgba(0, 0, 0, 0.55) 100%); }
 @media (min-aspect-ratio: 1/1) { .wbg__vignette { background: radial-gradient(ellipse 60% 75% at 50% 48%, rgba(0, 0, 0, 0.12) 20%, rgba(0, 0, 0, 0.72) 100%); } }
 
-/* Scrub rail: the footage's timeline, glitch cuts marked. Hidden in the red hybrid (a decorative readout under
-   the text diet; the nav's meter already shows progress). Its rules stay so it can come back with one line. */
-.wbg__rail { display: none; }
-@media (min-width: 1024px) and (hover: hover) {
-  .wbg__rail {
-    position: absolute;
-    right: 22px;
-    top: 50%;
-    height: 36vh;
-    transform: translateY(-50%);
-    /* display: flex; (hidden in the red hybrid) */
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-}
-.wbg__track { position: relative; flex: 1; width: 1px; background: var(--w-line-strong); }
-.wbg__track i { position: absolute; left: -3px; width: 7px; height: 1px; background: var(--w-fog); }
-.wbg__thumb { position: absolute; left: -3px; top: -1px; width: 7px; height: 3px; background: var(--w-frost); will-change: transform; }
-.wbg__code { font: 400 var(--w-fs-nano) / 1 var(--w-font-hud); letter-spacing: 0.18em; color: var(--w-fog); font-variant-numeric: tabular-nums; writing-mode: vertical-rl; transform: rotate(180deg); contain: layout paint; width: 10px; height: 64px; }
-
 /* ==========================================================================
-   The flyer moment (sticky stage over the scrub)
+   FROZEN: the hero + flyer region. The hero and flyer keep the deployed
+   scanlines; nothing else on the page has them. The layer is fixed to the
+   viewport (as the old global layer was) and clipped to this wrapper, so
+   it never shows below the flyer.
    ========================================================================== */
+.wposter { position: relative; clip-path: inset(0); }
+.wposter__scan {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.1) 3px 4px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wposter__scan { animation: wposter-in 1.6s ease 0.3s both; }
+}
+@keyframes wposter-in { from { opacity: 0; } }
+
+/* The flyer moment: a sticky stage over the background (unchanged). */
 .wflyer { position: relative; height: 280vh; height: 280lvh; }
 .wflyer__marker { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
 .wflyer__marker--lock { top: 135vh; top: 135lvh; }
@@ -117,16 +120,6 @@
 .wflyer__stage[data-live] .wflyer__layer { will-change: transform, opacity; }
 .wflyer__layer img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 .wflyer__layer .w-glitch { cursor: crosshair; }
-
-/* ==========================================================================
-   Mobile: no backdrop blur over the scrubbing canvas (re-blurs every frame).
-   ========================================================================== */
-@media (hover: none), (max-width: 899px) {
-  .wpage .w-window { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(180deg, rgba(42, 42, 42, 0.96) 0%, rgba(24, 24, 24, 0.97) 40%, rgba(17, 17, 17, 0.98) 100%); }
-}
-
-/* Page leads sit over moving footage: Outfit 300 shimmers against the grain there. */
-.wpage .w-lead { font-weight: 400; }
 
 @media (prefers-reduced-motion: reduce) {
   .wflyer__layer { will-change: auto; }

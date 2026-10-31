@@ -1,9 +1,12 @@
+// The kit's CSS first, so section stylesheets (imported by their components below) can build on it.
+import "@/styles/winter.css";
+import "@/styles/grid.css";
+import "@/styles/winter-page.css";
 import { preload } from "react-dom";
 import { winterFontVariables } from "@/components/winter/fonts";
-import { Grain } from "@/components/winter/ui";
+import { Gap } from "@/components/winter/grid";
 import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
 import { FlyerSection } from "@/components/winter/page/FlyerSection";
-import { FloatingCta } from "@/components/winter/page/FloatingCta";
 import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
 import { Hero } from "@/components/winter/page/Hero";
@@ -11,16 +14,14 @@ import { Faq } from "@/components/winter/page/Faq";
 import { GettingHere } from "@/components/winter/page/GettingHere";
 import { Lockers } from "@/components/winter/page/Lockers";
 import { Lineup } from "@/components/winter/page/Lineup";
+import { LoopBackground } from "@/components/winter/page/LoopBackground";
 import { Merch } from "@/components/winter/page/Merch";
 import { Nav } from "@/components/winter/page/Nav";
-import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
 import { Tickets } from "@/components/winter/page/Tickets";
 import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
 import { Preloader } from "@/components/winter/preloader/Preloader";
-import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
+import { BG, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
-import "@/styles/winter.css";
-import "@/styles/winter-page.css";
 
 const SITE = "https://agape-festival.com";
 
@@ -69,7 +70,7 @@ export default function Home() {
       </a>
       <Preloader />
       <GestureRescue />
-      <ScrollBackground media={BG} startTime={BG_TIMES.top} endTime={BG_TIMES.end} />
+      <LoopBackground media={BG} />
       <Nav
         links={NAV_LINKS}
         ticketsUrl={WINTER.tickets.url}
@@ -78,20 +79,29 @@ export default function Home() {
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
       />
       <main id="main" tabIndex={-1}>
-        <Hero />
-        <FlyerSection />
-        {/* Preview: the explorable profiler first, then the plain lineup for anyone who skips it. */}
-        {SHOW_ARTIST_SELECT && <ArtistSelectSection bgAt={BG_TIMES.afterLineup} />}
+        {/* Frozen: the hero and the flyer layover, under their own scanlines (winter-page.css .wposter). */}
+        <div className="wposter">
+          <Hero />
+          <FlyerSection />
+          <div className="wposter__scan" aria-hidden="true" />
+        </div>
+        {/* The grid: every section is a stack of rows of cells; a gap band separates sections. */}
+        {SHOW_ARTIST_SELECT && <ArtistSelectSection />}
+        {SHOW_ARTIST_SELECT && <Gap />}
         <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
-        <Tickets bgAt={SHOW_ARTIST_SELECT ? undefined : BG_TIMES.afterLineup} />
+        <Gap />
+        <Tickets />
+        <Gap />
         <Merch />
+        <Gap />
         <Faq />
+        <Gap />
         {LOCKERS.enabled && <Lockers />}
+        {LOCKERS.enabled && <Gap />}
         <GettingHere />
+        <Gap />
       </main>
-      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} />
       <Footer links={NAV_LINKS} />
-      <Grain />
       <OffscreenPauser />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>

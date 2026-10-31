@@ -3,7 +3,6 @@
 // Import this from server components only and pass plain props down, so the
 // manifest never ships in a client bundle.
 import manifest from "../../../../public/assets/winter/manifest.json";
-import type { FramePack } from "../load/framePacks";
 import type { VideoSet } from "../load/videoSource";
 
 export interface Still {
@@ -92,102 +91,49 @@ export const HERO_LOGO = {
 /** Portrait screens get the 9:16 crop. Keep the hero <picture> and its preloads on the same query. */
 export const HERO_PORTRAIT_QUERY = "(max-aspect-ratio: 3/4)";
 
-// ---- Scroll-scrubbed background ------------------------------------------
+// ---- Background: a plain muted loop (grid redesign) -------------------------
 
 const bg = manifest.background;
-
-export interface BgRange {
-  start: number;
-  end: number;
-  peakLuma: number;
-}
+const loop = bg.loop;
 
 export interface BgMedia {
-  duration: number;
-  video: {
-    /** H.264 (the fallback). */
-    src: string;
-    width: number;
-    height: number;
-    fps: number;
-    /** AV1 / HEVC / H.264, best first, all with the same GOP. */
-    sources?: VideoSet["sources"];
-    /** H.264 average bits per second (for MediaCapabilities). */
-    bitrate: number;
-  };
-  /** Seconds between keyframes in the desktop encode (seeks there decode one frame). */
-  keyframeStep: number;
-  frames: {
-    dir: string;
-    count: number;
-    width: number;
-    height: number;
-    /** seconds per frame */
-    step: number;
-    /** The playable frames' files concatenated into a few requests (load/framePacks.ts). */
-    packs?: FramePack[];
-  };
+  /** The loop for landscape screens (1080x1920, shown full width) and portrait screens (720x1280). */
+  landscape: VideoSet;
+  portrait: VideoSet;
+  /** Hard cuts inside the loop, in loop seconds: a cut glitches the flyer layers while the flyer is on screen. */
+  cuts: number[];
+  /** The loop's first frame (t=4.2 s of the footage). */
   posterDesktop: Still;
   posterMobile: Still;
-  /** Time shown by the posters. */
-  posterTime: number;
-  brightRanges: BgRange[];
-  /** Start times of the glitch shots (inverted flashes, whiteout). Crossing one fires a burst on the flyer layers. */
-  glitchCuts: number[];
-  /** The playable footage, [start, end] in seconds. The scrub never shows time outside these (dark or black frames). */
-  segments: [number, number][];
+  /** The flyer's own background still: the background settles on it while the flyer is locked. */
+  flyerStill: Still;
   /** ~0.5 KB inline still under everything, so the background is never plain black. */
   placeholder: string;
+  /** Scroll-scrub frames (720x1280 WebP), kept for the artist select's tile backdrops. */
+  frames: { dir: string };
 }
 
-const bgVideo = videoSet(bg.desktop.sources, bg.desktop.fps);
-
 export const BG: BgMedia = {
-  duration: bg.duration,
-  video: {
-    src: bg.desktop.src,
-    width: bg.desktop.width,
-    height: bg.desktop.height,
-    fps: bg.desktop.fps,
-    sources: bgVideo.sources,
-    bitrate: bgVideo.bitrate,
-  },
-  keyframeStep: bg.desktop.gop / bg.desktop.fps,
-  frames: {
-    dir: bg.frames.dir,
-    count: bg.frames.count,
-    width: bg.frames.width,
-    height: bg.frames.height,
-    step: bg.frames.sourceFrameStep / bg.desktop.fps,
-    packs: bg.frames.packs.map(({ src, bytes, frames }) => ({ src, bytes, frames })),
-  },
+  landscape: videoSet(loop.landscape.sources, loop.fps),
+  portrait: videoSet(loop.portrait.sources, loop.fps),
+  cuts: loop.cuts,
   posterDesktop: { src: bg.posterDesktop.src, width: bg.posterDesktop.width, height: bg.posterDesktop.height },
   posterMobile: { src: bg.posterMobile.src, width: bg.posterMobile.width, height: bg.posterMobile.height },
-  posterTime: bg.posterDesktop.time,
-  brightRanges: bg.brightRanges.map(({ start, end, peakLuma }) => ({ start, end, peakLuma })),
-  glitchCuts: bg.shots.filter((s) => "glitch" in s && s.glitch).map((s) => s.start),
-  segments: bg.segments.map(([a, b]) => [a, b] as [number, number]),
+  flyerStill: { src: manifest.flyer.backgroundStill.src, width: manifest.flyer.backgroundStill.width, height: manifest.flyer.backgroundStill.height },
   placeholder: bg.placeholder.dataUri,
+  frames: { dir: bg.frames.dir },
 };
 
 /**
- * Where the scrub lands at each scroll anchor (seconds into PLAIN V1).
- * The page puts `data-bg-at` on the element whose top reaching the viewport
- * top should show that time; between anchors the scrub runs linearly through
- * the playable `segments` only (dark stretches are skipped as cuts).
+ * Seconds into the footage that the old scroll scrub showed at each anchor. The scrub is gone; the
+ * flyer still renders these as `data-bg-at` (FlyerSection is frozen), and nothing reads them now.
  */
 export const BG_TIMES = {
-  /** Page top, under the hero: the antenna mast, lit (the dark platform underside before 3.67 s is skipped). */
   top: 3.7,
-  /** Hero fully gone: mid mast drift. */
   heroGone: 4.6,
-  /** Flyer reassembled: the exact still the v3 flyer is built on. */
   flyer: manifest.flyer.backgroundStill.animationTime,
-  /** Sticky flyer releases. */
   flyerRelease: 13.6,
-  /** Section after the lineup: the ghost-negative cut has just played (14.63–15.17). */
   afterLineup: 15.167,
-  /** Page bottom: the inverted mast, before the footage fades to black at ~19 s. */
   end: 18.6,
 } as const;
 

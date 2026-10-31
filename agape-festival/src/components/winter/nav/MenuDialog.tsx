@@ -1,21 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type RefObject } from "react";
-import { Button } from "@/components/winter/ui";
-import type { HudSection } from "./hud";
+import { Cell, Fill, LinkCell, Row } from "@/components/winter/grid";
+import { CloseIcon } from "@/components/winter/grid/icons";
+import type { NavLink } from "./sections";
 
 export type MenuPhase = "closed" | "opening" | "open" | "closing";
 
-// Choreography lengths (keep in sync with nav.css: the last row lands ~0.8s).
-const OPEN_MS = 850;
-const CLOSE_MS = 420;
-const RM_MS = 220;
+// Choreography lengths (nav.css): the panel drops in 240ms; the rows wipe in 240ms each, 40ms apart,
+// from 80ms. The close is the panel lifting (240ms).
+const ROW_START = 80;
+const STAGGER = 40;
+const WIPE = 240;
+const CLOSE_MS = 240;
+const RM_MS = 160;
 const DESKTOP = "(min-width: 1100px)";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /**
  * Menu state machine around a native modal <dialog> (focus trap, inert page, Esc).
- * opening → open runs the unfold; closing plays the fold-out before dialog.close().
+ * opening → open runs the reveal; closing plays the lift before dialog.close().
  * Scroll is locked on <html> while the dialog is up; focus returns to the menu
  * button, or moves to the chosen section after a link.
  */
@@ -35,18 +39,18 @@ export function useMenu(buttonRef: RefObject<HTMLButtonElement | null>) {
     const dialog = dialogRef.current;
     if (!dialog || phaseRef.current !== "closed") return;
     after.current = null;
-    document.documentElement.classList.add("whud-lock");
-    // Set before showModal so the very first painted frame is already the unfold's first frame.
+    document.documentElement.classList.add("wnav-lock");
+    // Set before showModal so the very first painted frame is already the reveal's first frame.
     dialog.dataset.phase = "opening";
     dialog.showModal();
-    // Start on CLOSE (the body is a scroller, which Chrome would otherwise pick).
-    dialog.querySelector<HTMLElement>(".whud-menu__close")?.focus({ preventScroll: true });
+    dialog.querySelector<HTMLElement>(".wmenu__close")?.focus({ preventScroll: true });
     go("opening");
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => go("open"), reduced() ? RM_MS : OPEN_MS);
+    const rows = dialog.querySelectorAll(".wmenu__seq").length;
+    timer.current = setTimeout(() => go("open"), reduced() ? RM_MS : ROW_START + rows * STAGGER + WIPE);
   }, [go]);
 
-  /** Fold out, then close. `then` runs after the dialog is gone (e.g. jump to a section). */
+  /** Lift away, then close. `then` runs after the dialog is gone (e.g. jump to a section). */
   const close = useCallback(
     (then?: () => void) => {
       const dialog = dialogRef.current;
@@ -62,7 +66,7 @@ export function useMenu(buttonRef: RefObject<HTMLButtonElement | null>) {
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    // Esc: play the fold-out instead of the instant native close.
+    // Esc: play the lift instead of the instant native close.
     const onCancel = (e: Event) => {
       e.preventDefault();
       close();
@@ -70,7 +74,7 @@ export function useMenu(buttonRef: RefObject<HTMLButtonElement | null>) {
     // Fires for our timed close and for any forced close (e.g. a second Esc).
     const onClose = () => {
       clearTimeout(timer.current);
-      document.documentElement.classList.remove("whud-lock");
+      document.documentElement.classList.remove("wnav-lock");
       go("closed");
       const then = after.current;
       after.current = null;
@@ -88,7 +92,7 @@ export function useMenu(buttonRef: RefObject<HTMLButtonElement | null>) {
       dialog.removeEventListener("close", onClose);
       mq.removeEventListener("change", onMq);
       clearTimeout(timer.current);
-      document.documentElement.classList.remove("whud-lock");
+      document.documentElement.classList.remove("wnav-lock");
     };
   }, [buttonRef, close, go]);
 
@@ -99,10 +103,10 @@ export type MenuApi = ReturnType<typeof useMenu>;
 
 interface MenuDialogProps {
   menu: MenuApi;
-  links: { label: string; href: string }[];
-  sections: HudSection[];
-  /** Index into `sections`, -1 when unknown. */
-  active: number;
+  /** Bar links (sentence case, no Top). */
+  links: NavLink[];
+  /** Id of the current section, if known. */
+  active: string | null;
   ticketsUrl: string;
   ticketsLabel: string;
   mark: { src: string; width: number; height: number };
@@ -120,15 +124,15 @@ function jumpTo(href: string) {
 }
 
 /**
- * The mobile menu (red hybrid): a dark panel inside the deployed corner
- * ticks that unfolds out of the bar. The section plates flip down on hinges
- * one after another (shorter, no overshoot), then the red Get tickets and
- * the socials rise in. No readouts, codes or decorative labels. All motion is
- * CSS transform/opacity keyed off data-phase (see nav.css).
+ * The menu below 1100px: a full-screen grid of cells. The head row redraws the bar (wordmark + close),
+ * one cell per section (two columns from 768px), then the red ticket cell and the socials. Opening drops
+ * the panel from the bar and wipes each row in from the left, 40ms apart (clip-path on rectangles, so
+ * the hairlines draw in with them); closing lifts the panel. No readouts, no decorative text.
  */
-export function MenuDialog({ menu, links, sections, active, ticketsUrl, ticketsLabel, mark, socials }: MenuDialogProps) {
+export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark, socials }: MenuDialogProps) {
   const { phase, close, dialogRef } = menu;
-  const activeId = sections[active]?.id;
+  /** Position in the reveal sequence (nav.css staggers on it). */
+  const seq = (i: number) => ({ "--k": i }) as CSSProperties;
 
   const onLink = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
@@ -136,73 +140,91 @@ export function MenuDialog({ menu, links, sections, active, ticketsUrl, ticketsL
     close(() => jumpTo(href));
   };
 
+  const odd = links.length % 2;
+
   return (
     <dialog
-      id="whud-menu"
+      id="wnav-menu"
       ref={dialogRef}
-      className="whud-menu"
+      className="wmenu"
       data-phase={phase}
       aria-label="Site menu"
       onClick={(e) => {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="whud-menu__veil" aria-hidden="true" onClick={() => close()} />
-
-      <div className="whud-menu__body">
-        {/* Head: the bar, re-drawn in place, so the menu reads as unfolding out of it. */}
-        <div className="whud-menu__head">
-          <span className="whud-brand whud-menu__brand" aria-hidden="true">
+      <div className="wmenu__panel">
+        <div className="wmenu__head">
+          <span className="wnav__cell wnav__brand" aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={mark.src} width={mark.width} height={mark.height} alt="" className="whud-brand__mark" />
-            <span className="whud-brand__word">ÄGAPE</span>
+            <img src={mark.src} width={mark.width} height={mark.height} alt="" className="wnav__mark" />
+            <span className="wnav__word">ÄGAPĒ</span>
           </span>
-          <button type="button" className="whud-btn whud-menu__close" onClick={() => close()}>
-            <svg className="whud-menu__x" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            <span>Close</span>
+          <span className="wnav__cell wnav__fill" aria-hidden="true" />
+          <button type="button" className="wnav__cell wmenu__close" onClick={() => close()} aria-label="Close menu">
+            <CloseIcon size={20} />
+            <span className="wnav__menu-label" aria-hidden="true">
+              Close
+            </span>
           </button>
         </div>
 
-        <div className="whud-menu__win">
-          <span className="whud-menu__bezel" aria-hidden="true" />
-          {[0, 1, 2, 3].map((i) => (
-            <i key={i} className="whud-menu__brk" style={{ "--k": i } as CSSProperties} aria-hidden="true" />
-          ))}
-
-          <nav className="whud-menu__nav" aria-label="Sections">
-            <ol className="whud-menu__list" style={{ "--n": links.length } as CSSProperties}>
-              {links.map((l, i) => (
-                <li key={l.href} className="whud-menu__item" style={{ "--i": i } as CSSProperties}>
-                  <a
-                    href={l.href}
-                    className="whud-menu__link"
-                    aria-current={l.href.slice(1) === activeId ? "location" : undefined}
-                    onClick={(e) => onLink(e, l.href)}
-                  >
-                    <span className="whud-menu__label">{l.label}</span>
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        </div>
-
-        <div className="whud-menu__foot">
-          <Button href={ticketsUrl} external size="md" className="whud-menu__cta">
-            {ticketsLabel}
-          </Button>
-          <ul className="whud-menu__socials">
-            {socials.map((s) => (
-              <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer">
-                  {s.handle}
-                </a>
-              </li>
+        <nav className="wmenu__nav" aria-label="Sections">
+          <Row as="ul" className="wmenu__links">
+            {links.map((l, i) => (
+              <LinkCell
+                key={l.href}
+                listItem
+                href={l.href}
+                span={6}
+                size="title"
+                className="wmenu__seq wmenu__link"
+                style={seq(i)}
+                aria-current={active && l.href === `#${active}` ? "location" : undefined}
+                onClick={(e) => onLink(e, l.href)}
+              >
+                {l.label}
+              </LinkCell>
             ))}
-          </ul>
-        </div>
+            {odd ? <Fill as="li" md={6} /> : null}
+          </Row>
+        </nav>
+
+        <Row>
+          <LinkCell
+            href={ticketsUrl}
+            external
+            icon="none"
+            variant="primary"
+            size="title"
+            h={2}
+            y="center"
+            className="wmenu__seq wmenu__tickets"
+            style={seq(links.length)}
+          >
+            {ticketsLabel}
+          </LinkCell>
+        </Row>
+
+        <Row as="ul" close>
+          {socials.map((s, i) => (
+            <LinkCell
+              key={s.url}
+              listItem
+              href={s.url}
+              external
+              span={6}
+              spanSm={2}
+              h={1}
+              label="Instagram"
+              className="wmenu__seq"
+              style={seq(links.length + 1 + i)}
+            >
+              {s.handle}
+            </LinkCell>
+          ))}
+          {socials.length % 2 ? <Cell as="li" span={6} spanSm={2} aria-hidden="true" /> : null}
+        </Row>
       </div>
     </dialog>
   );

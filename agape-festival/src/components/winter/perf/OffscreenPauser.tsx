@@ -8,8 +8,7 @@ export const PAUSE_ATTR = "data-pause-offscreen";
 
 /**
  * Render once per page. Parks the looping CSS animations of every
- * `[data-pause-offscreen]` element (and every primary Button, whose halo
- * pulses forever) while it is off screen, through one shared
+ * `[data-pause-offscreen]` element while it is off screen, through one shared
  * IntersectionObserver and the `[data-offscreen]` rule in winter.css.
  * Server components get offscreen pausing without becoming client components.
  * Elements mounted later (lazy chunks) can call pauseWhenOffscreen themselves.
@@ -18,8 +17,8 @@ export function OffscreenPauser() {
   useEffect(() => {
     const undo = new Map<Element, () => void>();
     const scan = () => {
-      document.querySelectorAll<HTMLElement>(`[${PAUSE_ATTR}], .w-btn--primary`).forEach((el) => {
-        if (!undo.has(el) && !el.closest(".wcta")) undo.set(el, pauseWhenOffscreen(el, { rootMargin: "64px 0px" }));
+      document.querySelectorAll<HTMLElement>(`[${PAUSE_ATTR}]`).forEach((el) => {
+        if (!undo.has(el)) undo.set(el, pauseWhenOffscreen(el, { rootMargin: "64px 0px" }));
       });
     };
     scan();

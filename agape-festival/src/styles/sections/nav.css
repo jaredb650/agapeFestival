@@ -1,356 +1,187 @@
 /* ==========================================================================
-   ÄGAPĒ WINTER — TOP BAR + MENU (Nav.tsx, nav/MenuDialog.tsx), red hybrid.
-   The blue build's structure (a slim frame hung from the top edge with
-   chamfered caps, a scroll meter with a tick per section, Ä mark + wordmark,
-   section links with the original hover and a sliding bracket on the current
-   section, compact over the flyer) with the HUD clutter stripped: no notch,
-   status lights, clocks, readouts or codes. Black / neutral / red, solid
-   colours, no glass. The mobile menu still flips its plates down, shorter
-   and without overshoot or decorative text.
-   Classes: whud-*, keyframes: whud-*. Motion is transform/opacity only.
+   TOP BAR + MENU (Nav.tsx, nav/MenuDialog.tsx), grid redesign.
+   A plain bar of hairline cells on the page margins: wordmark, section
+   links, an empty cell, the red ticket cell; a menu cell below 1100px.
+   The current section's link carries a red mark on the bar's bottom edge.
+   Below 1100px the menu is a full-screen grid of cells (grid.css cells).
+   Classes wnav-* / wmenu-*. Motion: transform, opacity, clip-path.
    ========================================================================== */
 
-.whud {
-  --hud-h: 56px;
-  --hud-hc: 42px;       /* compact height (over the flyer) */
-  --hud-cap: 20px;
-  --hud-pad: 24px;
-  --hud-fill: rgba(0, 0, 0, 0.82);
-  --hud-line: rgba(255, 255, 255, 0.14);
+.wnav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 40;
-  height: var(--hud-h);
-  pointer-events: none;
-  color: var(--w-frost);
+  z-index: var(--z-nav);
+  height: var(--g-nav);
+  color: var(--c-fg);
+  transition: transform var(--m-dur-2) var(--m-ease);
 }
-@media (min-width: 1100px) {
-  .whud { --hud-h: 64px; --hud-hc: 36px; --hud-pad: max(28px, var(--w-gutter)); }
-}
+/* Away over the flyer, unless a keyboard user is in it or its menu is open. */
+.wnav[data-away]:not(:focus-within):not([data-menu]) { transform: translateY(calc(-100% - 1px)); }
 
-/* Over the hero: a soft top scrim; it goes once the page moves. */
-.whud::before {
+.wnav__bar {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  /* Bottom 1px is the bar's rule; +1px right is the frame line (cells end before both). */
+  padding: 0 calc(var(--g-margin) + 1px) 1px var(--g-margin);
+  background-color: transparent;
+  background-image:
+    linear-gradient(var(--c-rule), var(--c-rule)),
+    linear-gradient(var(--c-rule), var(--c-rule));
+  background-size: 100% 1px, 1px 100%;
+  background-position: 0 100%, calc(100% - var(--g-margin)) 0;
+  background-repeat: no-repeat;
+  transition: background-color var(--m-dur-2) var(--m-ease);
+}
+/* Transparent over the hero; solid once the page moves. */
+.wnav[data-scrolled] .wnav__bar { background-color: var(--c-ink); }
+
+.wnav__cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0 var(--s-5);
+  border: 0;
+  border-left: 1px solid var(--c-rule);
+  background: transparent;
+  background-clip: padding-box;
+  color: var(--c-fg-2);
+  font: 400 var(--t-small) / 1 var(--f-ui);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--m-dur-1) var(--m-ease), background-color var(--m-dur-1) var(--m-ease);
+}
+.wnav__cell:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+
+.wnav__brand { color: var(--c-fg); gap: 10px; }
+.wnav__mark { display: block; width: 18px; height: auto; flex: none; }
+.wnav__word { font-size: var(--t-body); font-weight: 500; letter-spacing: 0.04em; }
+
+.wnav__links { display: none; }
+.wnav__links ul { display: flex; height: 100%; margin: 0; padding: 0; list-style: none; }
+.wnav__links li { display: flex; }
+.wnav__link[aria-current] { color: var(--c-fg); }
+/* The current section: a 2px red mark over the bar's bottom rule. */
+.wnav__link[aria-current]::after {
   content: "";
-  position: absolute;
-  inset: 0 0 -56px 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent);
-  transition: opacity var(--w-dur) ease;
-}
-.whud[data-scrolled]::before { opacity: 0; }
-
-/* ---- Frame: caps + run ------------------------------------------------------ */
-.whud__shell { position: absolute; inset: 0 0 auto; height: var(--hud-h); display: flex; }
-/* Over the hero the frame is barely there (the deployed hero has no bar); it firms up once scrolled. */
-.whud__shell > * { opacity: 0.35; transition: opacity var(--w-dur-slow) ease; }
-.whud[data-scrolled] .whud__shell > * { opacity: 1; }
-.whud__cap { position: relative; flex: none; width: var(--hud-cap); height: 100%; }
-.whud__cap svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.whud__run { flex: 1; min-width: 0; background: var(--hud-fill); box-shadow: inset 0 -1px 0 var(--hud-line); }
-.whud-fill { fill: var(--hud-fill); }
-.whud-stroke { fill: none; stroke: var(--hud-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
-
-/* ---- Scroll meter: hairline + red fill + a tick per section ----------------- */
-.whud__meter {
-  position: absolute;
-  left: calc(var(--hud-cap) + 4px);
-  right: calc(var(--hud-cap) + 4px);
-  top: calc(var(--hud-h) - 5px);
-  height: 1px;
-  background: var(--w-line);
-}
-.whud__fill {
   position: absolute;
   left: 0;
   right: 0;
-  top: 0;
-  height: 1px;
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  background: var(--w-red-line);
-  will-change: transform;
+  bottom: -1px;
+  height: 2px;
+  background: var(--c-mark);
+  transform-origin: left;
+  animation: wnav-mark var(--m-dur-2) var(--m-ease) both;
 }
-.whud__tick { position: absolute; top: -2px; width: 1px; height: 5px; background: rgba(255, 255, 255, 0.24); transition: background-color var(--w-dur) ease; }
-.whud__tick[data-lit] { background: var(--w-red-line); }
+@keyframes wnav-mark { from { transform: scaleX(0); } }
 
-/* ---- Bar content ------------------------------------------------------------ */
-.whud__bar {
-  position: relative;
-  height: var(--hud-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--w-s-4);
-  padding-inline: var(--hud-pad);
-}
-.whud__bar a, .whud__bar button { pointer-events: auto; }
-.whud__start, .whud__end { display: flex; align-items: center; min-width: 0; }
-.whud__end { justify-content: flex-end; gap: var(--w-s-4); }
+.wnav__fill { flex: 1 1 auto; padding: 0; }
 
-.whud-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; flex: none; color: var(--w-frost); text-decoration: none; }
-.whud-brand__glitch { width: 20px; flex: none; }
-.whud-brand__mark { display: block; width: 20px; height: auto; }
-.whud-brand__word {
-  /* Orbitron, plain E: the face has no Ē. */
-  font: 700 12px / 1 var(--w-font-hud);
-  letter-spacing: 0.32em;
-  margin-right: -0.32em;
-  transition: color var(--w-dur-fast) ease;
-}
-.whud-brand:hover .whud-brand__word { color: var(--w-red-hi); }
+.wnav__tickets { padding: 0 var(--s-6); background-color: var(--c-red); color: var(--c-fg); font-weight: 500; }
 
-/* Links: the original hover (grey → accent) and current-section underline, kept as Jared asked; accent is now red. */
-.whud__links { position: relative; display: none; }
-.whud__links ul { display: flex; gap: var(--w-s-6); margin: 0; padding: 0; list-style: none; }
-.whud__links a {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  text-decoration: none;
-  transition: color var(--w-dur-fast) ease;
-}
-.whud__links a:hover { color: var(--w-red-hi); }
-.whud__links a[aria-current] { color: var(--w-frost); }
-.whud__links a[aria-current]::after { content: ""; position: absolute; left: 0; right: 0.24em; bottom: 10px; height: 1px; background: currentColor; }
-.whud__links a:focus-visible, .whud-brand:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 4px; }
+.wnav__menu { gap: var(--s-2); padding: 0 var(--s-4); color: var(--c-fg); cursor: pointer; }
+.wnav__menu-label { display: none; }
+@media (min-width: 480px) { .wnav__menu-label { display: inline; } }
 
-/* Bracket: [ LINK ] slides to the current section. */
-.whud__reticle { --rx: 0px; --rw: 0px; position: absolute; left: 0; top: 50%; height: 24px; margin-top: -12px; opacity: 0; pointer-events: none; transition: opacity var(--w-dur) ease; }
-.whud__reticle[data-on] { opacity: 1; }
-.whud__reticle i { position: absolute; top: 0; left: 0; width: 5px; height: 100%; border: 1px solid var(--w-bracket-accent); transition: transform 0.55s var(--w-ease); }
-.whud__reticle i:first-child { border-right: 0; transform: translateX(calc(var(--rx) - 11px)); }
-.whud__reticle i:last-child { border-left: 0; transform: translateX(calc(var(--rx) + var(--rw) + 6px)); }
-
-/* ---- MENU / CLOSE key: transparent with a hairline (the secondary button) --- */
-.whud-btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 16px 0 14px;
-  border: 0;
-  margin: 0;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
-  color: var(--w-frost);
-  font: 700 10px / 1 var(--w-font-hud);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transition: box-shadow var(--w-dur-fast) ease, background-color var(--w-dur-fast) ease;
-}
-.whud-btn > span:last-child { margin-right: -0.3em; position: relative; }
-.whud-btn:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 2px; }
-.whud-btn:active { background-color: var(--w-red); box-shadow: inset 0 0 0 1px var(--w-red); }
-@media (hover: hover) { .whud-btn:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); } }
-
-.whud__burger { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; width: 16px; }
-.whud__burger i { display: block; width: 16px; height: 1px; background: currentColor; transition: transform var(--w-dur) var(--w-ease); }
-.whud__burger i:nth-child(2) { width: 10px; background: var(--w-red-hi); }
-@media (hover: hover) {
-  .whud__menu:hover .whud__burger i:nth-child(1) { transform: translateX(-3px); }
-  .whud__menu:hover .whud__burger i:nth-child(3) { transform: translateX(3px); }
+@media (hover: hover) and (pointer: fine) {
+  .wnav__brand:hover, .wnav__link:hover, .wnav__menu:hover { background-color: var(--c-wash); color: var(--c-fg); }
+  .wnav__tickets:hover { background-color: var(--c-red-hover); }
 }
 
-/* ---- Breakpoints ------------------------------------------------------------ */
 @media (min-width: 1100px) {
-  .whud__bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-  .whud__links { display: block; }
-  .whud__menu { display: none; }
+  .wnav__links { display: block; }
+  .wnav__menu { display: none; }
 }
-@media (min-width: 1100px) and (max-width: 1599px) { .whud__links ul { gap: 28px; } }
-@media (min-width: 1100px) and (max-width: 1359px) { .whud__links ul { gap: var(--w-s-5); } }
-
-/* ---- Compact (over the flyer) ----------------------------------------------
-   Nav.tsx sets [data-compact] while the flyer holds the screen. The frame slides
-   up so only a slim strip of it shows, and the wordmark, links / MENU and meter
-   ride along. Written with the individual `translate` / `scale` properties, so it
-   composes with the boot keyframes' `transform`. Compositor-only. */
-.whud { --hud-shift: calc(var(--hud-hc) - var(--hud-h)); }
-.whud__shell, .whud__meter, .whud__bar {
-  transition: translate 0.5s var(--w-ease), scale 0.4s var(--w-ease), opacity 0.3s ease;
-}
-.whud__menu { transform-origin: 100% 50%; transition: scale 0.4s var(--w-ease), box-shadow var(--w-dur-fast) ease, background-color var(--w-dur-fast) ease; }
-.whud[data-compact] .whud__shell,
-.whud[data-compact] .whud__meter { translate: 0 var(--hud-shift); }
-/* Centred over the meter (which runs 5px above the bottom edge), not the whole strip. */
-.whud[data-compact] .whud__bar { translate: 0 calc(var(--hud-shift) / 2 - 2px); }
-.whud[data-compact] .whud__menu { scale: 0.8; }
-
-/* ---- Entry (page load): the frame fades up, modules slide in ----------------- */
-@media (prefers-reduced-motion: no-preference) {
-  .whud__shell { animation: whud-fade 0.6s ease 0.05s backwards; }
-  .whud__meter { animation: whud-grow-x 0.8s var(--w-ease) 0.2s backwards; }
-  .whud__start { animation: whud-slide 0.6s var(--w-ease) 0.15s backwards; --sx: -16px; }
-  .whud__end { animation: whud-slide 0.6s var(--w-ease) 0.28s backwards; --sx: 16px; }
-  .whud__links li { animation: whud-drop 0.5s var(--w-ease) backwards; animation-delay: calc(0.3s + var(--i, 0) * 0.05s); }
-}
-@keyframes whud-fade { from { opacity: 0; } }
-@keyframes whud-fade-out { to { opacity: 0; } }
-@keyframes whud-grow-x { from { transform: scaleX(0); opacity: 0; } 40% { opacity: 1; } }
-@keyframes whud-slide { from { transform: translateX(var(--sx, -16px)); opacity: 0; } }
-@keyframes whud-drop { from { transform: translateY(-8px); opacity: 0; } }
-
-/* Scroll lock while the menu is up. */
-html.whud-lock { overflow: hidden; }
 
 /* ==========================================================================
-   THE MENU — full-screen modal dialog
+   Menu (below 1100px): a full-screen grid. The panel drops from the bar
+   (clip-path), then each cell wipes in from the left, 40ms apart; the
+   close lifts the panel. Reduced motion: a short fade.
    ========================================================================== */
-.whud-menu {
-  --hud-h: 56px;
-  --hud-line: rgba(255, 255, 255, 0.14);
+html.wnav-lock { overflow: hidden; }
+
+.wmenu {
   position: fixed;
   inset: 0;
   width: 100%;
-  height: 100%;
   max-width: none;
+  height: 100%;
   max-height: none;
   margin: 0;
   padding: 0;
   border: 0;
-  overflow: hidden;
-  overscroll-behavior: contain;
   background: transparent;
-  color: var(--w-frost);
-  font-family: var(--w-font-body);
-  pointer-events: auto;
+  color: var(--c-fg);
+  overflow: hidden;
 }
-.whud-menu::backdrop { background: transparent; }
+.wmenu::backdrop { background: transparent; }
+.wmenu:not([open]) { display: none; }
 
-.whud-menu__veil { position: absolute; inset: 0; background: var(--w-ink); }
-.whud-menu__body {
-  position: relative;
-  z-index: 1;
+.wmenu__panel {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  display: flex;
-  flex-direction: column;
-  padding: 0 16px max(16px, env(safe-area-inset-bottom));
+  background: var(--c-ink);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-@media (min-width: 600px) { .whud-menu__body { width: min(560px, 100%); margin-inline: auto; } }
-
-/* Head: the bar redrawn in place. */
-.whud-menu__head {
-  position: relative;
+/* The head redraws the bar in place: wordmark, empty cell, close. */
+.wmenu__head {
   flex: none;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--hud-h);
-  margin-inline: -16px;
-  padding-inline: 24px;
-  box-shadow: inset 0 -1px 0 var(--hud-line);
+  align-items: stretch;
+  height: var(--g-nav);
+  padding: 0 calc(var(--g-margin) + 1px) 0 var(--g-margin);
+  background-image: linear-gradient(var(--c-rule), var(--c-rule));
+  background-size: 1px 100%;
+  background-position: calc(100% - var(--g-margin)) 0;
+  background-repeat: no-repeat;
 }
-.whud-menu__x { position: relative; color: var(--w-red-hi); }
-
-/* The panel: a dark neutral pane inside the deployed corner ticks. */
-.whud-menu__win { position: relative; flex: none; margin-top: 24px; padding: 8px; }
-.whud-menu__bezel { position: absolute; inset: 0; transform-origin: 50% 0; background: var(--w-deep); box-shadow: inset 0 0 0 1px var(--w-line); }
-.whud-menu__brk { position: absolute; z-index: 2; width: 13px; height: 13px; border: 0 solid var(--w-bracket); pointer-events: none; }
-.whud-menu__brk:nth-of-type(1) { --snap: translate(-6px, -6px); top: -6px; left: -6px; border-top-width: 1px; border-left-width: 1px; }
-.whud-menu__brk:nth-of-type(2) { --snap: translate(6px, -6px); top: -6px; right: -6px; border-top-width: 1px; border-right-width: 1px; }
-.whud-menu__brk:nth-of-type(3) { --snap: translate(-6px, 6px); bottom: -6px; left: -6px; border-bottom-width: 1px; border-left-width: 1px; }
-.whud-menu__brk:nth-of-type(4) { --snap: translate(6px, 6px); bottom: -6px; right: -6px; border-bottom-width: 1px; border-right-width: 1px; }
-
-/* Section plates */
-.whud-menu__list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; perspective: 900px; }
-.whud-menu__item { position: relative; transform-origin: 50% 0; backface-visibility: hidden; }
-.whud-menu__link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: clamp(48px, 6.4svh, 58px);
-  padding: 0 18px;
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  color: var(--w-soft);
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--w-dur-fast) var(--w-ease), background-color var(--w-dur-fast) ease, color var(--w-dur-fast) ease;
+.wmenu__close { gap: var(--s-2); padding: 0 var(--s-4); color: var(--c-fg); cursor: pointer; }
+@media (hover: hover) and (pointer: fine) {
+  .wmenu__close:hover { background-color: var(--c-wash); }
 }
-.whud-menu__label {
-  overflow: hidden;
-  white-space: nowrap;
-  font-family: var(--w-font-display);
-  font-weight: 800;
-  font-size: clamp(1.0625rem, 5.2vw, 1.5rem);
-  line-height: 1;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+
+/* The section cells share the free height, so the grid fills the screen. */
+.wmenu__nav { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+.wmenu .wmenu__links { flex: 1 1 auto; grid-auto-rows: minmax(var(--g-row-1), 1fr); }
+.wmenu__link .g-link__value { color: var(--c-fg-2); transition: color var(--m-dur-1) var(--m-ease); }
+.wmenu__link > .g-link { justify-content: flex-end; }
+.wmenu__link > .g-link[aria-current] .g-link__value { color: var(--c-fg); }
+/* The current section: a small red square in the cell's corner. */
+.wmenu__link > .g-link[aria-current]::after {
+  content: "";
+  position: absolute;
+  top: var(--g-pad);
+  right: var(--g-pad);
+  width: 8px;
+  height: 8px;
+  background: var(--c-mark);
 }
-/* Current section: white label, a red bar on the left edge. */
-.whud-menu__link[aria-current] { color: var(--w-frost); box-shadow: inset 3px 0 0 var(--w-red-hi), inset 0 0 0 1px rgba(255, 255, 255, 0.16); }
-.whud-menu__link:active { transform: translateX(4px); background-color: rgba(139, 0, 0, 0.35); }
-.whud-menu__link:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 3px; }
-@media (hover: hover) { .whud-menu__link:hover { color: var(--w-red-hi); } }
-
-.whud-menu__foot { margin-top: auto; padding-top: 24px; display: flex; flex-direction: column; gap: 10px; }
-.whud-menu__cta { width: 100%; }
-.whud-menu__socials { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 18px; margin: 0; padding: 0; list-style: none; }
-.whud-menu__socials a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  text-decoration: none;
-  transition: color var(--w-dur-fast) ease;
+@media (hover: hover) and (pointer: fine) {
+  .wmenu__link:hover .g-link__value { color: var(--c-fg); }
 }
-.whud-menu__socials a:hover { color: var(--w-red-hi); }
 
-/* ---- UNFOLD (opening): plates flip down on hinges, no overshoot -------------- */
-.whud-menu[data-phase="opening"] .whud-menu__veil { animation: whud-fade 0.22s ease both; }
-.whud-menu[data-phase="opening"] .whud-menu__head { animation: whud-fade 0.25s ease 0.04s both; }
-.whud-menu[data-phase="opening"] .whud-menu__bezel { animation: whud-grow-y 0.45s var(--w-ease) 0.08s both; }
-.whud-menu[data-phase="opening"] .whud-menu__brk { animation: whud-snap 0.32s var(--w-ease) both; animation-delay: calc(0.2s + var(--k) * 0.04s); }
-.whud-menu[data-phase="opening"] .whud-menu__item {
-  --from: rotateX(-80deg);
-  animation: whud-unfold 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(0.18s + var(--i) * 0.04s);
+@media (prefers-reduced-motion: no-preference) {
+  .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-drop var(--m-dur-2) var(--m-ease) both; }
+  .wmenu[data-phase="opening"] .wmenu__seq {
+    animation: wmenu-wipe var(--m-dur-2) var(--m-ease) both;
+    animation-delay: calc(80ms + var(--k, 0) * var(--m-stagger));
+  }
+  .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-lift var(--m-dur-2) var(--m-ease) both; }
 }
-.whud-menu[data-phase="opening"] .whud-menu__foot { animation: whud-rise 0.35s var(--w-ease) 0.5s both; }
-
-/* ---- FOLD (closing): the same parts, reversed, bottom first --------------- */
-.whud-menu[data-phase="closing"] .whud-menu__foot { animation: whud-sink 0.16s ease-in both; }
-.whud-menu[data-phase="closing"] .whud-menu__item {
-  --from: rotateX(-80deg);
-  animation: whud-fold 0.2s cubic-bezier(0.5, 0, 0.75, 0) both;
-  animation-delay: calc((var(--n, 7) - 1 - var(--i)) * 0.025s);
-}
-.whud-menu[data-phase="closing"] .whud-menu__brk { animation: whud-unsnap 0.14s ease-in 0.14s both; }
-.whud-menu[data-phase="closing"] .whud-menu__bezel { animation: whud-shrink-y 0.22s cubic-bezier(0.7, 0, 0.84, 0) 0.18s both; }
-.whud-menu[data-phase="closing"] .whud-menu__head { animation: whud-fade-out 0.16s ease-in 0.24s both; }
-.whud-menu[data-phase="closing"] .whud-menu__veil { animation: whud-fade-out 0.18s ease-in 0.24s both; }
-
-@keyframes whud-unfold { from { transform: var(--from); opacity: 0; } 40% { opacity: 1; } to { transform: none; opacity: 1; } }
-@keyframes whud-fold { from { transform: none; opacity: 1; } 70% { opacity: 1; } to { transform: var(--from); opacity: 0; } }
-@keyframes whud-grow-y { from { transform: scaleY(0); } }
-@keyframes whud-shrink-y { to { transform: scaleY(0); } }
-@keyframes whud-rise { from { transform: translateY(14px); opacity: 0; } }
-@keyframes whud-sink { to { transform: translateY(12px); opacity: 0; } }
-@keyframes whud-snap { from { opacity: 0; transform: var(--snap); } }
-@keyframes whud-unsnap { to { opacity: 0; transform: var(--snap); } }
-
-/* ---- Reduced motion: a plain fade ------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  .whud-menu *, .whud-menu *::before, .whud-menu *::after { animation: none !important; }
-  .whud-menu[data-phase="opening"] { animation: whud-fade 0.2s ease both; }
-  .whud-menu[data-phase="closing"] { animation: whud-fade-out 0.2s ease both; }
-  .whud__shell, .whud__meter, .whud__bar { transition: opacity 0.2s ease; }
-  .whud__menu { transition: none; }
-  .whud__reticle i, .whud-menu__link, .whud__burger i { transition: none; }
+  .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-fade 160ms ease both; }
+  .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-fade 160ms ease reverse both; }
 }
+@keyframes wmenu-drop { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+@keyframes wmenu-lift { from { clip-path: inset(0); } to { clip-path: inset(0 0 100% 0); } }
+@keyframes wmenu-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes wmenu-fade { from { opacity: 0; } }

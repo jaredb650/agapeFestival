@@ -1,0 +1,143 @@
+/* ==========================================================================
+   THE GRID (components/winter/grid). Every section below the flyer is a
+   stack of full-bleed ROWS; each row lays CELLS on the page's columns
+   (12 from 768px, 4 below), inside the page margins. The hairlines ARE the
+   layout: they bound real cells and nothing else.
+
+   How the lines are drawn (one owner per pixel, so nothing doubles):
+   - a cell draws its own TOP and LEFT edge (border-top / border-left);
+   - the row draws the RIGHT frame line (a 1px background column just inside
+     its right margin) and the two MARGIN pieces of its top line (so every
+     horizontal rule runs edge to edge, like Intercell);
+   - the next row's top line closes the row above. `<Row close>` (or the last
+     row of the page) adds a bottom line.
+   So a row must be fully tiled: fill a short row with an empty <Cell />.
+   Usage, props and rules: context/winter-redesign/grid-system.md.
+   ========================================================================== */
+
+.g-section { position: relative; z-index: var(--z-content, 1); }
+
+.g-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--g-cols), minmax(0, 1fr));
+  grid-auto-rows: minmax(var(--row-h, 0px), auto);
+  /* +1px on the right: the frame line sits in the padding, outside the last cell. */
+  padding: 0 calc(var(--g-margin) + 1px) 0 var(--g-margin);
+  background:
+    linear-gradient(var(--c-rule), var(--c-rule)) 0 0 / var(--g-margin) 1px no-repeat,
+    linear-gradient(var(--c-rule), var(--c-rule)) 100% 0 / var(--g-margin) 1px no-repeat,
+    linear-gradient(var(--c-rule), var(--c-rule)) calc(100% - var(--g-margin)) 0 / 1px 100% no-repeat;
+}
+.g-row[data-close] {
+  padding-bottom: 1px;
+  background:
+    linear-gradient(var(--c-rule), var(--c-rule)) 0 0 / var(--g-margin) 1px no-repeat,
+    linear-gradient(var(--c-rule), var(--c-rule)) 100% 0 / var(--g-margin) 1px no-repeat,
+    linear-gradient(var(--c-rule), var(--c-rule)) calc(100% - var(--g-margin)) 0 / 1px 100% no-repeat,
+    linear-gradient(var(--c-rule), var(--c-rule)) 0 100% / 100% 1px no-repeat;
+}
+/* Lists render as rows of cells: drop the list chrome. */
+ul.g-row, ol.g-row { margin: 0; list-style: none; }
+
+/* ---- Cell ---------------------------------------------------------------- */
+.g-cell {
+  position: relative;
+  min-width: 0;
+  min-height: var(--cell-h, 0px);
+  grid-column: var(--start-sm, auto) / span var(--span-sm, 4);
+  grid-row: span var(--rows-sm, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: var(--cell-y, flex-start);
+  align-items: var(--cell-x, stretch);
+  gap: var(--s-3);
+  padding: var(--g-pad);
+  border-top: 1px solid var(--c-rule);
+  border-left: 1px solid var(--c-rule);
+  /* Fills and hover washes stay inside the hairlines. */
+  background-clip: padding-box;
+  color: inherit;
+  text-align: var(--cell-text, start);
+}
+@media (min-width: 768px) {
+  .g-cell {
+    grid-column: var(--start, auto) / span var(--span, 12);
+    grid-row: span var(--rows, 1);
+  }
+}
+.g-cell[data-pad="none"] { padding: 0; }
+.g-cell[data-pad="lg"] { padding: calc(var(--g-pad) * 2); }
+/* Dense content (long answers, lists) over a bright moment of the footage. */
+.g-cell[data-tone="shade"] { background-color: var(--c-shade); }
+
+/* Breakpoint-only cells (fillers). */
+@media (max-width: 767.98px) { .g-cell[data-only="md"] { display: none; } }
+@media (min-width: 768px) { .g-cell[data-only="sm"] { display: none; } }
+
+/* ---- Link cell: the whole cell is the link ------------------------------- */
+.g-link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: var(--cell-y, space-between);
+  align-items: var(--cell-x, stretch);
+  gap: var(--s-3);
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.g-link__label { font-size: var(--t-small); line-height: 1.45; color: var(--c-fg-3); transition: color var(--m-dur-1) var(--m-ease); }
+.g-link__value { font-size: var(--t-body); line-height: 1.3; font-weight: 500; overflow-wrap: anywhere; }
+.g-link__value--title { font-size: var(--t-title); line-height: 1.1; letter-spacing: -0.015em; }
+.g-link__icon { position: absolute; top: var(--g-pad); right: var(--g-pad); width: 16px; height: 16px; color: var(--c-fg-3); transition: color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease); }
+@media (hover: hover) and (pointer: fine) {
+  .g-link:hover { background-color: var(--c-wash); }
+  .g-link:hover .g-link__label, .g-link:hover .g-link__icon { color: var(--c-fg); }
+  .g-link:hover .g-link__icon { transform: translate(2px, -2px); }
+}
+.g-link:active { background-color: var(--c-wash); }
+/* In a list row the <li> is the cell and the link fills it. */
+.g-cell--li { padding: 0; }
+.g-cell--li > .g-link { flex: 1 1 auto; padding: var(--g-pad); }
+.g-link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+
+/* Primary link cell: the flat red fill (the ticket cell). */
+.g-link[data-variant="primary"] { background-color: var(--c-red); }
+.g-link[data-variant="primary"] .g-link__label,
+.g-link[data-variant="primary"] .g-link__icon { color: rgba(255, 255, 255, 0.8); }
+@media (hover: hover) and (pointer: fine) {
+  .g-link[data-variant="primary"]:hover { background-color: var(--c-red-hover); }
+}
+
+/* Wipe link cell: on hover/focus a red fill wipes across the rectangle from
+   the left (clip-path inset, one curve). The newsletter sign-up uses it. */
+.g-link[data-fx="wipe"] { isolation: isolate; }
+.g-link[data-fx="wipe"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--c-red);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--m-dur-2) var(--m-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .g-link[data-fx="wipe"]:hover { background-color: transparent; }
+  .g-link[data-fx="wipe"]:hover::before { clip-path: inset(0 0 0 0); }
+  .g-link[data-fx="wipe"]:hover .g-link__label, .g-link[data-fx="wipe"]:hover .g-link__icon { color: var(--c-fg); }
+}
+.g-link[data-fx="wipe"]:focus-visible::before { clip-path: inset(0 0 0 0); }
+.g-link[data-fx="wipe"]:focus-visible .g-link__label { color: var(--c-fg); }
+
+/* ---- Section header row --------------------------------------------------- */
+.g-head__title { justify-content: flex-end; }
+.g-head__aside { justify-content: flex-end; }
+.g-head__aside > p { margin: 0; max-width: 36em; font-size: var(--t-body); line-height: 1.55; color: var(--c-fg-2); text-wrap: pretty; }
+
+@media (prefers-reduced-motion: reduce) {
+  .g-link[data-fx="wipe"]::before { transition-duration: 0.01ms; }
+  .g-link__icon { transition: color var(--m-dur-1) var(--m-ease); }
+}

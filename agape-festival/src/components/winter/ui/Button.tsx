@@ -1,15 +1,23 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cx } from "./cx";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "link";
+/**
+ * primary = flat red fill: the one primary action in a view (Get tickets).
+ * secondary = hairline outline.
+ * link = a quiet text link with an underline (no box).
+ */
+export type ButtonVariant = "primary" | "secondary" | "link";
+/** sm 40px · md 48px (default) · lg 56px tall. */
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface BaseProps {
   children: ReactNode;
-  /** primary = the red ticket CTA (one per view). secondary = transparent hairline. ghost = text. link = label + arrow. */
   variant?: ButtonVariant;
-  /** Default: lg for primary, md otherwise. Ignored by `link`. */
   size?: ButtonSize;
+  /** Full width of its container (e.g. a cell). */
+  block?: boolean;
+  /** Optional trailing icon (16px, currentColor), e.g. from components/winter/grid/icons. */
+  icon?: ReactNode;
   className?: string;
 }
 
@@ -23,49 +31,38 @@ type NativeButtonProps = BaseProps & Omit<ButtonHTMLAttributes<HTMLButtonElement
 };
 export type ButtonProps = AnchorProps | NativeButtonProps;
 
-function Arrow() {
-  return (
-    <svg className="w-btn__arrow" viewBox="0 0 22 10" fill="none" aria-hidden="true">
-      <path d="M0 5h20M16 1l4 4-4 4" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  );
-}
-
 /**
- * The deployed site's button: flat solid red with white Orbitron caps and four
- * small corner ticks (CSS only). The primary breathes a soft red glow every 4s
- * (opacity only, off under reduced motion). Secondary is a transparent pane with
- * a white hairline. No gradients, glass, bevels or 3D shading (hybrid-theme.md).
- * Renders <a> when `href` is set, otherwise <button type="button">.
+ * A plain rectangle (winter.css `.w-btn`): flat red fill or hairline outline, sentence-case label, no
+ * radius, glow, ticks or glyphs. Hover is a colour step, press scales to 0.98. Renders <a> when `href` is
+ * set, otherwise <button type="button">.
+ *
+ * The hero's Get tickets is this component too: winter.css gives `.wh .wh__cta` the frozen deployed look.
  */
-export function Button({ children, variant = "primary", size, className, ...rest }: ButtonProps) {
-  const resolvedSize = variant === "link" ? undefined : size ?? (variant === "primary" ? "lg" : "md");
-  const cls = cx("w-btn", `w-btn--${variant}`, className);
+export function Button({ children, variant = "primary", size, block, icon, className, ...rest }: ButtonProps) {
+  const props = {
+    className: cx("w-btn", className),
+    "data-variant": variant,
+    "data-size": variant === "link" || !size || size === "md" ? undefined : size,
+    "data-block": block || undefined,
+  };
   const inner = (
     <>
-      {variant === "primary" && <span className="w-btn__glow" aria-hidden="true" />}
       <span className="w-btn__label">{children}</span>
-      {variant === "link" && <Arrow />}
+      {icon}
     </>
   );
 
   if (rest.href !== undefined) {
     const { href, external, ...anchor } = rest as Omit<AnchorProps, keyof BaseProps>;
     return (
-      <a
-        href={href}
-        className={cls}
-        data-size={resolvedSize}
-        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-        {...anchor}
-      >
+      <a href={href} {...props} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} {...anchor}>
         {inner}
       </a>
     );
   }
   const { type, ...button } = rest as Omit<NativeButtonProps, keyof BaseProps>;
   return (
-    <button type={type ?? "button"} className={cls} data-size={resolvedSize} {...button}>
+    <button type={type ?? "button"} {...props} {...button}>
       {inner}
     </button>
   );

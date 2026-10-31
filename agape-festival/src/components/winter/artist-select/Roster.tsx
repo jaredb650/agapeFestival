@@ -16,10 +16,14 @@ export interface RosterProps {
   days: readonly [WinterDay, WinterDay];
   /** Prefix for element ids. */
   id: string;
+  /** The bio panel's venue line, "Industry City, Brooklyn". */
+  venue: string;
 }
 
 /** A hover has to rest this long on a tile before it changes the feature (sweeping across stays cheap). */
 const HOVER_INTENT = 80;
+/** A pointer entering a tile this soon after the page scrolled was carried there by the scroll: ignored. */
+const SCROLL_QUIET = 150;
 
 /**
  * The roster, below the section header: one featured artist across the full width (name, day, and their
@@ -30,7 +34,7 @@ const HOVER_INTENT = 80;
  * Performance: hover never renders by itself (an 80ms intent timer, then one transition render); the
  * footage loads only near the viewport and plays only while it is on screen and the bio is closed.
  */
-export function Roster({ artists, days, id }: RosterProps) {
+export function Roster({ artists, days, id, venue }: RosterProps) {
   const roster = useMemo(() => buildRoster(artists, days), [artists, days]);
   const [selected, setSelected] = useState(roster.first);
   const [open, setOpen] = useState(false);
@@ -79,13 +83,42 @@ export function Roster({ artists, days, id }: RosterProps) {
     return () => document.removeEventListener("click", onClick);
   }, [select]);
 
-  useEffect(() => () => clearTimeout(hoverTimer.current), []);
+  // A page scroll carries tiles under a resting pointer (a lineup link scrolls the roster into view right
+  // under it): only a pointer that moves over a tile features it, never the page moving under the pointer.
+  const scrolledAt = useRef(0);
+  /** The tile whose hover intent is running. */
+  const armed = useRef<string | null>(null);
+  const disarm = () => {
+    clearTimeout(hoverTimer.current);
+    armed.current = null;
+  };
+  useEffect(() => {
+    const onScroll = () => {
+      scrolledAt.current = performance.now();
+      clearTimeout(hoverTimer.current);
+      armed.current = null;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(hoverTimer.current);
+    };
+  }, []);
 
   const onTileEnter = (slug: string) => {
-    clearTimeout(hoverTimer.current);
-    hoverTimer.current = setTimeout(() => select(slug), HOVER_INTENT);
+    disarm();
+    if (performance.now() - scrolledAt.current < SCROLL_QUIET) return;
+    armed.current = slug;
+    hoverTimer.current = setTimeout(() => {
+      armed.current = null;
+      select(slug);
+    }, HOVER_INTENT);
   };
-  const onTileLeave = () => clearTimeout(hoverTimer.current);
+  /** A real move inside a tile the scroll carried in arms it as an entry would have. */
+  const onTileMove = (slug: string) => {
+    if (armed.current !== slug && slug !== selectedRef.current) onTileEnter(slug);
+  };
+  const onTileLeave = disarm;
 
   /** Arrow keys: the nearest tile in that direction, by geometry (works for both layouts). */
   const onGridKey = (e: KeyboardEvent<HTMLElement>) => {
@@ -102,7 +135,7 @@ export function Roster({ artists, days, id }: RosterProps) {
   };
 
   const openBio = (e: MouseEvent<HTMLButtonElement>) => {
-    clearTimeout(hoverTimer.current);
+    disarm();
     // detail 0: Enter / Space. The panel then rises without the sideways leg.
     originRef.current = e.detail > 0 ? { x: e.clientX, y: e.clientY } : null;
     setOpen(true);
@@ -149,21 +182,15 @@ export function Roster({ artists, days, id }: RosterProps) {
         <Cell span={4} pad="none" className="rs-feature__media" aria-hidden="true">
           <FeatureMedia key={act.artist.slug} act={act} near={near} play={near && onScreen && !open && !reduced} reduced={reduced} />
         </Cell>
-        <BioDialog
-          id={dialogId}
-          act={act}
-          day={day}
-          open={open}
-          originRef={originRef}
-          anchorRef={hitRef}
-          reduced={reduced}
-          onClose={closeBio}
-          onStep={step}
-        />
+        {/* Mounted once the roster is near the viewport (it can't be opened before): the closed dialog's
+            markup stays out of the initial HTML, and its photo is not preloaded with the hero. */}
+        {near && (
+          <BioDialog id={dialogId} act={act} day={day} open={open} originRef={originRef} anchorRef={hitRef} venue={venue} reduced={reduced} onClose={closeBio} onStep={step} />
+        )}
       </Row>
 
       {roster.days.map((d) => (
-        <DayRow key={d.day} day={d} selected={selected} tileRef={tileRef} onEnter={onTileEnter} onLeave={onTileLeave} onSelect={select} onKey={onGridKey} />
+        <DayRow key={d.day} day={d} selected={selected} tileRef={tileRef} onEnter={onTileEnter} onMove={onTileMove} onLeave={onTileLeave} onSelect={select} onKey={onGridKey} />
       ))}
     </>
   );
@@ -174,6 +201,7 @@ interface DayRowProps {
   selected: string;
   tileRef: (slug: string) => (el: HTMLButtonElement | null) => void;
   onEnter: (slug: string) => void;
+  onMove: (slug: string) => void;
   onLeave: () => void;
   onSelect: (slug: string) => void;
   onKey: (e: KeyboardEvent<HTMLElement>) => void;
@@ -184,7 +212,7 @@ interface DayRowProps {
  * From 768px: the label spans two lines of five 2-column tiles. Phones: the label takes three of the
  * four columns of the first line, so nine acts tile three full lines.
  */
-function DayRow({ day, selected, tileRef, onEnter, onLeave, onSelect, onKey }: DayRowProps) {
+function DayRow({ day, selected, tileRef, onEnter, onMove, onLeave, onSelect, onKey }: DayRowProps) {
   const n = day.acts.length;
   // From 768px: two columns of label, then lines of ten columns.
   const used = n * 2 + (day.more ? 10 : 0);
@@ -202,7 +230,7 @@ function DayRow({ day, selected, tileRef, onEnter, onLeave, onSelect, onKey }: D
         <p className="w-small">{day.date}</p>
       </Cell>
       {day.acts.map((a) => (
-        <Tile key={a.artist.slug} act={a} shown={a.artist.slug === selected} tileRef={tileRef(a.artist.slug)} onEnter={onEnter} onLeave={onLeave} onSelect={onSelect} />
+        <Tile key={a.artist.slug} act={a} shown={a.artist.slug === selected} tileRef={tileRef(a.artist.slug)} onEnter={onEnter} onMove={onMove} onLeave={onLeave} onSelect={onSelect} />
       ))}
       {day.more && (
         <Cell as="li" span={10} spanSm={4} className="rs-more">
@@ -222,11 +250,12 @@ interface TileProps {
   shown: boolean;
   tileRef: (el: HTMLButtonElement | null) => void;
   onEnter: (slug: string) => void;
+  onMove: (slug: string) => void;
   onLeave: () => void;
   onSelect: (slug: string) => void;
 }
 
-function Tile({ act, shown, tileRef, onEnter, onLeave, onSelect }: TileProps) {
+function Tile({ act, shown, tileRef, onEnter, onMove, onLeave, onSelect }: TileProps) {
   const { artist } = act;
   const photo = photoSet(artist);
   return (
@@ -240,6 +269,7 @@ function Tile({ act, shown, tileRef, onEnter, onLeave, onSelect }: TileProps) {
         tabIndex={shown ? 0 : -1}
         aria-pressed={shown}
         onPointerEnter={(e) => e.pointerType === "mouse" && onEnter(artist.slug)}
+        onPointerMove={(e) => e.pointerType === "mouse" && (e.movementX || e.movementY) && onMove(artist.slug)}
         onPointerLeave={onLeave}
         onFocus={() => onSelect(artist.slug)}
         onClick={() => onSelect(artist.slug)}
@@ -271,7 +301,11 @@ function Tile({ act, shown, tileRef, onEnter, onLeave, onSelect }: TileProps) {
   );
 }
 
-/** The feature's footage (muted loop over its poster) or photo; nothing for acts without media yet. */
+/**
+ * The feature's footage (muted loop over its poster) or photo; nothing for acts without media yet. Nothing
+ * at all until the feature is near the viewport: a lazy image this far below the hero still loads with the
+ * page where the browser's lazy margin is large (unknown connection: 2500px), competing with the hero.
+ */
 function FeatureMedia({ act, near, play, reduced }: { act: Act; near: boolean; play: boolean; reduced: boolean }) {
   const media = featureMedia(act.artist);
   const photo = photoSet(act.artist);
@@ -281,13 +315,13 @@ function FeatureMedia({ act, near, play, reduced }: { act: Act; near: boolean; p
       {media.kind === "video" ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {media.poster && <img className="rs-media__img" src={media.poster} alt="" loading="lazy" decoding="async" />}
+          {near && media.poster && <img className="rs-media__img" src={media.poster} alt="" decoding="async" />}
           {near && !reduced && <Clip src={media.src} play={play} />}
         </>
-      ) : (
+      ) : near ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img className="rs-media__img" src={photo?.src ?? media.src} srcSet={photo?.srcSet} sizes="(min-width: 768px) 34vw, 100vw" alt="" loading="lazy" decoding="async" />
-      )}
+        <img className="rs-media__img" src={photo?.src ?? media.src} srcSet={photo?.srcSet} sizes="(min-width: 768px) 34vw, 100vw" alt="" decoding="async" />
+      ) : null}
     </div>
   );
 }

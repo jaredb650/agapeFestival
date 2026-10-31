@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { SectionGrid, SectionHeader } from "@/components/winter/grid";
-import { ARTISTS, SHOW_ARTIST_SELECT, WINTER_DAYS } from "@/data/winter";
+import { ARTISTS, SHOW_ARTIST_SELECT, WINTER, WINTER_DAYS } from "@/data/winter";
 
 // Own chunk + CSS, and the import sits behind the env literal (inlined at build time) so the bundler
 // drops it from builds without the flag: the hidden production page carries none of the roster's JS or CSS.
@@ -19,7 +19,7 @@ export function ArtistSelectSection() {
   return (
     <SectionGrid id="artists" labelledBy="artists-title" className="rs">
       <SectionHeader id="artists-title" title="The roster" />
-      <Roster artists={ARTISTS} days={WINTER_DAYS} id="artists" />
+      <Roster artists={ARTISTS} days={WINTER_DAYS} id="artists" venue={`${WINTER.venue.name}, ${WINTER.venue.city}`} />
     </SectionGrid>
   );
 }

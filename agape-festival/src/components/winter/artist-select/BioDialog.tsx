@@ -2,7 +2,6 @@
 
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type RefObject } from "react";
 import { ArrowRight, Cell, CloseIcon, Fill, LinkCell, Row } from "@/components/winter/grid";
-import { WINTER } from "@/data/winter";
 import { photoSet, type Act, type RosterDay } from "./acts";
 import { unfoldClose, unfoldOpen, type Point } from "./unfold";
 
@@ -15,6 +14,8 @@ interface BioDialogProps {
   originRef: RefObject<Point | null>;
   /** The feature row's button: the panel unfolds out of it, folds back into it, and gets focus back. */
   anchorRef: RefObject<HTMLButtonElement | null>;
+  /** "Industry City, Brooklyn" (from the server, so winter.ts never ships to the client). */
+  venue: string;
   reduced: boolean;
   onClose: () => void;
   onStep: (dir: -1 | 1) => void;
@@ -31,7 +32,7 @@ const columns = () => (window.matchMedia("(min-width: 768px)").matches ? 12 : 4)
  * The open/close choreography lives in unfold.ts; the phase is a data attribute (no React renders), and
  * the content's reveal is CSS keyed on it (roster.css). Reduced motion: it simply appears and goes.
  */
-export function BioDialog({ id, act, day, open, originRef, anchorRef, reduced, onClose, onStep }: BioDialogProps) {
+export function BioDialog({ id, act, day, open, originRef, anchorRef, venue, reduced, onClose, onStep }: BioDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
@@ -50,7 +51,7 @@ export function BioDialog({ id, act, day, open, originRef, anchorRef, reduced, o
   // What every act's panel can say for certain: the date, the venue, and that set times are not out yet.
   const facts = [
     { label: "Date", value: day.date },
-    { label: "Venue", value: `${WINTER.venue.name}, ${WINTER.venue.city}` },
+    { label: "Venue", value: venue },
     { label: "Set time", value: "To be announced" },
   ];
   /** Cells in the facts line (3 of 12 columns each, 2 of 4 on phones). */

@@ -1,851 +1,238 @@
 /* ==========================================================================
-   ÄGAPĒ WINTER — MERCH ARMORY ("THE UNIFORM")
-   A mech-game ARMORY / LOADOUT screen in the artist select's language:
-   breeder-unit bezel with a centre notch, chrome-edged shard slots in two
-   mirrored wings (desktop) or one chevron rail (phones), wired into a
-   Xefirotarch-style inspect window (`ITEM: …` / `VIEW` bar, `01/04 < > SHOP`
-   footer) with an LCD stat readout.
+   MERCH (page/Merch.tsx, merch/MerchViewer.tsx, merch/Preview.tsx,
+   page/MerchCard.tsx). The grid kit plus this file. Classes mx-*.
 
-   Motion: transform/opacity only. Loops run only while the section is on
-   screen ([data-live]); the entrance plays once ([data-arm] → [data-on]).
-   Everything animated lives under prefers-reduced-motion: no-preference,
-   so reduced motion is the static layout.
-   Classes: wmx-*. Keyframes: wmx-*.
+   One Row (.mx-board) holds the preview, its Front | Back cells and the
+   product tiles; the shop link is the closing row. From 768px the board is
+   placed explicitly on alternating image / caption lines:
+
+     cols 1–6                 cols 7–9      cols 10–12
+     preview (lines 1…2n-1)   tile image    tile image
+                              tile name     tile name
+                              tile image    tile image
+     Front     | Back         tile name     tile name
+
+   Each tile spans an image line and a caption line (subgrid), so Front |
+   Back sit on the last captions' line and every rule runs straight across.
+   Phones: the preview, Front | Back, the tiles two to a line.
+
+   The photographs are on pure black, so their cells are black: the image
+   runs to the hairlines and its edges disappear.
    ========================================================================== */
 
-.wmx-section { position: relative; z-index: 1; }
+/* The section is a size container so the board can size its image lines from the column width. */
+.mx { --mx-cap: var(--g-row-1); container-type: inline-size; }
 
-.wmx {
-  --wmx-line: rgba(255, 255, 255, 0.22);
-  --wmx-glass: rgba(164, 43, 43, 0.16);
-  --wmx-scan: none; /* hybrid: per-panel scanlines removed (one global layer, winter.css .w-grain) */
-  --wmx-chrome: linear-gradient(180deg, #e6e6e6 0%, #bebebe 48%, #9b9b9b 52%, #b0b0b0 100%);
-  --wmx-gap: 56px;
-  position: relative;
+/* ---- Board layout ---------------------------------------------------------- */
+.mx-stage-cell { aspect-ratio: 6 / 5; }
+@media (min-width: 768px) {
+  /* image, caption, image, caption… An image line is one tile (3 of 12 columns) at 6:5. Set
+     explicitly rather than from the tile's aspect-ratio, which Safari's subgrid does not size by. */
+  .mx-board {
+    --mx-img: calc((100cqw - 2 * var(--g-margin) - 1px) / 4 / 1.2);
+    grid-auto-rows: var(--mx-img) minmax(var(--mx-cap), auto);
+  }
+  .mx-stage-cell { aspect-ratio: auto; grid-row: 1 / span var(--mx-span); }
+  .mx-seg { grid-row: var(--mx-seg-row); }
+  .mx-tile { grid-row: var(--mx-row) / span 2; }
+}
+
+/* ---- The preview ------------------------------------------------------------ */
+.mx-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   isolation: isolate;
-  padding: 76px var(--w-gutter) 20px;
-  color: var(--w-frost);
+  background: var(--c-ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
-
-/* ==========================================================================
-   STAGE + BEZEL
-   ========================================================================== */
-.wmx-stage {
-  /* Bezel geometry, mirrored from MerchBezel.tsx (chamfer, notch half-width, notch depth). */
-  --c: 14px;
-  --nh: min(88px, 23%);
-  --nd: 18px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-width: 560px;
-  margin-inline: auto;
-  padding: 30px 12px 14px;
-}
-/* The tinted glass plate inside the bezel (follows the chamfers and the notch). */
-.wmx-stage::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    var(--wmx-scan),
-    radial-gradient(ellipse 60% 50% at 50% 46%, rgba(108, 108, 108, 0.1), transparent 70%),
-    linear-gradient(180deg, rgba(11, 11, 11, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%);
-  clip-path: polygon(
-    var(--c) 0, calc(50% - var(--nh) - var(--nd)) 0, calc(50% - var(--nh)) var(--nd), calc(50% + var(--nh)) var(--nd),
-    calc(50% + var(--nh) + var(--nd)) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)),
-    calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)
-  );
-}
-
-.wmx-frame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-.wmx-frame svg { position: absolute; inset: 0; overflow: visible; fill: none; }
-.wmx-frame__outer { stroke: rgba(255, 255, 255, 0.26); stroke-width: 1; }
-.wmx-frame__inner { stroke: rgba(164, 43, 43, 0.14); stroke-width: 1; }
-.wmx-frame__notch { stroke: var(--w-ice); stroke-width: 2; opacity: 0.7; }
-.wmx-frame__port { stroke: var(--w-ice); stroke-width: 1.5; opacity: 0.55; }
-.wmx-frame__label {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 18px;
-  translate: -50% 0;
-  display: flex;
-  align-items: center;
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  white-space: nowrap;
-}
-
-/* ==========================================================================
-   HEAD (title block) + TALLY
-   ========================================================================== */
-.wmx-head { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
-.wmx-kicker {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-}
-.wmx-kicker i, .wmx-tally i, .wmx-keys i { font-style: normal; color: rgba(164, 43, 43, 0.45); }
-.wmx-kicker__chip {
-  padding: 4px 9px 4px 8px;
-  background: var(--wmx-chrome);
-  color: #0e0e0e;
-  letter-spacing: 0.26em;
-  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-.wmx-title {
-  margin: 0;
-  font-family: var(--w-font-display);
-  font-weight: 800;
-  font-size: clamp(1.625rem, 7.6vw, 2.125rem);
-  line-height: 0.95;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-wrap: balance;
-  text-shadow: 0 0 1px currentColor;
-  color: var(--w-frost);
-}
-.wmx-body { margin: 0; max-width: 30em; font-size: 0.8125rem; line-height: 1.45; color: var(--w-mist); }
-
-.wmx-tally { display: none; }
-.wmx-tally__orbs { display: flex; gap: 6px; }
-.wmx-tally__line {
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--w-red-hi);
-  text-shadow: 0 0 6px rgba(164, 43, 43, 0.45);
-  white-space: nowrap;
-}
-.wmx-tally__line--dim { color: var(--w-mist); text-shadow: none; }
-
-/* ==========================================================================
-   SLOTS: wings (desktop) / chevron rail (phones)
-   ========================================================================== */
-.wmx-slots { order: 3; position: relative; display: flex; justify-content: center; align-items: flex-end; container-type: inline-size; }
-.wmx-wing, .wmx-wedge { --tw: calc(100cqi / 4.2); }
-.wmx-wing { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-.wmx-wing__head {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--w-red-hi);
-  text-shadow: 0 0 6px rgba(164, 43, 43, 0.45);
-  white-space: nowrap;
-}
-.wmx-wing[data-side="1"] .wmx-wing__head { padding-left: calc(var(--tw) * 0.06); }
-.wmx-wing[data-side="2"] .wmx-wing__head { flex-direction: row-reverse; padding-right: calc(var(--tw) * 0.06); }
-.wmx-wing__rule { flex: 1; min-width: 8px; height: 1px; background: var(--wmx-line); }
-.wmx-wing__count { color: var(--w-mist); text-shadow: none; }
-.wmx-wing__list { display: flex; }
-
-.wmx-slot { position: relative; flex: none; width: var(--tw); height: calc(var(--tw) * 0.84); --sk: 22%; --dir: -1; }
-.wmx-slot[data-side="2"], .wmx-wing[data-side="2"] { --dir: 1; }
-.wmx-slot + .wmx-slot { margin-left: calc(var(--tw) * -0.15); }
-
-/* Rail centre wedge (phones): fills the V between the wings, like the artist select's RANDOM wedge. */
-.wmx-wedge { position: relative; flex: none; width: calc(var(--tw) * 0.8); height: calc(var(--tw) * 0.84); margin-inline: calc(var(--tw) * -0.15); }
-.wmx-wedge__body {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding-bottom: 10%;
-  background: linear-gradient(180deg, #303030 0%, #212121 50%, #121212 100%);
-}
-.wmx-wedge__body::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 22%), var(--wmx-scan); }
-
-.wmx-slot__btn {
-  position: absolute;
-  inset: 0;
+.mx-plate { position: absolute; inset: 0; }
+.mx-side { position: absolute; inset: 0; overflow: hidden; background: var(--c-ink); }
+.mx-side img {
   display: block;
   width: 100%;
   height: 100%;
+  padding: var(--s-6);
+  object-fit: contain;
+  transition: transform var(--m-dur-3) var(--m-ease);
+}
+@media (min-width: 768px) {
+  .mx-side img { padding: var(--s-8); }
+}
+
+/* The flip: the back photograph lies over the front. Showing the front wipes the back's clip shut
+   towards the right (Front is the left-hand cell); showing the back wipes it open again. Both
+   photographs slide a step with the edge, so the garment reads as turning, not swapping. One
+   transition per property: a second click mid-way reverses from where it is. */
+.mx-side--back { clip-path: inset(0 0 0 0); transition: clip-path var(--m-dur-3) var(--m-ease); }
+.mx-stage[data-side="front"] .mx-side--back { clip-path: inset(0 0 0 100%); }
+.mx-stage[data-side="front"] .mx-side--back img { transform: translateX(4%); }
+.mx-stage[data-side="back"] .mx-side--front img { transform: translateX(-4%); }
+
+/* A newly selected product holds closed until its photograph is ready, then wipes down over the last. */
+.mx-plate[data-enter="wait"] { clip-path: inset(0 0 100% 0); }
+.mx-plate[data-enter="go"] { animation: mx-drop var(--m-dur-3) var(--m-ease) both; }
+@keyframes mx-drop {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* The holographic view (useHolo.ts): a soft highlight that follows the mouse over the garment and a
+   silver band that drifts against it, like foil turning in the light. Overlay leaves the pure-black
+   ground black and lifts only the cloth and the print, so the sheen sits on the garment alone.
+   Client-mandated; the only colours here outside the tokens, kept near-neutral (silver with a faint
+   blue, rose and mint cast). */
+.mx-holo {
+  --mx-holo-a: rgb(200 210 236);
+  --mx-holo-b: rgb(236 212 226);
+  --mx-holo-c: rgb(208 234 220);
+  --mx-holo-glare: rgb(255 255 255 / 0.32);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity var(--m-dur-1) var(--m-ease);
+}
+.mx-stage[data-holo] .mx-holo { opacity: 1; transition-duration: var(--m-dur-2); }
+.mx-holo__band {
+  position: absolute;
+  inset: 0 -50%;
+  background: linear-gradient( /* taste-skill-ignore: the client-mandated holographic sheen on the photograph */
+    100deg,
+    transparent 39%,
+    var(--mx-holo-a) 44%,
+    var(--mx-holo-b) 48%,
+    var(--mx-holo-c) 52%,
+    var(--mx-holo-a) 56%,
+    transparent 61%
+  );
+  transform: translate3d(calc(var(--dx, 0px) * -0.6), 0, 0);
+}
+.mx-holo__glare {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, var(--mx-holo-glare), transparent); /* taste-skill-ignore: holographic highlight */
+  transform: translate3d(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px)), 0);
+}
+
+/* ---- Front | Back ------------------------------------------------------------ */
+.mx-seg__btn,
+.mx-tile__btn {
+  position: relative;
   margin: 0;
   padding: 0;
   border: 0;
-  overflow: hidden;
-  background: var(--w-deep);
-  color: var(--w-frost);
-  cursor: pointer;
-  clip-path: var(--clip-m);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-.wmx-slot__btn:focus-visible { outline: none; }
-.wmx-slot__media { position: absolute; inset: 0; background: #000; }
-.wmx-slot__media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; opacity: 0; }
-.wmx-slot__media img[data-loaded] { opacity: 1; }
-.wmx-slot__shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 38%, rgba(0, 0, 0, 0.9) 100%), var(--wmx-scan); }
-.wmx-slot__shade::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.46); }
-.wmx-slot[data-selected] .wmx-slot__shade::after, .wmx-slot__btn:focus-visible .wmx-slot__shade::after { opacity: 0; }
-.wmx-slot[data-selected] .wmx-slot__btn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(164, 43, 43, 0.24), transparent 34%);
-  pointer-events: none;
-}
-
-.wmx-slot__idx { position: absolute; top: 5px; font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-mist); }
-.wmx-slot[data-side="1"] .wmx-slot__idx { right: calc(var(--sk) + 2px); }
-.wmx-slot[data-side="2"] .wmx-slot__idx { left: calc(var(--sk) + 2px); }
-.wmx-slot__cls { position: absolute; bottom: 6px; font: 700 8px / 1 var(--w-font-hud); letter-spacing: 0.16em; color: var(--w-frost); }
-.wmx-slot[data-side="1"] .wmx-slot__cls { right: 8px; }
-.wmx-slot[data-side="2"] .wmx-slot__cls { left: 8px; }
-.wmx-slot__name { display: none; }
-
-/* Edge + ring on the shard's own outline (two outlines: rail / desk). */
-.wmx-slot__edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; fill: none; }
-.wmx-slot__edge polygon { vector-effect: non-scaling-stroke; }
-.wmx-slot__g[data-for="desk"] { display: none; }
-.wmx-slot__line { stroke: var(--wmx-line); stroke-width: 2; }
-.wmx-slot__ring { stroke: var(--w-ice); stroke-width: 3; opacity: 0; }
-.wmx-slot[data-selected] .wmx-slot__ring { opacity: 1; }
-.wmx-slot__btn:focus-visible .wmx-slot__ring { opacity: 1; stroke-width: 6; }
-
-/* Lock-on brackets: stand off the slot's box, snap in on hover, stay lit on the equipped slot. */
-.wmx-slot__lock { position: absolute; inset: -5px -4px; pointer-events: none; }
-.wmx-slot__lock i { position: absolute; width: 10px; height: 10px; border: 0 solid var(--w-frost); opacity: 0; }
-.wmx-slot__lock i:nth-child(1) { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; --bx: -7px; --by: -7px; }
-.wmx-slot__lock i:nth-child(2) { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; --bx: 7px; --by: -7px; }
-.wmx-slot__lock i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; --bx: -7px; --by: 7px; }
-.wmx-slot__lock i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; --bx: 7px; --by: 7px; }
-.wmx-slot[data-selected] .wmx-slot__lock i { opacity: 1; border-color: var(--w-ice); }
-
-.wmx-slot__tag, .wmx-slot__wire { display: none; }
-
-@media (hover: hover) {
-  .wmx-slot:hover .wmx-slot__shade::after { opacity: 0; }
-  .wmx-slot:hover .wmx-slot__ring { opacity: 0.6; }
-  .wmx-slot[data-selected]:hover .wmx-slot__ring { opacity: 1; }
-  .wmx-slot:hover .wmx-slot__lock i { opacity: 1; }
-}
-
-/* ==========================================================================
-   INSPECT WINDOW
-   ========================================================================== */
-.wmx-win {
-  order: 2;
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  background: linear-gradient(180deg, #151515 0%, #0c0c0c 100%);
-  border: 1px solid rgba(164, 43, 43, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 30px 70px -30px rgba(0, 0, 0, 0.9);
-}
-.wmx-win__bar {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 32px;
-  flex: none;
-  padding: 0 4px 0 10px;
-  background: var(--wmx-chrome);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 1px 0 rgba(0, 0, 0, 0.9);
-  color: #0e0e0e;
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  user-select: none;
-}
-.wmx-win__bar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; background: var(--w-red-line); }
-.wmx-win__led { width: 6px; height: 6px; flex: none; background: var(--w-ice); box-shadow: 0 0 6px var(--w-volt), inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
-.wmx-win__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wmx-win__key { opacity: 0.62; }
-.wmx-win__view {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 24px;
-  flex: none;
-  padding: 0 10px 0 12px;
-  border: 0;
-  background: #0e0e0e;
-  color: var(--w-red-hi);
+  background: transparent;
+  color: inherit;
   font: inherit;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  text-align: center;
   cursor: pointer;
-  clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
-  box-shadow: inset 0 0 0 1px rgba(164, 43, 43, 0.25);
-  text-shadow: 0 0 6px rgba(164, 43, 43, 0.5);
-}
-.wmx-win__view .wmx-win__key { color: var(--w-mist); opacity: 1; text-shadow: none; }
-.wmx-win__view i { font-style: normal; font-size: 7px; color: var(--w-mist); }
-.wmx-win__view > span:last-of-type { min-width: 5.4em; text-align: left; }
-.wmx-win__flip { width: 14px; height: 10px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; }
-.wmx-win__view:hover { background: #1f1f1f; }
-.wmx-win__view:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 2px; }
-.wmx-win__controls { display: none; gap: 4px; flex: none; }
-.wmx-win__controls i { display: block; width: 13px; height: 11px; background: linear-gradient(180deg, #f6f6f6, #adadad); box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0, 0, 0, 0.55); }
-
-/* ---- Stage: black turntable + HUD glass ---------------------------------- */
-.wmx-view {
-  position: relative;
-  height: clamp(232px, 34svh, 340px);
-  flex: none;
-  overflow: hidden;
-  /* Pure black: the product shots' own background, so the square never shows when it tilts. */
-  background: #000;
-  cursor: pointer;
-  container-type: size;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
 }
-.wmx-turn { position: absolute; inset: 0; display: grid; place-items: center; }
-.wmx-tilt { width: min(86cqw, 90cqh); aspect-ratio: 1; }
-/* Pre-promoted for the pointer tilt only while the armory is on screen (no idle GPU layer off screen). */
-.wmx[data-live] .wmx-tilt { will-change: transform; }
-.wmx-flipper { position: relative; width: 100%; height: 100%; }
-.wmx-plate { position: absolute; inset: 0; }
-.wmx-face { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
-.wmx[data-view="back"] .wmx-face--back[data-loaded],
-.wmx[data-view="front"] .wmx-face--front[data-loaded],
-/* Front still loading: keep the back print up meanwhile. */
-.wmx[data-view="front"] .wmx-plate:has(.wmx-face--front:not([data-loaded])) .wmx-face--back[data-loaded],
-.wmx[data-view="front"] .wmx-plate:not(:has(.wmx-face--front)) .wmx-face--back[data-loaded] { opacity: 1; }
-
-.wmx-hud { position: absolute; inset: 0; pointer-events: none; }
-.wmx-hud__grid {
-  position: absolute;
-  inset: 0;
-  background:
-    none,
-    linear-gradient(rgba(164, 43, 43, 0.045) 1px, transparent 1px) 50% 50% / 100% 12.5%,
-    linear-gradient(90deg, rgba(164, 43, 43, 0.045) 1px, transparent 1px) 50% 50% / 12.5% 100%,
-    radial-gradient(ellipse 64% 60% at 50% 48%, transparent 45%, rgba(0, 0, 0, 0.72) 100%);
-}
-/* Pedestal: flattened rings round the hem (parallax-shifted by the tilt). */
-.wmx-hud__pad { position: absolute; left: 50%; top: 50%; width: min(96cqw, 98cqh); aspect-ratio: 1; translate: -50% -50%; }
-.wmx-hud__disc { position: absolute; inset: 0; transform: translateY(40%) scaleY(0.2); }
-.wmx-hud__rings { display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--w-ice); }
-.wmx-hud__ring { stroke-width: 1; opacity: 0.32; vector-effect: non-scaling-stroke; }
-.wmx-hud__ring--dash { stroke-dasharray: 2 6; opacity: 0.6; }
-.wmx-hud__ring--fine { opacity: 0.16; }
-.wmx-hud__tick { stroke-width: 1.5; opacity: 0.7; vector-effect: non-scaling-stroke; }
-.wmx-hud__cross { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: rgba(255, 255, 255, 0.4); stroke-width: 1; }
-.wmx-hud__cross path { vector-effect: non-scaling-stroke; }
-.wmx-hud__vf { position: absolute; left: 50%; top: 50%; width: min(90cqw, 92cqh); aspect-ratio: 1; translate: -50% -50%; }
-.wmx-hud__vf i { position: absolute; width: 18px; height: 18px; border: 0 solid rgba(255, 255, 255, 0.5); }
-.wmx-hud__vf i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-.wmx-hud__vf i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
-.wmx-hud__vf i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
-.wmx-hud__vf i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
-.wmx-hud__ruler {
-  position: absolute;
-  left: 10px;
-  top: 22%;
-  bottom: 22%;
-  width: 7px;
-  background:
-    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0 1px, transparent 1px 40px) 0 0 / 7px 100% no-repeat,
-    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px 8px) 0 0 / 4px 100% no-repeat;
-}
-.wmx-hud__label {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 7px;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--w-red-hi);
-  background: rgba(0, 0, 0, 0.72);
-  box-shadow: inset 0 0 0 1px var(--wmx-glass);
-  text-shadow: 0 0 6px rgba(164, 43, 43, 0.5);
-}
-.wmx-hud__label--tl { top: 10px; left: 10px; }
-.wmx-hud__label--tr { top: 10px; right: 10px; color: var(--w-mist); text-shadow: none; }
-.wmx-hud__label--bl { bottom: 10px; left: 10px; color: var(--w-mist); text-shadow: none; }
-.wmx-hud__label--br { bottom: 10px; right: 10px; }
-.wmx-hud__rec { width: 6px; height: 6px; background: var(--w-ice); box-shadow: 0 0 6px var(--w-volt); }
-.wmx-hud__touch { display: none; }
-@media (hover: none) {
-  .wmx-hud__fine { display: none; }
-  .wmx-hud__touch { display: inline; }
-}
-.wmx-scan { position: absolute; left: 0; right: 0; top: 0; height: 18%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent 0%, rgba(164, 43, 43, 0.035) 62%, rgba(255, 255, 255, 0.1) 94%, rgba(255, 255, 255, 0.16) 97%, transparent 100%); }
-
-/* ---- Swap / flip FX (mounted per change) --------------------------------- */
-.wmx-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
-.wmx-fx__shutter { position: absolute; left: 0; right: 0; height: 50.5%; background: var(--wmx-scan), linear-gradient(180deg, #0e0e0e, #070707); }
-.wmx-fx__shutter--a { top: 0; box-shadow: 0 1px 0 rgba(164, 43, 43, 0.7); }
-.wmx-fx__shutter--b { bottom: 0; box-shadow: 0 -1px 0 rgba(164, 43, 43, 0.7); }
-.wmx-fx__band { position: absolute; left: 0; right: 0; top: 0; height: 22%; opacity: 0; background: linear-gradient(180deg, transparent 0%, rgba(164, 43, 43, 0.1) 70%, rgba(255, 255, 255, 0.5) 99%, transparent 100%); }
-.wmx-fx__slice { position: absolute; left: 0; right: 0; height: 3px; background: rgba(164, 43, 43, 0.55); opacity: 0; }
-.wmx-fx__slice--1 { top: 31%; }
-.wmx-fx__slice--2 { top: 47%; height: 6px; background: rgba(255, 255, 255, 0.32); }
-.wmx-fx__slice--3 { top: 64%; height: 2px; }
-.wmx-fx__flash { position: absolute; inset: 0; background: rgba(164, 43, 43, 0.16); opacity: 0; }
-.wmx-fx__lock { position: absolute; left: 50%; top: 50%; width: min(90cqw, 92cqh); aspect-ratio: 1; translate: -50% -50%; opacity: 0; }
-.wmx-fx__lock i { position: absolute; width: 26px; height: 26px; border: 0 solid var(--w-ice); }
-.wmx-fx__lock i:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
-.wmx-fx__lock i:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
-.wmx-fx__lock i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
-.wmx-fx__lock i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
-
-/* ---- LCD readout + status bar --------------------------------------------- */
-.wmx-lcd {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 4px 14px;
-  flex: none;
-  margin: 8px 8px 0;
-  padding: 10px 12px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #080808 0%, #111111 100%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--wmx-glass), 0 1px 0 rgba(255, 255, 255, 0.08);
-  font: 400 var(--w-fs-micro) / 1.15 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--w-red-hi);
-  text-shadow: 0 0 6px rgba(164, 43, 43, 0.45);
-}
-.wmx-lcd::after { content: ""; position: absolute; inset: 0; background: var(--wmx-scan); pointer-events: none; }
-.wmx-lcd__row { position: relative; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wmx-lcd b { font-weight: 400; color: rgba(164, 43, 43, 0.55); }
-.wmx-lcd__row--x { display: none; }
-
-.wmx-win__status {
+.mx-seg__btn {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 32px;
-  flex: none;
-  margin-top: 8px;
-  padding: 0 0 0 12px;
-  border-top: 1px solid var(--w-line);
-  background: rgba(0, 0, 0, 0.5);
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--w-fog);
+  justify-content: center;
+  min-height: var(--mx-cap);
+  padding: 0 var(--g-pad);
+  font-size: var(--t-body);
+  line-height: 1.3;
+  color: var(--c-fg-3);
 }
-.wmx-win__orbs { flex: 1; display: flex; align-items: center; gap: 5px; min-width: 0; }
-.wmx-win__count { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-mist); font-variant-numeric: tabular-nums; }
-.wmx-win__nav { display: flex; }
-.wmx-win__btn {
-  width: 34px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: 400 13px / 1 var(--w-font-pixel);
-  color: var(--w-frost);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.wmx-win__btn:hover { color: var(--w-red-hi); }
-.wmx-win__btn:focus-visible, .wmx-win__shop:focus-visible { outline: 2px solid var(--w-frost); outline-offset: -2px; }
-.wmx-win__shop {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: stretch;
-  padding: 0 14px;
-  color: var(--w-frost);
-  text-decoration: none;
-  letter-spacing: 0.3em;
-  box-shadow: inset 1px 0 0 var(--w-line);
-}
-.wmx-win__shop:hover { color: var(--w-red-hi); background: rgba(200, 0, 0, 0.072); }
-
-/* Glass orbs */
-.wmx-orb {
-  --d: 8px;
-  position: relative;
-  flex: none;
-  width: var(--d);
-  height: var(--d);
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.5) 0 12%, #545454 32%, #212121 72%, #0e0e0e 100%);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-.wmx-orb[data-size="md"] { --d: 11px; }
-.wmx-orb::after {
+.mx-seg__btn[aria-pressed="true"] { color: var(--c-fg); }
+/* The side showing: a 2px red mark on the edge it shares with the preview. Between Front and Back it
+   travels: the outgoing mark shrinks towards the incoming cell, the incoming one grows from it. */
+.mx-seg__btn::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #fff 0 10%, #e3e3e3 22%, #a42b2b 44%, #8b0000 74%, #990d0d 100%);
-  box-shadow: 0 0 8px 1px rgba(164, 43, 43, 0.75), 0 0 2px rgba(164, 43, 43, 0.9);
-  opacity: 0;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--m-dur-2) var(--m-ease);
 }
-.wmx-orb[data-lit]::after { opacity: 1; }
+.mx-seg[data-side="back"] .mx-seg__btn::before { transform-origin: left; }
+.mx-seg__btn[aria-pressed="true"]::before { transform: scaleX(1); }
+.mx-seg__btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
 
-/* ==========================================================================
-   CTA + KEYS
-   ========================================================================== */
-.wmx-cta { order: 4; display: flex; align-items: center; justify-content: center; gap: var(--w-s-5); }
-.wmx-cta .w-btn--link { min-height: 44px; }
-.wmx-keys { display: none; }
-
-/* ==========================================================================
-   SPLIT LAYOUT (≥ 960px): wings either side of the bench, one screen tall
-   ========================================================================== */
-@media (min-width: 960px) {
-  .wmx {
-    --wmx-gap: clamp(40px, 4.2vw, 64px);
-    --wmx-cw: clamp(380px, 38vw, 560px);
-    display: flex;
-    height: max(720px, 100svh);
-    padding: 88px max(var(--w-gutter), 24px) 20px;
-  }
-  .wmx-stage {
-    --c: 24px;
-    --nh: 150px;
-    --nd: 24px;
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-    max-width: 1360px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--wmx-cw) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      "head win tally"
-      "w1   win w2"
-      "keys win cta";
-    column-gap: var(--wmx-gap);
-    padding: 44px clamp(24px, 3vw, 44px) 26px;
-  }
-  .wmx-frame__label { height: 24px; letter-spacing: 0.34em; }
-
-  .wmx-head { grid-area: head; align-items: flex-start; gap: 10px; text-align: left; }
-  .wmx-title { font-size: clamp(1.75rem, 2.7vw, 2.75rem); }
-  .wmx-body { max-width: 22em; font-size: var(--w-fs-small); }
-  .wmx-tally { grid-area: tally; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; padding-top: 4px; text-align: right; }
-
-  .wmx-slots { display: contents; }
-  .wmx-wedge { display: none; }
-  .wmx-wing { container-type: inline-size; align-self: center; gap: 14px; }
-  .wmx-wing[data-side="1"] { grid-area: w1; }
-  .wmx-wing[data-side="2"] { grid-area: w2; }
-  .wmx-wing__head, .wmx-wing[data-side] .wmx-wing__head { padding: 0; }
-  .wmx-wing__list { flex-direction: column; gap: 22px; }
-
-  .wmx-slot {
-    --sk: 9%;
-    width: 100%;
-    /* Wide shard: ~2.1:1, shrinking on short screens so both slots always fit beside the bench. */
-    height: max(84px, min(calc(100cqi / 2.1), calc((100svh - 470px) / 2.2)));
-  }
-  .wmx-slot + .wmx-slot { margin-left: 0; }
-  .wmx-slot__btn { clip-path: var(--clip-d); }
-  .wmx-slot__g[data-for="desk"] { display: inline; }
-  .wmx-slot__g[data-for="rail"] { display: none; }
-  .wmx-slot__media img { object-position: 50% 40%; }
-  .wmx-slot__shade { background: linear-gradient(180deg, transparent 30%, rgba(0, 0, 0, 0.88) 100%), var(--wmx-scan); }
-  .wmx-slot__idx { top: 10px; }
-  .wmx-slot__cls {
-    top: 9px;
-    bottom: auto;
-    padding: 4px 7px;
-    font-size: var(--w-fs-nano);
-    letter-spacing: 0.26em;
-    color: var(--w-red-hi);
-    background: rgba(0, 0, 0, 0.72);
-    box-shadow: inset 0 0 0 1px var(--wmx-glass);
-  }
-  .wmx-slot[data-side="1"] .wmx-slot__cls { right: auto; left: calc(6% + 8px); }
-  .wmx-slot[data-side="2"] .wmx-slot__cls { left: auto; right: calc(6% + 8px); }
-  .wmx-slot__name {
-    position: absolute;
-    bottom: 11px;
-    display: block;
-    max-width: 78%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font: 700 clamp(9px, 4.6cqi, 13px) / 1.2 var(--w-font-hud);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
-  }
-  .wmx-slot[data-side="1"] .wmx-slot__name { right: 14px; text-align: right; }
-  .wmx-slot[data-side="2"] .wmx-slot__name { left: 14px; }
-  .wmx-slot__lock { inset: -7px -6px; }
-  .wmx-slot__lock i { width: 14px; height: 14px; }
-  .wmx-slot__lock i:nth-child(odd) { --bx: -10px; }
-  .wmx-slot__lock i:nth-child(even) { --bx: 10px; }
-  .wmx-slot__lock i:nth-child(-n + 2) { --by: -10px; }
-  .wmx-slot__lock i:nth-child(n + 3) { --by: 10px; }
-
-  /* Tag over the inner-top corner: LOCK ON while hovering, EQUIPPED on the bench. */
-  .wmx-slot__tag {
-    position: absolute;
-    z-index: 3;
-    top: -10px;
-    display: block;
-    padding: 4px 8px;
-    font: 700 8px / 1 var(--w-font-hud);
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--w-frost);
-    background: var(--w-volt);
-    box-shadow: 0 0 14px rgba(200, 0, 0, 0.36), inset 0 1px 0 rgba(164, 43, 43, 0.6);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .wmx-slot[data-side="1"] .wmx-slot__tag { right: calc(9% + 6px); }
-  .wmx-slot[data-side="2"] .wmx-slot__tag { left: calc(9% + 6px); }
-  .wmx-slot:not([data-selected]) .wmx-slot__tag { background: rgba(0, 0, 0, 0.9); color: var(--w-red-hi); box-shadow: inset 0 0 0 1px var(--wmx-glass); }
-  .wmx-slot[data-selected] .wmx-slot__tag { opacity: 1; }
-
-  /* Wire from the slot's inner edge (mid-height) across the gap, docking on the bench frame. */
-  .wmx-slot__wire {
-    position: absolute;
-    top: 50%;
-    display: block;
-    width: calc(var(--wmx-gap) + 4.5%);
-    height: 1px;
-    background: var(--wmx-line);
-    --wl: calc(var(--wmx-gap) + 4.5%);
-  }
-  .wmx-slot[data-side="1"] .wmx-slot__wire { left: 95.5%; transform-origin: 0 50%; }
-  .wmx-slot[data-side="2"] .wmx-slot__wire { right: 95.5%; transform-origin: 100% 50%; }
-  .wmx-slot__wire b { position: absolute; top: -2px; width: 5px; height: 5px; background: var(--w-steel); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3); }
-  .wmx-slot[data-side="1"] .wmx-slot__wire b { right: -3px; }
-  .wmx-slot[data-side="2"] .wmx-slot__wire b { left: -3px; }
-  .wmx-slot__wire::before { content: ""; position: absolute; top: -1px; left: 0; width: 22px; height: 3px; opacity: 0; background: linear-gradient(90deg, transparent, var(--w-ice), transparent); }
-  .wmx-slot[data-selected] .wmx-slot__wire { background: linear-gradient(90deg, rgba(164, 43, 43, 0.35), var(--w-ice)); }
-  .wmx-slot[data-selected][data-side="2"] .wmx-slot__wire { background: linear-gradient(270deg, rgba(164, 43, 43, 0.35), var(--w-ice)); }
-  .wmx-slot[data-selected] .wmx-slot__wire b { background: var(--w-ice); box-shadow: 0 0 8px var(--w-volt), 0 0 0 1px rgba(255, 255, 255, 0.5); }
-
-  .wmx-win { grid-area: win; }
-  .wmx-win__controls { display: flex; }
-  .wmx-win__bar { padding-right: 8px; }
-  .wmx-view { flex: 1; height: auto; min-height: 0; }
-  .wmx-hud__label--tl { top: 14px; left: 14px; }
-  .wmx-hud__label--tr { top: 14px; right: 14px; }
-  .wmx-hud__label--bl { bottom: 14px; left: 14px; }
-  .wmx-hud__label--br { bottom: 14px; right: 14px; }
-  .wmx-hud__ruler { left: 16px; }
-  .wmx-lcd { padding: 12px 14px; gap: 5px 18px; }
-  .wmx-lcd__row--x { display: block; }
-
-  .wmx-cta { grid-area: cta; align-self: end; justify-content: flex-end; gap: var(--w-s-5); flex-wrap: wrap; }
+/* ---- Product tiles ------------------------------------------------------------ */
+.mx-tile { gap: 0; }
+.mx-tile__btn { flex: 1 1 auto; display: flex; flex-direction: column; width: 100%; }
+.mx-tile__media { display: block; width: 100%; aspect-ratio: 6 / 5; background: var(--c-ink); }
+.mx-tile__media img { display: block; width: 100%; height: 100%; padding: var(--s-3); object-fit: contain; }
+.mx-tile__name {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mx-cap);
+  padding: var(--s-2) var(--g-pad);
+  border-top: 1px solid var(--c-rule); /* taste-skill-ignore: the grid's hairline (client-mandated) */
+  font-size: var(--t-body);
+  line-height: 1.3;
+  color: var(--c-fg-2);
+  transition: color var(--m-dur-1) var(--m-ease);
 }
+.mx-tile__btn[aria-pressed="true"] .mx-tile__name { color: var(--c-fg); }
+/* Selected: a 2px red mark over the tile's bottom rule (the nav's current-section mark). */
+.mx-tile__btn::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  z-index: 1;
+  height: 2px;
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--m-dur-1) var(--m-ease);
+}
+.mx-tile__btn[aria-pressed="true"]::after { transform: scaleX(1); transition-duration: var(--m-dur-2); }
+/* The photograph covers the button, so the focus ring is drawn on a layer above it. */
+.mx-tile__btn:focus-visible { outline: none; }
+.mx-tile__btn:focus-visible::before { content: ""; position: absolute; inset: 0; z-index: 2; outline: 2px solid var(--c-focus); outline-offset: -2px; }
 
-@media (min-width: 960px) and (hover: hover) and (pointer: fine) {
-  .wmx-keys {
-    grid-area: keys;
-    align-self: end;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    padding-bottom: 12px;
-    font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-    letter-spacing: 0.26em;
-    text-transform: uppercase;
-    color: var(--w-fog);
-  }
-  .wmx-keys i { margin-inline: 4px; }
-  .wmx-keys kbd {
-    min-width: 20px;
-    padding: 4px;
-    font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-    letter-spacing: 0;
-    text-align: center;
-    color: var(--w-mist);
-    box-shadow: inset 0 0 0 1px var(--w-line-strong), inset 0 -2px 0 rgba(0, 0, 0, 0.6);
+@media (hover: hover) and (pointer: fine) {
+  .mx-seg__btn:hover,
+  .mx-tile__btn:hover { background-color: var(--c-wash); }
+  .mx-seg__btn:hover,
+  .mx-tile__btn:hover .mx-tile__name { color: var(--c-fg); }
+}
+.mx-seg__btn:active,
+.mx-tile__btn:active { background-color: var(--c-wash); }
+
+/* From 768px a tile lies on the board's image line and caption line. */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 768px) {
+    .mx-tile { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; }
+    .mx-tile__btn { grid-row: 1 / span 2; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; row-gap: 0; }
+    .mx-tile__media { aspect-ratio: auto; }
   }
 }
-
-/* Short desktop screens: drop the body line before anything collides. */
-@media (min-width: 960px) and (max-height: 780px) {
-  .wmx-body { display: none; }
-  .wmx-lcd__row--x { display: none; }
+@media (min-width: 768px) {
+  .mx-tile__media img { padding: var(--s-4); }
 }
 
-/* Tablets: the stacked layout, centred and a touch taller. */
-@media (min-width: 600px) and (max-width: 959.98px) {
-  .wmx-stage { padding: 34px 20px 18px; gap: 16px; }
-  .wmx-view { height: clamp(300px, 40svh, 400px); }
+/* ---- Reduced motion: the end state, no travel ---------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .mx-side--back,
+  .mx-side img,
+  .mx-seg__btn::before,
+  .mx-tile__btn::after { transition-duration: 0.01ms; }
+  .mx-plate[data-enter="go"] { animation: none; }
+  .mx-holo { display: none; }
 }
-
-/* ==========================================================================
-   MOTION (no-preference only): entrance, hover, swap/flip FX, live loops
-   ========================================================================== */
-@media (prefers-reduced-motion: no-preference) {
-  /* ---- Hover / state transitions ---- */
-  .wmx-slot__media { transition: transform 0.6s var(--w-ease); }
-  .wmx-slot[data-selected] .wmx-slot__media { transform: scale(1.07); }
-  .wmx-slot__media img { transition: opacity 0.7s ease; }
-  .wmx-slot__shade::after { transition: opacity var(--w-dur) ease; }
-  .wmx-slot__ring { transition: opacity var(--w-dur-fast) ease; }
-  .wmx-slot__lock i { transform: translate(var(--bx), var(--by)); transition: transform 0.22s var(--w-ease), opacity 0.12s ease, border-color 0.2s ease; }
-  .wmx-slot[data-selected] .wmx-slot__lock i { transform: none; }
-  .wmx-slot__tag { transform: translateY(4px); transition: opacity 0.15s ease, transform 0.22s var(--w-ease); }
-  .wmx-slot[data-selected] .wmx-slot__tag { transform: none; }
-  .wmx-win__flip { transition: transform 0.45s var(--w-ease); }
-  .wmx-win__view:hover .wmx-win__flip { transform: rotate(180deg); }
-  .wmx-orb::after { transition: opacity var(--w-dur) ease; }
-  @media (hover: hover) {
-    .wmx-slot:hover .wmx-slot__media { transform: scale(1.07); }
-    .wmx-slot:hover .wmx-slot__lock i { transform: none; animation: wmx-tick 0.26s steps(1, end); }
-    .wmx-slot:hover .wmx-slot__tag { opacity: 1; transform: none; }
-    .wmx-view:hover .wmx-turn { animation-play-state: paused; }
-  }
-
-  /* ---- Faces: flip swaps at the edge-on moment (0.22s) ---- */
-  .wmx-face { transition: opacity 0s linear 0.22s; }
-  .wmx:not([data-flips]) .wmx-face { transition: opacity 0.7s ease; }
-  .wmx[data-flips][data-view="front"] .wmx-flipper { animation: wmx-flip-a 0.64s both; }
-  .wmx[data-flips][data-view="back"] .wmx-flipper { animation: wmx-flip-b 0.64s both; }
-  .wmx[data-flips][data-view="front"] .wmx-plate[data-current] .wmx-face--front,
-  .wmx[data-flips][data-view="back"] .wmx-plate[data-current] .wmx-face--back { animation: wmx-crt 0.5s 0.2s steps(2, end) both; }
-  .wmx-plate[data-enter] { animation: wmx-plate-in 0.7s var(--w-ease) both; }
-  .wmx-plate:not([data-current]) { animation: wmx-plate-out 0.5s var(--w-ease-io) both; }
-
-  /* ---- Swap FX ---- */
-  .wmx-fx__shutter--a { animation: wmx-shut-a 0.46s cubic-bezier(0.7, 0, 0.2, 1) both; }
-  .wmx-fx__shutter--b { animation: wmx-shut-b 0.46s cubic-bezier(0.7, 0, 0.2, 1) both; }
-  .wmx-fx__band { animation: wmx-band 0.7s 0.12s cubic-bezier(0.5, 0, 0.3, 1) both; }
-  .wmx-fx__slice--1 { animation: wmx-slice 0.32s 0.26s steps(4, end) both; }
-  .wmx-fx__slice--2 { animation: wmx-slice 0.28s 0.32s steps(3, end) both; }
-  .wmx-fx__slice--3 { animation: wmx-slice 0.3s 0.38s steps(4, end) both; }
-  .wmx-fx__flash { animation: wmx-flash 0.42s 0.3s ease-out both; }
-  .wmx-fx__lock { animation: wmx-lock 0.7s 0.18s var(--w-ease) both; }
-  .wmx-fx--flip .wmx-fx__band { animation-delay: 0.08s; animation-duration: 0.55s; }
-  .wmx-fx--flip .wmx-fx__slice--1 { animation-delay: 0.16s; }
-  .wmx-fx--flip .wmx-fx__slice--3 { animation-delay: 0.24s; }
-  .wmx-fx--flip .wmx-fx__flash { animation-delay: 0.2s; background: rgba(255, 255, 255, 0.12); }
-
-  /* ---- Live loops (only while on screen) ---- */
-  .wmx[data-live] .wmx-turn { animation: wmx-sway 10s ease-in-out infinite; }
-  .wmx[data-live] .wmx-hud__rings { animation: wmx-spin 22s linear infinite; }
-  .wmx[data-live] .wmx-hud__rec { animation: wmx-blink 1.4s steps(1, end) infinite; }
-  .wmx[data-live] .wmx-scan { animation: wmx-scan 6s 1.2s linear infinite; }
-  .wmx[data-live] .wmx-slot[data-selected] .wmx-slot__wire::before { animation: wmx-pulse 1.6s linear infinite; }
-  .wmx[data-live] .wmx-slot[data-selected][data-side="2"] .wmx-slot__wire::before { animation-name: wmx-pulse-rev; }
-
-  /* ---- Entrance: hidden once armed, glitch-in once on screen ---- */
-  .wmx[data-arm]:not([data-on]) :is(.wmx-in, .wmx-frame, .wmx-win, .wmx-slot, .wmx-wedge) { opacity: 0; }
-  .wmx[data-arm][data-on] .wmx-frame { animation: wmx-boot 0.8s steps(1, end) backwards; }
-  .wmx[data-arm][data-on] .wmx-in { animation: wmx-glitch-in 0.62s calc(var(--d, 0) * 1ms) steps(1, end) backwards; }
-  .wmx[data-arm][data-on] .wmx-win { animation: wmx-win-in 0.8s 0.1s var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-win__bar { animation: wmx-bar-in 0.55s 0.2s var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-view { animation: wmx-crt-on 0.75s 0.38s var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-view::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    pointer-events: none;
-    background: linear-gradient(180deg, transparent 46%, rgba(255, 255, 255, 0.9) 50%, transparent 54%);
-    opacity: 0;
-    animation: wmx-power 0.7s 0.38s ease-out both;
-  }
-  .wmx[data-arm][data-on] .wmx-lcd { animation: wmx-rise 0.5s 0.7s var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-lcd__row { animation: wmx-glitch-in 0.4s steps(1, end) backwards; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(1) { animation-delay: 0.8s; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(2) { animation-delay: 0.86s; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(3) { animation-delay: 0.92s; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(4) { animation-delay: 0.98s; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(5) { animation-delay: 1.04s; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(6) { animation-delay: 1.1s; }
-  .wmx[data-arm][data-on] .wmx-lcd__row:nth-child(n + 7) { animation-delay: 1.16s; }
-  .wmx[data-arm][data-on] .wmx-win__status { animation: wmx-rise 0.5s 0.82s var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-slot { animation: wmx-slot-in 0.7s calc(360ms + var(--o) * 90ms) steps(1, end) backwards; }
-  .wmx[data-arm][data-on] .wmx-slot__media { animation: wmx-media-on 0.5s calc(480ms + var(--o) * 90ms) var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-slot__wire { animation: wmx-wire-in 0.5s calc(760ms + var(--o) * 90ms) var(--w-ease) backwards; }
-  .wmx[data-arm][data-on] .wmx-wedge { animation: wmx-glitch-in 0.6s 0.5s steps(1, end) backwards; }
-}
-
-@keyframes wmx-tick { 0%, 100% { opacity: 1; } 25% { opacity: 0.3; } 50% { opacity: 1; } 75% { opacity: 0.3; } }
-@keyframes wmx-flip-a {
-  0% { transform: none; animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.4); }
-  34% { transform: perspective(900px) rotateY(86deg) scale(0.95); }
-  35% { transform: perspective(900px) rotateY(-86deg) scale(0.95); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-  100% { transform: none; }
-}
-@keyframes wmx-flip-b {
-  0% { transform: none; animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.4); }
-  34% { transform: perspective(900px) rotateY(-86deg) scale(0.95); }
-  35% { transform: perspective(900px) rotateY(86deg) scale(0.95); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-  100% { transform: none; }
-}
-/* The Sept CRT reveal, minus the filter: stepped slices + jitter (the flash comes from FlipFx). */
-@keyframes wmx-crt {
-  0% { clip-path: inset(0 0 88% 0); transform: translateX(-7px); }
-  12% { clip-path: inset(34% 0 42% 0); transform: translateX(6px); }
-  24% { clip-path: inset(4% 0 58% 0); transform: translateX(-5px); }
-  36% { clip-path: inset(48% 0 8% 0); transform: translateX(4px); }
-  48% { clip-path: inset(0 0 26% 0); transform: translateX(-3px); }
-  62% { clip-path: inset(12% 0 0 0); transform: translateX(2px); }
-  76% { clip-path: inset(0); transform: translateX(-1px); }
-  100% { clip-path: inset(0); transform: none; }
-}
-@keyframes wmx-plate-in { from { opacity: 0; transform: translate3d(0, 3%, 0) scale(1.06); } to { opacity: 1; transform: none; } }
-@keyframes wmx-plate-out { to { opacity: 0; transform: scale(0.94); } }
-@keyframes wmx-shut-a { from { transform: translateY(0); } to { transform: translateY(-101%); } }
-@keyframes wmx-shut-b { from { transform: translateY(0); } to { transform: translateY(101%); } }
-@keyframes wmx-band { from { transform: translateY(-100%); opacity: 1; } 85% { opacity: 1; } to { transform: translateY(460%); opacity: 0; } }
-@keyframes wmx-slice {
-  0% { opacity: 1; transform: translateX(-12%) scaleX(0.6); }
-  50% { opacity: 1; transform: translateX(8%) scaleX(0.9); }
-  100% { opacity: 0; transform: translateX(-4%) scaleX(0.3); }
-}
-@keyframes wmx-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes wmx-lock { 0% { opacity: 0; transform: scale(1.18); } 30% { opacity: 1; } 55% { opacity: 0.4; } 70% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
-@keyframes wmx-sway {
-  0%, 100% { transform: perspective(1200px) rotateY(0deg) translateY(0); }
-  25% { transform: perspective(1200px) rotateY(9deg) translateY(-1%); }
-  75% { transform: perspective(1200px) rotateY(-9deg) translateY(0.6%); }
-}
-@keyframes wmx-spin { to { transform: rotate(360deg); } }
-@keyframes wmx-blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.15; } }
-@keyframes wmx-scan { 0% { opacity: 1; transform: translateY(-100%); } 45% { opacity: 1; transform: translateY(420%); } 46%, 100% { opacity: 0; transform: translateY(420%); } }
-@keyframes wmx-pulse { from { opacity: 1; transform: translateX(-22px); } to { opacity: 1; transform: translateX(var(--wl)); } }
-@keyframes wmx-pulse-rev { from { opacity: 1; transform: translateX(var(--wl)); } to { opacity: 1; transform: translateX(-22px); } }
-@keyframes wmx-boot { 0% { opacity: 0; } 12% { opacity: 0.9; } 22% { opacity: 0.1; } 36% { opacity: 1; } 46% { opacity: 0.3; } 60%, 100% { opacity: 1; } }
-@keyframes wmx-glitch-in {
-  0% { opacity: 0; transform: translate3d(calc(var(--dir, -1) * 14px), 0, 0); }
-  18% { opacity: 1; transform: translate3d(calc(var(--dir, -1) * -6px), 0, 0); }
-  30% { opacity: 0.2; transform: translate3d(calc(var(--dir, -1) * -6px), 0, 0); }
-  42% { opacity: 1; transform: translate3d(calc(var(--dir, -1) * 3px), 0, 0); }
-  56% { opacity: 0.55; transform: none; }
-  68%, 100% { opacity: 1; transform: none; }
-}
-@keyframes wmx-slot-in {
-  0% { opacity: 0; transform: translate3d(calc(var(--dir) * 40px), 0, 0); }
-  16% { opacity: 1; transform: translate3d(calc(var(--dir) * -8px), 0, 0); }
-  28% { opacity: 0.2; transform: translate3d(calc(var(--dir) * -8px), 0, 0); }
-  40% { opacity: 1; transform: translate3d(calc(var(--dir) * 4px), 0, 0); }
-  54% { opacity: 0.6; transform: translate3d(calc(var(--dir) * 1px), 0, 0); }
-  66%, 100% { opacity: 1; transform: none; }
-}
-@keyframes wmx-media-on { from { opacity: 0; transform: scaleY(0.02); } 40% { opacity: 1; } to { opacity: 1; transform: none; } }
-@keyframes wmx-wire-in { from { transform: scaleX(0); } to { transform: none; } }
-@keyframes wmx-win-in { from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.97); } to { opacity: 1; transform: none; } }
-@keyframes wmx-bar-in { from { transform: scaleX(0); } to { transform: none; } }
-@keyframes wmx-crt-on { 0% { opacity: 0; transform: scale(0.7, 0.008); } 32% { opacity: 1; transform: scale(1, 0.008); } 100% { opacity: 1; transform: none; } }
-@keyframes wmx-power { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes wmx-rise { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }

@@ -1,91 +1,47 @@
 "use client";
 
 import { memo, type CSSProperties } from "react";
-import { toClipPath, toSvgPoints } from "@/components/winter/artist-select/geometry";
-import { MerchImg } from "@/components/winter/merch/MerchImg";
-import { pad2, SLOT_SHAPES, type Gear, type Side } from "@/components/winter/merch/loadout";
+import { Cell } from "@/components/winter/grid";
+import { ProductImage, warmPreview } from "@/components/winter/merch/ProductImage";
+import type { Product } from "@/components/winter/merch/types";
+
+// Three of twelve columns from 768px, two of four on phones.
+const SIZES = "(min-width: 768px) 25vw, 50vw";
 
 interface MerchCardProps {
-  gear: Gear;
-  side: Side;
-  /** Entrance stagger order. */
-  order: number;
+  item: Product;
+  i: number;
   selected: boolean;
-  tabbable: boolean;
-  /** id of the inspect window this slot loads. */
+  /** id of the preview this product loads into. */
   controls: string;
-  /** Stable (index, element) ref registrar from the armory (keeps this memo effective). */
-  registerSlot: (i: number, el: HTMLButtonElement | null) => void;
-  onHover: (i: number) => void;
-  onLeave: () => void;
-  onFocusSlot: (i: number) => void;
-  onPress: (i: number) => void;
+  onSelect: (i: number) => void;
 }
 
 /**
- * One equipment slot in the armory: a chrome-edged shard (the artist select's
- * tile shape) showing the back print, with lock-on brackets on hover, an
- * EQUIPPED tag when it's on the inspect bench, and a wire that docks into the
- * inspect window. Two outlines are drawn (wide desktop slot, phone rail tile);
- * CSS shows the one for the layout.
+ * One product: its back print on the black ground, its name beneath. From 768px the cell spans an image
+ * line and a caption line of the board (columns 7–12, two per line). Selected = the red mark on its
+ * bottom edge (merch.css).
  */
-export const MerchCard = memo(function MerchCard({ gear, side, order, selected, tabbable, controls, registerSlot, onHover, onLeave, onFocusSlot, onPress }: MerchCardProps) {
-  const i = gear.n - 1;
-  const desk = SLOT_SHAPES.desk[side];
-  const rail = SLOT_SHAPES.rail[side];
-  const style = { "--clip-d": toClipPath(desk), "--clip-m": toClipPath(rail), "--o": order } as CSSProperties;
-
+export const MerchCard = memo(function MerchCard({ item, i, selected, controls, onSelect }: MerchCardProps) {
+  // Intent (hover, press, focus) starts fetching this product's preview photographs.
+  const warm = () => warmPreview(item.back, item.front);
   return (
-    <div className="wmx-slot" style={style} data-side={side} data-selected={selected || undefined} data-merch-slot={i}>
+    <Cell span={3} spanSm={2} start={7 + (i % 2) * 3} pad="none" className="mx-tile" style={{ "--mx-row": 1 + Math.floor(i / 2) * 2 } as CSSProperties}>
       <button
-        ref={(el) => registerSlot(i, el)}
         type="button"
-        className="wmx-slot__btn"
-        tabIndex={tabbable ? 0 : -1}
+        className="mx-tile__btn"
         aria-pressed={selected}
         aria-controls={controls}
-        aria-label={`${gear.item.name}, ${gear.cls === "APPAREL" ? "apparel" : gear.cls.toLowerCase()}: inspect`}
-        onPointerEnter={(e) => e.pointerType === "mouse" && onHover(i)}
-        onPointerLeave={onLeave}
-        onFocus={() => onFocusSlot(i)}
-        onClick={() => onPress(i)}
+        onPointerEnter={warm}
+        onPointerDown={warm}
+        onFocus={warm}
+        onClick={() => onSelect(i)}
       >
-        <span className="wmx-slot__media" aria-hidden="true">
-          <MerchImg src={gear.item.backImage} alt="" />
+        <span className="mx-tile__media">
+          <ProductImage src={item.back} sizes={SIZES} alt="" />
         </span>
-        <span className="wmx-slot__shade" aria-hidden="true" />
-        <span className="wmx-slot__idx" aria-hidden="true">
-          {pad2(gear.n)}
-        </span>
-        <span className="wmx-slot__cls" aria-hidden="true">
-          {gear.cls}
-        </span>
-        <span className="wmx-slot__name" aria-hidden="true">
-          {gear.item.name}
-        </span>
-        <svg className="wmx-slot__edge" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-          <g className="wmx-slot__g" data-for="desk">
-            <polygon className="wmx-slot__line" points={toSvgPoints(desk)} />
-            <polygon className="wmx-slot__ring" points={toSvgPoints(desk)} />
-          </g>
-          <g className="wmx-slot__g" data-for="rail">
-            <polygon className="wmx-slot__line" points={toSvgPoints(rail)} />
-            <polygon className="wmx-slot__ring" points={toSvgPoints(rail)} />
-          </g>
-        </svg>
+        <span className="mx-tile__name">{item.name}</span>
       </button>
-      <span className="wmx-slot__lock" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-      <span className="wmx-slot__tag" aria-hidden="true">
-        {selected ? "Equipped" : "Lock on"}
-      </span>
-      <span className="wmx-slot__wire" aria-hidden="true">
-        <b />
-      </span>
-    </div>
+    </Cell>
   );
 });

@@ -1,18 +1,25 @@
-import { Armory } from "@/components/winter/merch/Armory";
-import { toGear } from "@/components/winter/merch/loadout";
+import { SectionGrid, SectionHeader } from "@/components/winter/grid";
+import { MerchViewer } from "@/components/winter/merch/MerchViewer";
+import type { Product } from "@/components/winter/merch/types";
+import { sentenceCase } from "@/components/winter/nav/sections";
 import { MERCH, SHOP_LINK_PARAMS, SHOP_URL } from "@/data/winter";
+import "@/styles/sections/merch.css";
 
 /**
- * "THE UNIFORM": the merch armory. Shop preview only: no prices and no stock
- * claims (the shop is the point of sale), so every action reads VIEW / SHOP.
+ * Merch: a preview of the shop's four pieces. Pick a product, turn it front to back, follow it to its
+ * page in the shop. No prices or stock (the shop is the point of sale and the data has neither).
  */
 export function Merch() {
-  const gear = toGear(MERCH.items, (handle) => `${SHOP_URL}/products/${handle}${SHOP_LINK_PARAMS}`);
-  // The readout's BLANK row repeats the section copy ("Heavyweight blanks…"), nothing more.
-  const blank = /\bheavyweight\b/i.test(MERCH.body) ? "HEAVYWEIGHT" : null;
+  const items: Product[] = MERCH.items.map((it) => ({
+    name: sentenceCase(it.name),
+    href: `${SHOP_URL}/products/${it.handle}${SHOP_LINK_PARAMS}`,
+    back: it.backImage,
+    front: it.frontImage,
+  }));
   return (
-    <section id="merch" className="wmx-section" aria-labelledby="merch-title">
-      <Armory headingId="merch-title" title={MERCH.heading} body={MERCH.body} gear={gear} shopUrl={MERCH.shopUrl} blank={blank} />
-    </section>
+    <SectionGrid id="merch" labelledBy="merch-title" className="mx">
+      <SectionHeader id="merch-title" title="Merch" aside={MERCH.body} />
+      <MerchViewer items={items} />
+    </SectionGrid>
   );
 }

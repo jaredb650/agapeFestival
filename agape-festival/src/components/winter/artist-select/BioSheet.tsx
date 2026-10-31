@@ -168,7 +168,7 @@ export function BioSheet({ open, day, info, wing, entry, index, pending, onClose
           <div className="asel-window__actions">
             {named.socials.map((s) => (
               <a key={s.url} className="asel-link" href={s.url} target="_blank" rel="noopener noreferrer">
-                {s.handle ?? s.platform} <span aria-hidden="true">↗</span>
+                {s.handle ?? s.platform} <span aria-hidden="true">↗︎</span>
               </a>
             ))}
           </div>

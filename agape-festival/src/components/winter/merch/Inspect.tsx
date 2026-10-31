@@ -260,7 +260,7 @@ export function Inspect({ id, gear, sel, swap, flips, view, fronts, reduced, bla
           </button>
         </span>
         <a className="wmx-win__shop" href={shopUrl}>
-          Shop <span aria-hidden="true">↗</span>
+          Shop <span aria-hidden="true">↗︎</span>
         </a>
       </div>
     </div>

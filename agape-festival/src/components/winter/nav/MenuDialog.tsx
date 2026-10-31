@@ -255,7 +255,7 @@ export function MenuDialog({ menu, links, sections, active, ticketsUrl, ticketsL
                         {l.label}
                       </span>
                       <span className="whud-menu__state" aria-hidden="true">
-                        {current ? "◀ HERE" : `SEC.${idx}`}
+                        {current ? "◀︎ HERE" : `SEC.${idx}`}
                       </span>
                     </a>
                   </li>

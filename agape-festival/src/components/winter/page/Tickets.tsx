@@ -150,10 +150,10 @@ export function Tickets({ bgAt }: { bgAt?: number }) {
               <i />
             </span>
             <span className="tk-callout tk-callout--a tk-in" data-in="fade" style={d(1.9)} aria-hidden="true">
-              <i>↘</i> Access pass <b>:: 01</b>
+              <i>↘︎</i> Access pass <b>:: 01</b>
             </span>
             <span className="tk-callout tk-callout--b tk-in" data-in="fade" style={d(2.05)} aria-hidden="true">
-              Holo-auth <i>↖</i>
+              Holo-auth <i>↖︎</i>
             </span>
             <Pass
               logo={LOGO}
@@ -227,8 +227,8 @@ export function Tickets({ bgAt }: { bgAt?: number }) {
             <div className="tk-start tk-in" data-in="cta" style={d(1.25)}>
               <p className="tk-prompt" aria-hidden="true">
                 <span className="tk-prompt__say">
-                  <span className="tk-prompt__a tk-loop">▶ Insert coin</span>
-                  <span className="tk-prompt__b">▶ Press start</span>
+                  <span className="tk-prompt__a tk-loop">▶︎ Insert coin</span>
+                  <span className="tk-prompt__b">▶︎ Press start</span>
                 </span>
                 <span className="tk-prompt__credit">
                   Credit{" "}
@@ -242,7 +242,7 @@ export function Tickets({ bgAt }: { bgAt?: number }) {
                 {cta}
               </Button>
               <p className="tk-out" aria-hidden="true">
-                Options + prices <i>::</i> {host} <i>↗</i>
+                Options + prices <i>::</i> {host} <i>↗︎</i>
               </p>
             </div>
           </div>

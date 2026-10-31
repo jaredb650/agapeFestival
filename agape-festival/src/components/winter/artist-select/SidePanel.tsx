@@ -144,7 +144,7 @@ export const SidePanel = memo(function SidePanel({ id, day, info, wing, entry, i
               </button>
               {named.socials?.map((s) => (
                 <a key={s.url} className="asel-link" href={s.url} target="_blank" rel="noopener noreferrer">
-                  {s.handle ?? s.platform} <span aria-hidden="true">↗</span>
+                  {s.handle ?? s.platform} <span aria-hidden="true">↗︎</span>
                 </a>
               ))}
             </div>

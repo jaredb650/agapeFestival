@@ -148,7 +148,7 @@ export function GettingHere() {
                 Navigate
               </Button>
               <a className="wgh-link" href={alt.href} target="_blank" rel="noopener noreferrer">
-                {alt.label} <span aria-hidden="true">↗</span>
+                {alt.label} <span aria-hidden="true">↗︎</span>
               </a>
             </div>
           </GlassWindow>

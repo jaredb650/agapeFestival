@@ -42,7 +42,11 @@ export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }
     const off = onBootDone((at) => {
       const wait = at === null ? 2000 : Math.max(0, at + 2000 - performance.now());
       swap = window.setTimeout(() => {
-        cancelIdle = afterLoadIdle(() => setWebgl(true), 0);
+        // Fetch the three.js chunk first and swap only once it's in: rendering the lazy component before
+        // then leaves the logo box empty for a few frames, which jolts the whole lockup (text jumps).
+        cancelIdle = afterLoadIdle(() => {
+          void import("@/components/GlitchLogo").then(() => setWebgl(true), () => {});
+        }, 0);
       }, wait);
     });
     return () => {

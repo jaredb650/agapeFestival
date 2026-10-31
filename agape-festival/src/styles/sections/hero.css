@@ -92,7 +92,7 @@
 }
 
 .wh__logo { margin: 0 auto 32px; width: min(100%, 510px, 60svh); font-size: inherit; font-weight: inherit; line-height: 0; }
-.wh__logo-box { display: block; }
+.wh__logo-box { display: block; aspect-ratio: 1233 / 682; } /* reserves the logo's height through the static → WebGL swap */
 .wh__logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 22px #0009); }
 /* The hi-res master is 1233x682 (the deployed PNG was 586x310): keep the WebGL box on the image's own ratio. */
 .wh__logo .glitch-logo { aspect-ratio: 1233 / 682; }

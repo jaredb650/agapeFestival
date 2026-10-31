@@ -20,7 +20,7 @@ const logoFestival = FLYER.layers.find((l) => l.id === "logo-festival")!;
 export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
   if (!SHOW_ARTIST_SELECT || !ArtistSelect) return null;
   return (
-    <section id="artists" className="asel-section" aria-labelledby="artists-title" data-bg-at={bgAt}>
+    <section id="artists" className="asel-section" aria-labelledby="artists-title" data-bg-at={bgAt} data-pause-offscreen="">
       <ArtistSelect
         artists={ARTISTS}
         days={WINTER_DAYS}

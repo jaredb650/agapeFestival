@@ -111,7 +111,8 @@ html.wmenu-open .wcta { opacity: 0; visibility: hidden; }
   .wcta__floor::after { animation: wcta-bloom var(--w-pulse, 4.8s) ease-out infinite; }
   .wcta[data-shown] .w-btn__lock i { animation: wcta-acquire 0.7s var(--w-ease) 0.12s backwards; }
   .wcta[data-shown] .wcta__rail b { animation: wcta-type 0.4s steps(10, end) 0.45s backwards; }
-  .wcta:not([data-shown]) * { animation-play-state: paused; }
+  /* Parked while docked away (pseudo-elements too: a hidden bloom still needed main-thread frames). */
+  .wcta:not([data-shown]) *, .wcta:not([data-shown]) *::before, .wcta:not([data-shown]) *::after { animation-play-state: paused; }
 }
 @keyframes wcta-bloom { 0%, 100% { opacity: 0.25; } 6% { opacity: 1; } 34% { opacity: 0.25; } }
 @keyframes wcta-acquire {

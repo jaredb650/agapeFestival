@@ -460,8 +460,12 @@
   .wh-hud__frame i { animation: wh-corner 0.62s var(--w-ease) 0.05s both; }
   .wh-hud__reg { animation: wh-blink-in 0.5s steps(1, end) 0.3s both; }
   .wh-ret__in { animation: wh-lock 1s var(--w-ease) 0.15s both; }
-  .wh-ret__spin--ticks { animation: wh-spin-in 1.5s var(--w-ease) 0.15s both, wh-spin 120s linear 1.65s infinite; }
-  .wh-ret__spin--arcs { animation: wh-spin-in-rev 1.3s var(--w-ease) 0.2s both, wh-spin-rev 48s linear 1.5s infinite; }
+  /* The wind-in and the endless spin live on different boxes (svg / wrapper): two transform animations on one
+     element can't share the compositor, which pushed the 120s/48s loops onto the main thread at 60fps. */
+  .wh-ret__spin--ticks > svg { animation: wh-spin-in 1.5s var(--w-ease) 0.15s backwards; }
+  .wh-ret__spin--ticks { animation: wh-spin 120s linear 1.65s infinite; }
+  .wh-ret__spin--arcs > svg { animation: wh-spin-in-rev 1.3s var(--w-ease) 0.2s backwards; }
+  .wh-ret__spin--arcs { animation: wh-spin-rev 48s linear 1.5s infinite; }
   .wh-hud__axis { animation: wh-draw-x 0.7s var(--w-ease) 0.35s both; }
   .wh-hud__ticks { animation: wh-draw-y 0.8s var(--w-ease) 0.15s both; }
   .wh-hud__nums b { animation: wh-blink-in 0.4s steps(1, end) both; }
@@ -475,7 +479,7 @@
   .wh-hud__tape-pin, .wh-hud__scroll { animation: wh-blink-in 0.5s steps(1, end) 1.2s both; }
   .wh-type { animation: wh-type 0.42s steps(16, end) calc(1.05s + var(--i) * 0.11s) both; }
   .wh-hud__vtext { animation: wh-type-v 0.9s steps(24, end) 0.9s both; }
-  .wh-hud__rec { animation: wh-rec 1.6s steps(1, end) infinite; }
+  .wh-hud__rec { animation: wh-rec 32s steps(1, end) infinite; }
   .wh-hud__slice[data-n="1"] { animation: wh-slice 0.3s steps(4, end) 0.32s both; }
   .wh-hud__slice[data-n="2"] { animation: wh-slice 0.26s steps(3, end) 0.4s both; }
   .wh-hud__slice[data-n="3"] { animation: wh-slice 0.3s steps(4, end) 0.48s both; }
@@ -488,15 +492,19 @@
   .wh-decode__ch { animation: wh-dc-hold calc(var(--d0) + var(--i) * 30ms + 110ms) linear; }
   .wh-decode__c::before { animation: wh-dc-flash 0.11s linear calc(var(--d0) + var(--i) * 30ms); }
   .wh-lcd { animation: wh-power 0.55s var(--w-ease) 0.85s both; }
-  .wh-lcd__orb[data-blink]::after { animation: wh-rec 1s steps(1, end) infinite; }
-  .wh-lcd[data-live] .wh-lcd__colon { animation: wh-colon 1s steps(1, end) infinite; }
+  .wh-lcd__orb[data-blink]::after { animation: wh-rec 20s steps(1, end) infinite; }
+  .wh-lcd[data-live] .wh-lcd__colon { animation: wh-colon 20s steps(1, end) infinite; }
   .wh__cta { animation: wh-rise 0.6s var(--w-ease) 1.05s both; }
   .wh__cta .w-btn__lock i { animation: wh-acquire 0.75s var(--w-ease) 1.2s backwards; }
   /* First halo pulse right as the CTA lands, then every beat. */
   .wh__cta .w-btn__glow, .wh__cta .w-btn__ping, .wh__cta .w-btn__lock { animation-delay: 1.75s; }
   .wh__meta { animation: wh-blink-in 0.5s steps(1, end) 1.4s both; }
 
-  .wh[data-off] .wh-hud *, .wh[data-off] .wh-lcd__colon, .wh[data-off] .wh-lcd__orb::after { animation-play-state: paused; }
+  /* Loops park once their layer has faded out on scroll (HeroExit: HUD at 34%, copy at 45%) or the hero is off screen. */
+  .wh:is([data-off], [data-hud-off]) .wh-hud *,
+  .wh:is([data-off], [data-faded]) .wh__copy *,
+  .wh:is([data-off], [data-faded]) .wh__copy *::before,
+  .wh:is([data-off], [data-faded]) .wh__copy *::after { animation-play-state: paused; }
 }
 
 @keyframes wh-sweep {
@@ -521,8 +529,10 @@
 @keyframes wh-draw-y { from { transform: scaleY(0); } to { transform: none; } }
 @keyframes wh-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
 @keyframes wh-type-v { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
-@keyframes wh-rec { 50% { opacity: 0.15; } }
-@keyframes wh-colon { 50% { opacity: 0.25; } }
+/* Blinks fold 20 cycles into one iteration (durations x20): every iteration boundary costs a main-thread frame
+   (React listens for animationiteration), so short loops are written long. Same blink, same timing. */
+@keyframes wh-rec { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.15; } }
+@keyframes wh-colon { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.25; } }
 @keyframes wh-slice {
   0% { opacity: 1; transform: translateX(-14%) scaleX(0.6); }
   50% { opacity: 1; transform: translateX(9%) scaleX(0.95); }

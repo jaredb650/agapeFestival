@@ -271,8 +271,8 @@
 .whud__bars i:nth-child(1) { height: 5px; }
 .whud__bars i:nth-child(2) { height: 8px; }
 .whud__bars i:nth-child(3) { height: 11px; }
-.whud__bars i:nth-child(4) { height: 14px; animation: whud-signal 5.2s steps(1, end) infinite; }
-@keyframes whud-signal { 0%, 100% { opacity: 1; } 62% { opacity: 0.2; } 66% { opacity: 1; } 70% { opacity: 0.2; } 80% { opacity: 1; } }
+.whud__bars i:nth-child(4) { height: 14px; animation: whud-signal 26s steps(1, end) infinite; }
+@keyframes whud-signal { 0%, 13.2%, 16%, 20%, 33.2%, 36%, 40%, 53.2%, 56%, 60%, 73.2%, 76%, 80%, 93.2%, 96%, 100% { opacity: 1; } 12.4%, 14%, 32.4%, 34%, 52.4%, 54%, 72.4%, 74%, 92.4%, 94% { opacity: 0.2; } }
 
 /* ---- Glass orbs (the artist select's, self-contained here) ----------------- */
 .whud-orb {
@@ -298,8 +298,10 @@
   transition: opacity var(--w-dur) ease;
 }
 .whud-orb[data-lit]::after { opacity: 1; }
-.whud__beat::after { animation: whud-beat 2.4s ease-in-out infinite; }
-@keyframes whud-beat { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.whud__beat::after { animation: whud-beat 24s ease-in-out infinite; }
+/* Folded loops (10 / 5 cycles per iteration): each iteration boundary costs a main-thread frame (React
+   listens for animationiteration), and the HUD never leaves the screen. Same pulse, same rhythm. */
+@keyframes whud-beat { 0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100% { opacity: 1; } 5%, 15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95% { opacity: 0.45; } }
 
 /* ---- Hologram key (MENU / CLOSE): chamfered ice glass + 1px edge ----------- */
 .whud-btn {

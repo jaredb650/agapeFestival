@@ -15,6 +15,7 @@ import { Merch } from "@/components/winter/page/Merch";
 import { Nav } from "@/components/winter/page/Nav";
 import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
 import { Tickets } from "@/components/winter/page/Tickets";
+import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
 import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
 import "@/styles/winter.css";
@@ -90,6 +91,7 @@ export default function Home() {
       <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
       <Footer links={NAV_LINKS} />
       <Grain animated />
+      <OffscreenPauser />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

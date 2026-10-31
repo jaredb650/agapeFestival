@@ -434,7 +434,7 @@ export const FAQ: FaqItem[] = [
   {
     id: "arrival",
     q: "What time should I arrive?",
-    a: "We recommend arriving early to avoid queues. Doors times will be announced soon.",
+    a: "We recommend arriving early to avoid queues. Door times will be announced soon.",
     needsConfirm: true,
     confirmNote: "TODO_CONFIRM: doors time (then this answer can name it)",
   },

@@ -21,7 +21,7 @@ export function FighterSelectSketch(props: { poster: string; flashGeaHeadshot: s
   void props;
   return (
     <div className="lab-fighter">
-      <ArtistSelect artists={ARTISTS} days={WINTER_DAYS} media={MEDIA} pending={ARTIST_PENDING} headingId="lab-select-title" title="Artist profiler" />
+      <ArtistSelect artists={ARTISTS} days={WINTER_DAYS} media={MEDIA} pending={ARTIST_PENDING} headingId="lab-select-title" title="The roster" />
     </div>
   );
 }

@@ -26,7 +26,7 @@ export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
         days={WINTER_DAYS}
         pending={ARTIST_PENDING}
         headingId="artists-title"
-        title="Artist profiler"
+        title="The roster"
         media={{
           frameDir: BG.frames.dir,
           tileStill: BG.posterMobile.src,

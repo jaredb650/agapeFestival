@@ -643,7 +643,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "hero", label: "TOP", href: "#hero", inNav: true, enabled: true },
   { id: "flyer", label: "FLYER", href: "#flyer", inNav: false, enabled: true },
   { id: "lineup", label: "LINEUP", href: "#lineup", inNav: true, enabled: true },
-  { id: "artists", label: "ARTIST PROFILER", href: "#artists", inNav: true, enabled: SHOW_ARTIST_SELECT },
+  { id: "artists", label: "THE ROSTER", href: "#artists", inNav: true, enabled: SHOW_ARTIST_SELECT },
   { id: "tickets", label: "TICKETS", href: "#tickets", inNav: true, enabled: true },
   { id: "merch", label: "MERCH", href: "#merch", inNav: true, enabled: true },
   { id: "faq", label: "FAQ", href: "#faq", inNav: true, enabled: true },

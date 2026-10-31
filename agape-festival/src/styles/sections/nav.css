@@ -11,6 +11,7 @@
 
 .whud {
   --hud-h: 56px;
+  --hud-hc: 42px;       /* compact height (over the flyer) */
   --hud-nw: 228px;      /* notch width, slopes included */
   --hud-nd: 18px;       /* notch depth below the bar */
   --hud-cap: 20px;
@@ -31,7 +32,7 @@
   color: var(--w-frost);
 }
 @media (min-width: 1100px) {
-  .whud { --hud-h: 64px; --hud-nw: 300px; --hud-nd: 22px; --hud-pad: max(28px, var(--w-gutter)); }
+  .whud { --hud-h: 64px; --hud-hc: 36px; --hud-nw: 300px; --hud-nd: 22px; --hud-pad: max(28px, var(--w-gutter)); }
 }
 
 /* Over the hero: a soft top scrim; it goes once the page moves. */
@@ -374,6 +375,28 @@
 @media (min-width: 1100px) and (max-width: 1359px) { .whud__links ul { gap: var(--w-s-5); } }
 @media (min-width: 1220px) { .whud__lcd { display: flex; } .whud__bars { display: flex; } }
 @media (min-width: 1400px) { .whud__sep, .whud__status { display: flex; } }
+
+/* ---- Compact (over the flyer) ----------------------------------------------
+   Nav.tsx sets [data-compact] while the flyer holds the screen. The frame slides
+   up so only a slim strip of it shows, the notch folds up into it, the readouts
+   (status, LCD, signal) fade, and the wordmark, links / MENU and scroll meter
+   ride along. Written with the individual `translate` / `scale` properties, so it
+   composes with the boot keyframes' `transform` instead of fighting them.
+   Compositor-only: translate, scale, opacity. */
+.whud { --hud-shift: calc(var(--hud-hc) - var(--hud-h)); }
+.whud__shell, .whud__meter, .whud__bar, .whud__notch {
+  transition: translate 0.5s var(--w-ease), scale 0.4s var(--w-ease), opacity 0.3s ease;
+}
+.whud__sep, .whud__status, .whud__lcd, .whud__bars { transition: opacity 0.3s ease; }
+.whud__menu { transform-origin: 100% 50%; transition: scale 0.4s var(--w-ease); }
+.whud[data-compact] .whud__shell,
+.whud[data-compact] .whud__meter { translate: 0 var(--hud-shift); }
+/* Centred over the meter (which runs 5px above the bottom edge), not the whole strip. */
+.whud[data-compact] .whud__bar { translate: 0 calc(var(--hud-shift) / 2 - 2px); }
+.whud[data-compact] .whud__menu { scale: 0.8; }
+.whud[data-compact] .whud__notch { translate: 0 var(--hud-shift); scale: 1 0; opacity: 0; }
+.whud[data-compact] :is(.whud__sep, .whud__status, .whud__lcd, .whud__bars) { opacity: 0; }
+.whud[data-compact] :is(.whud__beat, .whud__bars i), .whud[data-compact] .whud__beat::after { animation-play-state: paused; }
 
 /* ---- Boot (page load): shell flickers on, modules slide in, notch unfolds -- */
 @media (prefers-reduced-motion: no-preference) {
@@ -745,5 +768,7 @@ html.whud-lock { overflow: hidden; }
   .whud-menu[data-phase="closing"] { animation: whud-fade-out 0.2s ease both; }
   .whud-menu__scan, .whud-menu__flash { display: none; }
   .whud__beat::after, .whud__bars i { animation: none; }
+  .whud__shell, .whud__meter, .whud__bar, .whud__notch { transition: opacity 0.2s ease; }
+  .whud__menu { transition: none; }
   .whud__reticle i, .whud-menu__link, .whud__burger i { transition: none; }
 }

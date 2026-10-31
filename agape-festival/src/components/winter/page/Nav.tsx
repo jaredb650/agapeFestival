@@ -5,8 +5,15 @@ import { GlitchLayer } from "@/components/winter/ui";
 import { decode } from "@/components/winter/nav/decode";
 import { dateCode, findSections, nycTime, sectorCode, type HudSection } from "@/components/winter/nav/hud";
 import { MenuDialog, useMenu } from "@/components/winter/nav/MenuDialog";
-import { onSecond } from "@/components/winter/perf";
+import { observeInView, onSecond } from "@/components/winter/perf";
 import "@/styles/sections/nav.css";
+
+/**
+ * While the flyer's stage holds the screen (its section crosses a line ~35% down
+ * the viewport: the hero has mostly gone, until the stage has mostly left), the bar
+ * goes compact so the poster gets the top of the screen.
+ */
+const FLYER_BAND = "-35% 0px -64% 0px";
 
 interface Props {
   links: { label: string; href: string }[];
@@ -24,6 +31,7 @@ interface Props {
  * along its bottom edge, a status module (orb + SYS ONLINE + dates) and a
  * recessed LCD (New York clock + scan %). Desktop: the section links with a
  * sliding lock-on bracket. Mobile: a MENU key that unfolds the HUD menu.
+ * Over the flyer it slims down ([data-compact], from one IntersectionObserver).
  *
  * Motion budget: nothing re-renders per frame. Scroll writes one transform and
  * (when it changes) a 3-digit text node; the clock writes text once a second;
@@ -131,6 +139,18 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials, dates }: P
       window.removeEventListener("resize", remeasure);
     };
   }, [links]);
+
+  // ---- Compact over the flyer: one shared IntersectionObserver, no scroll work.
+  useEffect(() => {
+    const root = rootRef.current;
+    const flyer = document.getElementById("flyer");
+    if (!root || !flyer) return;
+    const off = observeInView(flyer, (on) => root.toggleAttribute("data-compact", on), { rootMargin: FLYER_BAND });
+    return () => {
+      off();
+      root.removeAttribute("data-compact");
+    };
+  }, []);
 
   // ---- Clock: festival-local time on the page's shared 1 Hz tick (wall-clock aligned,
   // parked while the tab is hidden), written straight to the DOM. (Readouts hidden by a

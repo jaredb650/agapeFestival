@@ -6,16 +6,19 @@ import "@/styles/sections/cta.css";
 
 /** Sections the floating CTA steps aside for. Add `data-cta-hide` to any element to join them. */
 const HIDE_ON = "#tickets, #footer, [data-cta-hide]";
-/** Phones only: one-screen sections whose bottom edge holds key UI (the flyer's date, the profiler grid). */
-const HIDE_ON_MOBILE = "#flyer, #artists";
+/** Phones only: the artist profiler, whose grid runs to the bottom edge. */
+const HIDE_ON_MOBILE = "#artists";
 const MOBILE = "(max-width: 899px)";
+/** The flyer's date sits low on the poster: the CTA steps aside there on phones and on short desktop windows, where it would crowd it. */
+const HIDE_ON_SHORT = "#flyer";
+const SHORT = "(max-width: 899px), (max-height: 860px)";
 
 /**
  * Floating Get tickets: a glowing hologram CTA docked at the bottom centre of
  * the viewport, in HUD chrome (rails, ticks, readouts). It docks once the
  * hero's CTA has scrolled out of view and steps aside while the Tickets
  * section, the footer (or any `data-cta-hide` element; on phones also the
- * flyer and the artist profiler) is on screen. Visibility is a data
+ * artist profiler; on phones and short windows also the flyer) is on screen. Visibility is a data
  * attribute toggled from IntersectionObservers: no React state, no re-render.
  * Hidden = `inert` + `visibility: hidden`, so it is never tabbable unseen.
  */
@@ -26,6 +29,7 @@ export function FloatingCta({ href, label, meta }: { href: string; label: string
     const el = root.current;
     if (!el) return;
     const mobile = window.matchMedia(MOBILE);
+    const short = window.matchMedia(SHORT);
     let heroGone = !document.querySelector("[data-hero-cta]");
     const blockers = new Set<Element>();
 
@@ -57,17 +61,19 @@ export function FloatingCta({ href, label, meta }: { href: string; label: string
     const observeBlockers = () => {
       blockIo.disconnect();
       blockers.clear();
-      const sel = mobile.matches ? `${HIDE_ON}, ${HIDE_ON_MOBILE}` : HIDE_ON;
+      const sel = [HIDE_ON, mobile.matches && HIDE_ON_MOBILE, short.matches && HIDE_ON_SHORT].filter(Boolean).join(", ");
       document.querySelectorAll(sel).forEach((n) => blockIo.observe(n));
       update();
     };
     observeBlockers();
     mobile.addEventListener("change", observeBlockers);
+    short.addEventListener("change", observeBlockers);
 
     return () => {
       heroIo.disconnect();
       blockIo.disconnect();
       mobile.removeEventListener("change", observeBlockers);
+      short.removeEventListener("change", observeBlockers);
     };
   }, []);
 

@@ -1,12 +1,17 @@
 import type { ArtistEntry, DayNumber, NamedArtist } from "@/data/winter";
-import { placeWing, ROW_CAP, type Box } from "./geometry";
+import { placeWing, pyramidCap, pyramidCells, pyramidRows, ROW_CAP, tagAnchor, type Box } from "./geometry";
 
 export interface Slot {
   entry: ArtistEntry;
   day: DayNumber;
   /** 1-based index within its day (tile number, footer counter). */
   index: number;
+  /** Desktop shard. */
   box: Box;
+  /** Desktop cursor-tag anchor, tile units. */
+  tag: ReturnType<typeof tagAnchor>;
+  /** Mobile pyramid cell, square steps. */
+  cell: { x: number; y: number };
 }
 
 export interface Wing {
@@ -16,31 +21,46 @@ export interface Wing {
   locked: number;
 }
 
+export interface Roster {
+  wings: Record<DayNumber, Wing>;
+  /** Mobile pyramid: shared by both days so switching never jumps. */
+  pyramid: { cols: number; rows: number };
+}
+
 export const isNamed = (e: ArtistEntry): e is NamedArtist => e.kind === "artist";
 
 /**
  * Split the roster into the two mirrored wings: named acts in flyer order
  * fill the top row from the centre outward, then the bottom row; locked
  * slots go last, so the TBA acts share the bottom row (and stretch to the
- * wing's outline when that row is short).
+ * wing's outline when that row is short). Mobile reuses the same order in a
+ * centred inverted pyramid.
  */
-export function buildWings(artists: readonly ArtistEntry[]): Record<DayNumber, Wing> {
-  const make = (day: DayNumber): Wing => {
+export function buildRoster(artists: readonly ArtistEntry[]): Roster {
+  const ordered = (day: DayNumber) => {
     const named = artists.filter((a) => a.day === day && isNamed(a));
     const locked = artists.filter((a) => a.day === day && !isNamed(a));
-    const ordered = [...named, ...locked];
-    // Top row full (5), the rest below; a short bottom row stretches to the same outline.
-    const topCount = Math.min(ROW_CAP[0], ordered.length);
-    const rows: [number, number] = [topCount, ordered.length - topCount];
-    const boxes = placeWing(day, rows);
-    const slots = ordered.map((entry, i) => {
-      const row = i < topCount ? 0 : 1;
-      const k = row === 0 ? i : i - topCount;
-      return { entry, day, index: i + 1, box: boxes[row][k] };
-    });
-    return { day, slots, named: named.length, locked: locked.length };
+    return { list: [...named, ...locked], named: named.length, locked: locked.length };
   };
-  return { 1: make(1), 2: make(2) };
+  const per = { 1: ordered(1), 2: ordered(2) };
+  const most = Math.max(per[1].list.length, per[2].list.length);
+  const cols = pyramidCap(most);
+  const rows = pyramidRows(most, cols).length;
+
+  const make = (day: DayNumber): Wing => {
+    const { list, named, locked } = per[day];
+    // Top row full (5), the rest below; a short bottom row stretches to the same outline.
+    const topCount = Math.min(ROW_CAP[0], list.length);
+    const boxes = placeWing(day, [topCount, list.length - topCount]);
+    const cells = pyramidCells(list.length, cols);
+    const slots = list.map((entry, i) => {
+      const row = i < topCount ? 0 : 1;
+      const box = boxes[row][row === 0 ? i : i - topCount];
+      return { entry, day, index: i + 1, box, tag: tagAnchor(box), cell: cells[i] };
+    });
+    return { day, slots, named, locked };
+  };
+  return { wings: { 1: make(1), 2: make(2) }, pyramid: { cols, rows } };
 }
 
 // ---- Presentation helpers -------------------------------------------------

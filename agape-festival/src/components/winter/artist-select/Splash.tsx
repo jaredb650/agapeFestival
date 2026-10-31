@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { memo, useEffect, useRef, useState, type CSSProperties } from "react";
 import { GLITCH_EVENT, GlitchLayer, Redaction } from "@/components/winter/ui";
 import type { ArtistEntry, DayNumber } from "@/data/winter";
 import { playWithRescue } from "@/components/winter/page/GestureRescue";
-import { frameFor, frameSrc, IDLE_FRAME, isNamed, splashMedia } from "./roster";
+import { useScramble } from "./hooks";
+import { frameFor, frameSrc, IDLE_FRAME, isNamed, pad2, splashMedia } from "./roster";
 
 interface SplashProps {
   day: DayNumber;
@@ -18,10 +19,12 @@ interface SplashProps {
   /** Footage may load + play (near, on screen, visible layout, no reduced motion). */
   canPlay: boolean;
   reduced: boolean;
-  /** Mobile overlay copy (the desktop name band lives in SidePanel). */
-  hud: { name: string; lcd: string; status: string };
+  /** LCD date, "02.19.27". */
+  date: string;
   /** Mobile: the single visible splash. */
   shown: boolean;
+  /** Stacked (mobile) layout: the HUD overlay is live. */
+  mobile: boolean;
 }
 
 interface Layer {
@@ -33,7 +36,15 @@ interface Layer {
 const OUT_MS = 720;
 
 /** One side's splash: idle tower → footage / still / typographic / encrypted, crossfaded with a swap FX. */
-export function Splash({ day, entry, order, swapId, frameDir, near, canPlay, reduced, hud, shown }: SplashProps) {
+export const Splash = memo(function Splash({ day, entry, order, swapId, frameDir, near, canPlay, reduced, date, shown, mobile }: SplashProps) {
+  const named = entry && isNamed(entry) ? entry : null;
+  const dd = pad2(day);
+  // Mobile overlay copy (the desktop name band lives in SidePanel).
+  const hudName = named ? named.displayName : entry ? "████████" : `DAY ${dd}`;
+  const hudStatus = !entry ? "STANDBY" : named ? (named.clip ? "FOOTAGE: ONLINE" : "FOOTAGE INCOMING") : "SIGNAL ENCRYPTED";
+  const hudLcd = `${date} / ${!entry ? "TAP AN ARTIST BELOW" : named ? "CONFIRMED" : "ENCRYPTED"}`;
+  const nameRef = useScramble<HTMLSpanElement>(hudName, { disabled: reduced || !shown || !mobile });
+
   // Layer stack: the newest is current, the previous one plays its exit and is dropped.
   const [layers, setLayers] = useState<Layer[]>([{ key: 0, entry, order }]);
   const [prev, setPrev] = useState(entry);
@@ -68,13 +79,18 @@ export function Splash({ day, entry, order, swapId, frameDir, near, canPlay, red
         {swapId > 0 && !reduced && <SwapFx key={swapId} />}
       </div>
       <div className="asel-half__hud">
-        <span className="asel-half__status">{hud.status}</span>
-        <span className="asel-half__name">{hud.name}</span>
-        <span className="asel-half__lcd">{hud.lcd}</span>
+        <span className="asel-half__chips">
+          <span className="asel-half__day">DAY {dd}</span>
+          <span className="asel-half__status">{hudStatus}</span>
+        </span>
+        <span className="asel-half__name" data-idle={!entry || undefined}>
+          <span ref={nameRef}>{hudName}</span>
+        </span>
+        <span className="asel-half__lcd">{hudLcd}</span>
       </div>
     </div>
   );
-}
+});
 
 /** Shutter + scan band + slice bars, mounted once per swap (CSS keyframes, transform/opacity only). */
 function SwapFx() {

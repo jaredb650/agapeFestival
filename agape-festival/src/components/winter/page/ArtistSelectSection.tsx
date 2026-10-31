@@ -13,7 +13,8 @@ const ArtistSelect =
 const logoFestival = FLYER.layers.find((l) => l.id === "logo-festival")!;
 
 /**
- * "Choose your fighter": the split character select (Day 1 left, Day 2 right).
+ * "Artist profiler": the split character select (Day 1 blue on the left, Day 2
+ * red on the right; one day at a time on phones).
  * Gated by NEXT_PUBLIC_SHOW_ARTIST_SELECT; renders nothing when it's off.
  */
 export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
@@ -25,7 +26,7 @@ export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
         days={WINTER_DAYS}
         pending={ARTIST_PENDING}
         headingId="artists-title"
-        title="Choose your fighter"
+        title="Artist profiler"
         media={{
           frameDir: BG.frames.dir,
           tileStill: BG.posterMobile.src,

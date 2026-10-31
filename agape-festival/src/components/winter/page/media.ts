@@ -46,7 +46,7 @@ const hv = manifest.heroVideo;
 /** The Sept DJ photo by @EMILYGUZZ (the first winter hero). */
 export const HERO_PHOTO: HeroMedia = {
   desktop: { src: h.desktop.src, width: h.desktop.width, height: h.desktop.height, objectPosition: h.desktop.objectPosition },
-  // 1080x1920 q70 re-export (J4) of the same crop as hero-1200: ~75 KB lighter on the mobile LCP path.
+  // 1080x1920 q70 re-export (J4) of the same crop as the old hero-1200 (deleted): ~75 KB lighter on the mobile LCP path.
   mobile: { src: h.mobileLight.src, width: h.mobileLight.width, height: h.mobileLight.height, objectPosition: h.mobileLight.objectPosition },
   alt: h.desktop.alt,
   credit: h.credit,

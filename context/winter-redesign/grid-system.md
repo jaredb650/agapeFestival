@@ -8,7 +8,7 @@ Read with `grid-brief.md` (the why and Jared's rules). The skills (unslop, impec
 
 | What | File |
 |---|---|
-| Tokens, type roles, `Button` styles, frozen hero/flyer styles, deprecated `--w-*` aliases | `src/styles/winter.css` |
+| Tokens, type roles, `Button` styles, frozen hero/flyer styles | `src/styles/winter.css` |
 | Rows, cells, link cells, section header | `src/styles/grid.css` |
 | Page frame, background loop, the frozen hero + flyer wrapper | `src/styles/winter-page.css` |
 | Primitives (server components, no client JS) | `src/components/winter/grid/` (`import { … } from "@/components/winter/grid"`) |
@@ -197,7 +197,7 @@ On phones the feature cell stacks above the two smaller cells (`spanSm` defaults
 
   For a pop-out (the roster's bio window), grow a rectangle from the clicked cell: `clip-path: inset(top right bottom left)` computed from the cell's rect inside the target panel, animated to `inset(0)`; or a FLIP of `transform: translate/scale` on the panel only (never its text at large scale). Close faster than open (240ms vs 420ms). Interruptible: use transitions, not keyframes, for anything a user can toggle quickly.
 - **Reduced motion**: drop travel and wipes (show the end state, or a 160ms fade). The background shows its poster only.
-- **Performance**: no per-frame React state; scroll work rAF-throttled and transform/opacity-only; nothing animates off screen (`data-pause-offscreen` / `usePauseOffscreen` from `components/winter/perf` park CSS loops); lazy-init heavy things near the viewport.
+- **Performance**: no per-frame React state; scroll work rAF-throttled and transform/opacity-only; nothing animates off screen (no idle CSS loops below the hero; `observeInView` from `components/winter/perf` gates video playback); lazy-init heavy things near the viewport, and don't render closed dialogs or far-below-the-fold media into the initial HTML (React hoists a preload for every eager `<img>` it server-renders).
 
 ## Banned
 
@@ -206,8 +206,8 @@ Eyebrows / kickers / small labels above headings · section numbers (01 / 02) ·
 ## Frozen zone and legacy
 
 - **Hero, flyer, preloader**: untouched files (`Hero.tsx`, `HeroBits.tsx`, `sections/hero.css`, `FlyerSection.tsx`, `FlyerStage.tsx`, `preloader/*`). They keep Orbitron, Chonky Pixels, their scanlines (`.wposter`, page.tsx) and the deployed Get tickets look (winter.css `.wh .w-btn.wh__cta`). `GlitchLayer` and its CSS stay for them.
-- **Deprecated, still compiling**: `HudLabel`, `GlassWindow`, `Marquee` (their CSS is gone), `Redaction` (kept: the flyer's "to be revealed" blob, if a section shows unannounced acts that way), the `--w-*` token aliases at the end of winter.css (glow, bracket, volt and ice tokens are gone). Stop using all of them; G0/final QA deletes them once nothing imports them.
-- `OffscreenPauser` stays while sections still carry CSS loops; `GestureRescue` stays (the hero and background videos use `playWithRescue`).
+- **Removed in the final QA pass (grid-opt)**: `HudLabel`, `GlassWindow`, `Marquee`, `Redaction`, `HudBezel`, `hudFx`, `OffscreenPauser` / `usePauseOffscreen` (no section has a CSS loop to park), and the `--w-*` alias block (the only `--w-*` names left are the frozen ones on `.wh`).
+- `GestureRescue` stays (the hero, background and roster videos use `playWithRescue`).
 
 ## Requests for G0-owned files
 

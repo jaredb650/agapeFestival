@@ -178,8 +178,8 @@ html.wnav-lock { overflow: hidden; }
   .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-lift var(--m-dur-2) var(--m-ease) both; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-fade 160ms ease both; }
-  .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-fade 160ms ease reverse both; }
+  .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-fade var(--m-dur-1) var(--m-ease) both; }
+  .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-fade var(--m-dur-1) var(--m-ease) reverse both; }
 }
 @keyframes wmenu-drop { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
 @keyframes wmenu-lift { from { clip-path: inset(0); } to { clip-path: inset(0 0 100% 0); } }

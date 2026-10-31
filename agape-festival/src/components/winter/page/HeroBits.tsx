@@ -8,6 +8,7 @@ import { withGsap } from "./loadGsap";
 import { GLITCH_EVENT, GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
 import { onSecondWhileVisible } from "@/components/winter/perf";
+import { onBootDone } from "@/components/winter/preloader/boot";
 import type { HeroVideo as HeroVideoConfig } from "./media";
 
 // three.js only ships to desktop mice: phones get the CSS GlitchLayer (tap burst)
@@ -34,13 +35,18 @@ export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }
 
   useEffect(() => {
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    const burst = motionOk
-      ? window.setTimeout(() => box.current?.querySelector(".w-glitch")?.dispatchEvent(new Event(GLITCH_EVENT)), 560)
-      : 0;
     const fine =
       motionOk && window.matchMedia("(hover: hover) and (pointer: fine)").matches && navigator.maxTouchPoints === 0;
-    const swap = fine ? window.setTimeout(() => setWebgl(true), 2400) : 0;
+    let burst = 0;
+    let swap = 0;
+    // Timed from the hero intro: when the boot preloader hands over (or from mount when there is none).
+    const off = onBootDone((at) => {
+      const wait = (ms: number) => (at === null ? ms : Math.max(0, at + ms - performance.now()));
+      if (motionOk) burst = window.setTimeout(() => box.current?.querySelector(".w-glitch")?.dispatchEvent(new Event(GLITCH_EVENT)), wait(560));
+      if (fine) swap = window.setTimeout(() => setWebgl(true), wait(2400));
+    });
     return () => {
+      off();
       clearTimeout(burst);
       clearTimeout(swap);
     };
@@ -135,8 +141,14 @@ export function Countdown({
     // First reading: decode in (once), and give screen readers a one-off summary.
     const first = digitsNow();
     if (sr.current) sr.current.textContent = `${first.d} days, ${Math.floor(first.left / 3600) % 24} hours to go.`;
-    // The decode waits for the LCD's CSS power-on (~1s after navigation start) so it is seen.
-    if (!reduced) decodeEnd = Math.max(performance.now(), LCD_ON_MS) + DECODE_MS;
+    // The decode waits for the LCD's CSS power-on (~1s into the hero intro: after navigation start, or after the
+    // boot preloader hands over) so it is seen.
+    const offBoot = reduced
+      ? () => {}
+      : onBootDone((at) => {
+          decodeEnd = Math.max(performance.now(), (at ?? 0) + LCD_ON_MS) + DECODE_MS;
+          if (at !== null && !decodeTimer) decodeStep();
+        });
 
     // Digits change once a second on the page's shared, wall-clock-aligned tick, only while the readout is on
     // screen and the tab is visible (perf/ticker).
@@ -150,6 +162,7 @@ export function Countdown({
     });
     return () => {
       off();
+      offBoot();
       clearTimeout(decodeTimer);
     };
   }, [targetIso]);

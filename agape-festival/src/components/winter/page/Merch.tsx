@@ -1,28 +1,18 @@
-import { Button, SectionHeading } from "@/components/winter/ui";
+import { Armory } from "@/components/winter/merch/Armory";
+import { toGear } from "@/components/winter/merch/loadout";
 import { MERCH, SHOP_LINK_PARAMS, SHOP_URL } from "@/data/winter";
-import { MerchCard } from "./MerchCard";
 
-/** "THE UNIFORM": shop preview, no prices (the shop is the point of sale). */
+/**
+ * "THE UNIFORM": the merch armory. Shop preview only: no prices and no stock
+ * claims (the shop is the point of sale), so every action reads VIEW / SHOP.
+ */
 export function Merch() {
+  const gear = toGear(MERCH.items, (handle) => `${SHOP_URL}/products/${handle}${SHOP_LINK_PARAMS}`);
+  // The readout's BLANK row repeats the section copy ("Heavyweight blanks…"), nothing more.
+  const blank = /\bheavyweight\b/i.test(MERCH.body) ? "HEAVYWEIGHT" : null;
   return (
-    <section id="merch" className="w-section wmerch" aria-labelledby="merch-title">
-      <div className="w-container">
-        <div className="wmerch__head">
-          <SectionHeading title={MERCH.heading} id="merch-title">
-            {MERCH.body}
-          </SectionHeading>
-          <Button variant="secondary" href={MERCH.shopUrl} className="wmerch__all">
-            {MERCH.cta.replace(/\s*→$/, "")}
-          </Button>
-        </div>
-        <ul className="wmerch__grid">
-          {MERCH.items.map((item) => (
-            <li key={item.handle}>
-              <MerchCard item={item} href={`${SHOP_URL}/products/${item.handle}${SHOP_LINK_PARAMS}`} />
-            </li>
-          ))}
-        </ul>
-      </div>
+    <section id="merch" className="wmx-section" aria-labelledby="merch-title">
+      <Armory headingId="merch-title" title={MERCH.heading} body={MERCH.body} gear={gear} shopUrl={MERCH.shopUrl} blank={blank} />
     </section>
   );
 }

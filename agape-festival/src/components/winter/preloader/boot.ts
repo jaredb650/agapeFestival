@@ -1,18 +1,24 @@
-// Client-side contract between the SYSTEM BOOT preloader (an inline script in
-// the initial HTML, see bootScript.ts) and the page. Import from client
-// components only.
+// Client-side contract between the preloader (an inline script in the initial
+// HTML, see bootScript.ts) and the page. Import from client components only.
 
-/** Fired on window when the preloader opens and the page's own intro should start. */
+/** Fired on window when the preloader hands over and the page's own intro should start. */
 export const BOOT_EVENT = "w:boot-done";
 
-/** sessionStorage flag: a repeat visit in the same session gets the quick shutter. */
+/** sessionStorage flag: a repeat visit in the same session gets the quick fade. */
 export const BOOT_SEEN_KEY = "w:boot-seen";
 
 export interface BootState {
-  /** True once the shutters have started to open (the page intro may play). */
+  /** True once the handover has started (the page intro may play). */
   done: boolean;
   /** performance.now() at that moment. */
   at: number;
+  /**
+   * True when the preloader opened onto the hero logo in place: its slit revealed a copy of the hero's own
+   * logo image exactly over it. The logo has had its entrance, so at the handover the preloader skips any
+   * finite CSS/WAAPI animation on the logo's own (text-free) wrappers to its end state, and the copy then
+   * dissolves into it. A hero that wants a JS-timed logo effect should check this flag and skip it too.
+   */
+  logo: boolean;
 }
 
 declare global {

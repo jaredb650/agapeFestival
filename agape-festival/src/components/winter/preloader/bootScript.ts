@@ -1,4 +1,4 @@
-// The SYSTEM BOOT runtime. Serialised with Function#toString into an inline
+// The preloader runtime. Serialised with Function#toString into an inline
 // <script> that runs while the HTML is still parsing (before React, before any
 // bundle), so it must stay SELF-CONTAINED: no imports, no outer variables, no
 // helpers. Types only. The overlay lives in a dangerouslySetInnerHTML host,
@@ -6,20 +6,22 @@
 //
 // What it does:
 //  - Flags the overlay (data-js; data-fast on a repeat visit this session)
-//    before first paint.
-//  - Holds the page's own CSS intros: inserts a tiny sheet (c.holdCss) that
-//    parks the hero + nav animations before they are even parsed, and removes
-//    it at the handover. Nothing touches React-owned elements.
-//  - Tracks real readiness: document fonts, the hero poster and festival logo
-//    decoded, window load, the scroll-scrub engine (or its poster) requested.
-//  - Drives the pixel LCD counter, gauge, umlaut dots and log statuses from a
-//    smoothed, monotonic progress value: never faster than `min`, never past
-//    `max`, never backwards. A 20 Hz timer, only while booting (no rAF: a
-//    pending rAF forces a main-thread frame every vsync); DOM writes only when
-//    a value changes, the gauge glides between them with a CSS transition.
-//  - Exits with the stow + hatch doors (CSS), releases the page intro (event +
-//    window.__wboot) as the doors part, then removes the overlay and every
-//    listener/observer/timer it started.
+//    before first paint, and parks the hero + nav CSS intros (c.hold) until the
+//    handover. Nothing touches React-owned elements.
+//  - Finds the hero logo <img> ([data-boot-logo] img, else the #hero img whose
+//    src says "logo"), copies it into the slit (same URL + srcset: the same
+//    request) and lays the hairline across its centre line.
+//  - Tracks real readiness: fonts, hero poster and logo copy decoded, window
+//    load, the scroll background requested. The hairline's width shows it: never
+//    full before `min`, forced full by `max`, never backwards. A 20 Hz timer
+//    only while booting (no rAF loop); a write only when the value moves.
+//  - Exits: the slit opens onto the logo copy and the hairline falls into the
+//    hero divider ([data-boot-divider], else #hero .winter-divider); the page
+//    intro is released (event + window.__wboot) as the black lifts, and the
+//    logo's own entrance is skipped to its end (the slit was its entrance). The
+//    copy and hairline stay until the hero's logo and divider have finished any
+//    entrance (capped), dissolve into them, and the overlay is removed with
+//    every listener and timer it started.
 import type { BootState } from "./boot";
 
 export interface BootConfig {
@@ -32,13 +34,11 @@ export interface BootConfig {
   /** Window event fired at handover. */
   ev: string;
   /** Sheet that parks the page's CSS intros until the handover. */
-  holdCss: string;
-  /** Task weights: fonts, poster, logo, page load, scrub engine. Sum 1. */
+  hold: string;
+  /** Readiness weights: fonts, hero poster, hero logo, window load, scroll background. Sum 1. */
   w: number[];
-  /** When each log line has finished typing (CSS), ms after first paint. */
-  lines: number[];
-  /** Exit timings, ms: [stow before the doors part, full exit length, quick exit length]. */
-  exit: [number, number, number];
+  /** Exit timings, ms: [handover into the full exit, full exit motion, quick exit, longest wait for the hero's own logo/divider entrance]. */
+  x: number[];
 }
 
 export function wBoot(c: BootConfig): void {
@@ -48,10 +48,7 @@ export function wBoot(c: BootConfig): void {
   if (!found) return;
   const root: HTMLElement = found;
   const now = () => performance.now();
-  // Re-based on the first frame (when the overlay and its CSS timeline first paint).
-  let t0 = now();
-  let started = false;
-  const state: BootState = { done: false, at: 0 };
+  const state: BootState = { done: false, at: 0, logo: false };
   w.__wboot = state;
 
   let seen = false;
@@ -66,78 +63,89 @@ export function wBoot(c: BootConfig): void {
   root.setAttribute("data-js", "");
   if (fast) root.setAttribute("data-fast", "");
 
-  // ---- hold the page intros (hero + nav) until the handover -------------------
   let hold: HTMLStyleElement | null = null;
   if (!fast && !reduced && root.parentNode) {
     hold = d.createElement("style");
-    hold.textContent = c.holdCss;
+    hold.textContent = c.hold;
     root.parentNode.insertBefore(hold, root);
   }
 
-  const all = (s: string) => Array.prototype.slice.call(root.querySelectorAll(s)) as Element[];
-  const digits = all("[data-dg]");
-  const lines = all("[data-ln]");
-  const orbs = all("[data-orb]");
-  const pips = all("[data-pip]");
-  const count = root.querySelector("[data-count]");
-  const fill = root.querySelector("[data-fill]") as HTMLElement | null;
-
+  const line = root.querySelector(".wb-ln") as HTMLElement;
+  const bar = line.firstChild as HTMLElement;
+  const slit = root.querySelector(".wb-sl") as HTMLElement;
   const ok = [false, false, false, false, false];
   const timers: number[] = [];
   const later = (fn: () => void, ms: number) => {
     timers.push(w.setTimeout(fn, ms));
   };
-  let shown = 0;
-  let pct = -1;
-  let logged = 0;
+  let t0 = now();
   let tick = 0;
-  let last = t0;
-  let frameNo = 0;
+  let n = 0;
+  let shown = 0;
   let exiting = false;
+  let copied = false;
+  let logo: HTMLImageElement | null = null;
+  let divider: Element | null = null;
+  // The hairline's first placement [left, centre y, width]; later fits glide from it by transform.
+  let base: number[] | null = null;
 
-  // ---- display (only on change) ------------------------------------------------
-  const paint = (p: number) => {
-    const n = Math.min(100, Math.floor(p * 100 + 1e-6));
-    if (n === pct) return;
-    pct = n;
-    const s = ("00" + n).slice(-3);
-    const lead = n < 10 ? 2 : n < 100 ? 1 : 0;
-    for (let i = 0; i < digits.length; i++) {
-      digits[i].setAttribute("href", "#wbg" + s.charAt(i));
-      if (i < lead) digits[i].setAttribute("data-lead", "");
-      else digits[i].removeAttribute("data-lead");
-    }
-    if (fill) fill.style.transform = "translate3d(" + (n - 100) + "%,0,0)";
-    // The umlaut dots light in chrome at 50 % and at 100 %.
-    if (n >= 50 && orbs[0]) orbs[0].setAttribute("data-lit", "");
-  };
-
-  const logLine = (i: number) => {
-    lines[i].setAttribute("data-ok", "");
-    if (pips[i]) pips[i].setAttribute("data-on", "");
-    if (count) count.textContent = String(i + 1);
-  };
-
-  // ---- readiness -------------------------------------------------------------
   const mark = (i: number) => {
     ok[i] = true;
   };
-  const decoded = (sel: string, i: number) => {
-    const img = d.querySelector(sel) as HTMLImageElement | null;
-    if (!img) return mark(i);
+  const decode = (img: HTMLImageElement | null, i: number, cb?: () => void) => {
     const fin = () => mark(i);
-    if (img.decode) img.decode().then(fin, fin);
-    else if (img.complete) fin();
-    else {
-      img.addEventListener("load", fin);
-      img.addEventListener("error", fin);
+    if (img && img.decode)
+      img.decode().then(() => {
+        if (cb) cb();
+        fin();
+      }, fin);
+    else fin();
+  };
+  const px = (v: number) => v + "px";
+  /** On-screen box of an element, or null (missing, empty or scrolled away). */
+  const box = (e: Element | null) => {
+    const r = e && e.getBoundingClientRect();
+    return r && r.width && r.bottom > 0 && r.top < innerHeight ? r : null;
+  };
+  /** Lay the hairline across the hero logo's centre line, `drop` px lower. */
+  const fit = (drop: number) => {
+    const r = box(logo);
+    if (!r) return;
+    const y = r.top + r.height / 2;
+    if (!base) {
+      base = [r.left, y, r.width];
+      line.style.cssText = `left:${px(r.left)};top:${px(y)};width:${px(r.width)};margin:0`;
     }
+    line.style.transform = `translate(${px(r.left - base[0])},${px(y - base[1] + drop)}) scaleX(${r.width / base[2]})`;
+  };
+
+  // The hero logo, copied into the slit: same src, srcset and sizes, so the same request and image.
+  const find = () => {
+    if (logo) return;
+    logo = d.querySelector<HTMLImageElement>("[data-boot-logo] img,#hero img[src*=logo]");
+    if (!logo) return;
+    const k = logo.cloneNode() as HTMLImageElement;
+    ["id", "class", "style", "loading"].forEach((a) => k.removeAttribute(a));
+    k.alt = "";
+    slit.insertBefore(k, slit.firstChild);
+    decode(k, 2, () => {
+      copied = true;
+    });
+    fit(0);
   };
   const wire = () => {
-    if (d.fonts && d.fonts.ready) d.fonts.ready.then(() => mark(0), () => mark(0));
+    find();
+    if (!logo) mark(2);
+    decode(d.querySelector<HTMLImageElement>("#hero img:not([src*=logo])"), 1);
+    divider = d.querySelector("[data-boot-divider],#hero .winter-divider");
+    const f = d.fonts;
+    // Webfonts can move the hero block: refit once they are in.
+    if (f && f.ready)
+      f.ready.then(() => {
+        mark(0);
+        if (!exiting) fit(0);
+      }, () => mark(0));
     else mark(0);
-    decoded(".wh__img", 1);
-    decoded(".wh__logo img", 2);
   };
   const onLoad = () => mark(3);
   if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", wire, { once: true });
@@ -145,7 +153,7 @@ export function wBoot(c: BootConfig): void {
   if (d.readyState === "complete") mark(3);
   else w.addEventListener("load", onLoad, { once: true });
 
-  // ---- input: any key, wheel, click or touch skips to the quick exit ----------
+  // ---- input: any key, wheel, click or touch skips to the quick fade ---------
   const evs = ["keydown", "wheel", "pointerdown", "touchstart"];
   const skip = () => {
     if (now() - t0 > 120) exit(true);
@@ -153,12 +161,32 @@ export function wBoot(c: BootConfig): void {
   evs.forEach((e) => w.addEventListener(e, skip, { passive: true, capture: true }));
 
   // ---- handover ---------------------------------------------------------------
+  /** The finite (entrance) animations on `e` and its ancestors; with `own`, only on its text-free wrappers. */
+  const entrance = (e: Element | null, own?: boolean) => {
+    const all: Animation[] = [];
+    for (; e && e !== d.body && !(own && (e.textContent || "").trim()); e = e.parentElement)
+      if (e.getAnimations)
+        e.getAnimations().forEach((a) => {
+          const end = a.effect ? a.effect.getComputedTiming().endTime : 0;
+          if (a.timeline === d.timeline && isFinite(Number(end))) all.push(a);
+        });
+    return all;
+  };
   const release = () => {
     if (state.done) return;
     state.done = true;
     state.at = now();
     if (hold) hold.remove();
     hold = null;
+    // The slit already brought the logo in: its own entrance (unparked just now) skips to its end under the copy.
+    if (state.logo)
+      entrance(logo, true).forEach((a) => {
+        try {
+          a.finish();
+        } catch {
+          /* not finishable: the copy waits for it instead */
+        }
+      });
     try {
       w.dispatchEvent(new Event(c.ev));
     } catch {
@@ -176,71 +204,89 @@ export function wBoot(c: BootConfig): void {
     const js = d.getElementById("wboot-js");
     if (js) js.remove();
   };
+  /** Resolves when the entrance animations on `e` and its ancestors have finished. */
+  const settled = (e: Element | null) => Promise.all(entrance(e).map((a) => a.finished.catch(() => 0)));
+
   function exit(quick: boolean) {
     if (exiting) return;
     exiting = true;
     clearTimeout(tick);
-    shown = 1;
-    paint(1);
-    for (let i = logged; i < lines.length; i++) logLine(i);
-    logged = lines.length;
-    for (let i = 0; i < orbs.length; i++) orbs[i].setAttribute("data-lit", "");
-    root.setAttribute("data-ready", "");
-    const mode = reduced ? "fade" : quick ? "quick" : "full";
+    const [gap, motion, short, wait] = c.x;
+    const mode = reduced ? "fade" : quick || fast ? "quick" : "full";
+    if (mode === "full") {
+      const r = box(logo);
+      const dv = box(divider);
+      let width = line.offsetWidth;
+      if (r) {
+        const cy = r.top + r.height / 2;
+        const drop = (dv ? dv.top : r.bottom + r.height * 0.55) - cy;
+        fit(drop);
+        width = r.width;
+        if (copied) {
+          slit.style.cssText = `left:${px(r.left + 1)};top:${px(r.top + 1)};width:${px(r.width - 2)};height:${px(r.height - 2)}`;
+          root.style.setProperty("--o", px(Math.max(drop, r.height / 2)));
+          root.setAttribute("data-slit", "");
+          state.logo = true;
+        }
+      }
+      // The hairline narrows to the divider's 30px.
+      bar.style.transform = `scaleX(${30 / width})`;
+    }
     root.setAttribute("data-exit", mode);
-    const [gap, full, short] = c.exit;
-    later(release, mode === "full" ? gap : 0);
-    later(remove, mode === "full" ? full : short);
+    if (mode !== "full") {
+      release();
+      later(remove, short);
+      return;
+    }
+    later(release, gap);
+    later(() => {
+      let out = false;
+      const end = () => {
+        if (out) return;
+        out = true;
+        root.setAttribute("data-out", "");
+        later(remove, 220);
+      };
+      Promise.all([settled(logo), settled(divider)]).then(end, end);
+      later(end, wait);
+    }, motion);
   }
 
   // ---- the loop (only while booting) -------------------------------------------
   const frame = () => {
     tick = 0;
-    const ts = now();
-    const t = ts - t0;
-    const dt = Math.min(64, Math.max(0, ts - last));
-    last = ts;
-    // The scrub engine (or, without it, the background poster) has been requested.
-    if (!ok[4] && (frameNo++ & 3) === 0 && (w.__winterBg || d.querySelector(".wbg__poster"))) mark(4);
-
+    const t = now() - t0;
+    find();
+    // The scroll background (or its poster) has been requested; by window load it has, or never will be.
+    if (!ok[4] && (ok[3] || ((n++ & 3) === 0 && ("__winterBg" in w || d.querySelector(".wbg__poster"))))) mark(4);
     let done = 0;
     let pend = 0;
     for (let i = 0; i < ok.length; i++) {
       if (ok[i]) done += c.w[i];
       else pend += c.w[i];
     }
-    // Pending work earns slow partial credit so the count never stalls; it can't reach 100 until all is real.
-    let goal = done + pend * 0.7 * (1 - Math.exp(-t / 1100));
-    if (t >= c.max - 420) goal = 1;
-    goal = Math.min(goal, t / c.min);
-    if (goal > shown) shown += (goal - shown) * (1 - Math.exp(-dt / 85));
-    if (goal >= 1 && shown > 0.994) shown = 1;
-
-    paint(shown);
-    // Log statuses land in order, each once its line has typed and its task is real.
-    while (logged < lines.length && ok[logged] && t >= c.lines[logged]) logLine(logged++);
-
-    if ((shown >= 1 && logged >= lines.length) || t >= c.max) {
-      root.setAttribute("data-ready", "");
-      if (orbs[1]) orbs[1].setAttribute("data-lit", "");
-      // A beat for the second dot to light, then the handover.
-      later(() => exit(false), 150);
+    // Pending work earns slow partial credit so the line never stalls; it can't fill until all is real.
+    let goal = Math.min(1, t / c.min, pend > 1e-6 ? done + pend * 0.7 * (1 - Math.exp(-t / 1100)) : 1);
+    if (t >= c.max - 300) goal = 1;
+    if (goal - shown > 0.004 || (goal >= 1 && shown < 1)) {
+      shown = goal;
+      bar.style.transform = `scaleX(${goal.toFixed(3)})`;
+    }
+    if (goal >= 1) {
+      // The fill's last stretch (CSS .25s), then the handover.
+      later(() => exit(false), 220);
       return;
     }
     tick = w.setTimeout(frame, 50);
   };
 
-  later(() => exit(false), c.max + 200); // safety net if rAF never runs (hidden tab)
-  if (fast) {
-    exit(true);
-  } else {
-    paint(0);
-    // The clock starts at the first frame (when the overlay and its CSS timeline first paint).
+  later(() => exit(false), c.max + 200); // safety net: rAF never runs in a background tab
+  if (fast) exit(true);
+  else
     requestAnimationFrame((ts) => {
-      if (started || exiting) return;
-      started = true;
-      t0 = last = ts;
+      // The clock starts at the first frame (when the overlay first paints).
+      if (exiting) return;
+      t0 = ts;
       frame();
     });
-  }
 }

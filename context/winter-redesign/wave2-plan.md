@@ -59,6 +59,9 @@ Glue everything into one design:
 - Fix everything; screenshot contact sheets for Jared.
 - Merge, push, verify the preview. Then write the summary to `context/winter-redesign/wave2-report.md` and message Jared.
 
+## Resource limits (learned 20:10)
+The Mac has 8 GB RAM. Max 3 heavy agents at once. Every agent stops its dev server and browser between screenshot rounds, and gates `next build`, Lighthouse, traces and `npm ci` behind the mkdir lock `scratchpad/locks/heavy`.
+
 ## Standing rules for all agents
 - `round2-common-brief.md` applies (the artist select is the standard; don't touch the flyer layover or the scroll background; buttery smooth; no unslop rules against the HUD language).
 - Worktrees: run `npm ci`, use unique dev ports, commit in the branch, never push.

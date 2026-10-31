@@ -1,28 +1,31 @@
+import dynamic from "next/dynamic";
 import { preload } from "react-dom";
-import { winterFontVariables } from "@/components/winter/fonts";
-import { Grain } from "@/components/winter/ui";
-import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
-import { FlyerSection } from "@/components/winter/page/FlyerSection";
-import { FloatingCta } from "@/components/winter/page/FloatingCta";
-import { Footer } from "@/components/winter/page/Footer";
+import { frostFontVariables } from "@/components/winter/frost/fonts";
+import { Faq } from "@/components/winter/frost/Faq";
+import { Flyer } from "@/components/winter/frost/Flyer";
+import { Footer } from "@/components/winter/frost/Footer";
+import { GettingHere } from "@/components/winter/frost/GettingHere";
+import { Hero } from "@/components/winter/frost/Hero";
+import { Lineup } from "@/components/winter/frost/Lineup";
+import { Lockers } from "@/components/winter/frost/Lockers";
+import { Merch } from "@/components/winter/frost/Merch";
+import { Nav } from "@/components/winter/frost/Nav";
+import { Reveal } from "@/components/winter/frost/Reveal";
+import { Tickets } from "@/components/winter/frost/Tickets";
+import { sentence } from "@/components/winter/frost/text";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
-import { Hero } from "@/components/winter/page/Hero";
-import { Faq } from "@/components/winter/page/Faq";
-import { GettingHere } from "@/components/winter/page/GettingHere";
-import { Lockers } from "@/components/winter/page/Lockers";
-import { Lineup } from "@/components/winter/page/Lineup";
-import { Merch } from "@/components/winter/page/Merch";
-import { Nav } from "@/components/winter/page/Nav";
-import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
-import { Tickets } from "@/components/winter/page/Tickets";
-import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
-import { Preloader } from "@/components/winter/preloader/Preloader";
-import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
-import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
-import "@/styles/winter.css";
-import "@/styles/winter-page.css";
+import { FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
+import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER, WINTER_DAYS } from "@/data/winter";
+import "@/styles/frost-flyer.css";
+import "@/styles/frost.css";
 
 const SITE = "https://agape-festival.com";
+
+// The roster ships only in builds with the flag (the env literal is inlined at build time).
+const Roster =
+  process.env.NEXT_PUBLIC_SHOW_ARTIST_SELECT === "1"
+    ? dynamic(() => import("@/components/winter/frost/Roster").then((m) => m.Roster))
+    : null;
 
 // Event structured data. Dates only: doors times aren't announced yet.
 const jsonLd = {
@@ -53,6 +56,9 @@ const jsonLd = {
   offers: { "@type": "Offer", url: TICKETS.url, availability: "https://schema.org/InStock" },
 };
 
+// The nav lists the sections, not "Top" (the mark goes there).
+const navLinks = NAV_LINKS.filter((l) => l.href !== "#hero").map((l) => ({ href: l.href, label: sentence(l.label) }));
+
 export default function Home() {
   // Only the hero still is preloaded (it is the LCP); everything else loads lazily or after idle.
   if (HERO.mobile.src === HERO.desktop.src) {
@@ -63,37 +69,35 @@ export default function Home() {
   }
 
   return (
-    <div className={`winter wpage ${winterFontVariables}`}>
-      <a className="wskip" href="#main">
+    <div className={`fr ${frostFontVariables}`}>
+      <a className="fr-skip" href="#main">
         Skip to content
       </a>
-      <Preloader />
       <GestureRescue />
-      <ScrollBackground media={BG} startTime={BG_TIMES.top} endTime={BG_TIMES.end} />
       <Nav
-        links={NAV_LINKS}
+        links={navLinks}
         ticketsUrl={WINTER.tickets.url}
-        ticketsLabel={WINTER.tickets.cta}
         mark={FLYER.mark}
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
-        dates={WINTER.dates}
+        dateLine={`${WINTER.dates.display} · ${WINTER.venue.name}, ${WINTER.venue.city}`}
       />
       <main id="main" tabIndex={-1}>
         <Hero />
-        <FlyerSection />
-        {/* Preview: the explorable profiler first, then the plain lineup for anyone who skips it. */}
-        {SHOW_ARTIST_SELECT && <ArtistSelectSection bgAt={BG_TIMES.afterLineup} />}
-        <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
-        <Tickets bgAt={SHOW_ARTIST_SELECT ? undefined : BG_TIMES.afterLineup} />
+        <Flyer />
+        {SHOW_ARTIST_SELECT && Roster && (
+          <section id="artists" className="fr-section" aria-labelledby="artists-title" data-reveal="">
+            <Roster artists={ARTISTS} days={WINTER_DAYS} startSlug="flash-gea" />
+          </section>
+        )}
+        <Lineup linkToRoster={SHOW_ARTIST_SELECT} />
+        <Tickets />
         <Merch />
         <Faq />
         {LOCKERS.enabled && <Lockers />}
         <GettingHere />
       </main>
-      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
-      <Footer links={NAV_LINKS} />
-      <Grain animated />
-      <OffscreenPauser />
+      <Footer />
+      <Reveal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

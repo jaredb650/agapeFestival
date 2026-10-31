@@ -55,7 +55,7 @@
 .lab-grid-2--top { align-items: start; }
 @media (min-width: 900px) { .lab-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .lab-panel { display: flex; flex-direction: column; gap: var(--w-s-5); }
-.lab-btn-stack { display: flex; flex-wrap: wrap; align-items: center; gap: var(--w-s-6); padding: var(--w-s-2) 0 var(--w-s-5) 7px; }
+.lab-btn-stack { display: flex; flex-wrap: wrap; align-items: center; gap: var(--w-s-7); padding: var(--w-s-4) 12px var(--w-s-6); }
 .lab-frames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--w-s-5); }
 .lab-frame-demo { display: grid; place-items: center; aspect-ratio: 4 / 3; background: rgba(27, 33, 44, 0.45); }
 

@@ -53,6 +53,19 @@ export const HERO_VIDEO: HeroMedia = {
 /** The live hero. Switch back to the photo with `HERO = HERO_PHOTO`. */
 export const HERO: HeroMedia = HERO_VIDEO;
 
+/**
+ * The ÄGAPĒ Festival logo for the hero, from the clean 1233x682 white master
+ * (~/Downloads/AgapeFestival_Logo, Oct 30); the old 586px PNG looked soft at
+ * the new centred size. Near-lossless WebP keeps the fine ring lines crisp.
+ * The 1233 file doubles as the desktop WebGL glitch texture (already cached).
+ */
+export const HERO_LOGO = {
+  src: "/assets/winter/hero/logo-festival-1233.webp",
+  srcSet: "/assets/winter/hero/logo-festival-680.webp 680w, /assets/winter/hero/logo-festival-1233.webp 1233w",
+  width: 1233,
+  height: 682,
+};
+
 /** Portrait screens get the 9:16 crop. Keep the hero <picture> and its preloads on the same query. */
 export const HERO_PORTRAIT_QUERY = "(max-aspect-ratio: 3/4)";
 

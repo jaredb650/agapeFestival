@@ -3,6 +3,7 @@ import { winterFontVariables } from "@/components/winter/fonts";
 import { Grain } from "@/components/winter/ui";
 import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
 import { FlyerSection } from "@/components/winter/page/FlyerSection";
+import { FloatingCta } from "@/components/winter/page/FloatingCta";
 import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
 import { Hero } from "@/components/winter/page/Hero";
@@ -82,6 +83,7 @@ export default function Home() {
         {LOCKERS.enabled && <Lockers />}
         <GettingHere />
       </main>
+      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
       <Footer links={NAV_LINKS} />
       <Grain animated />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

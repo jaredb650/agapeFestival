@@ -217,25 +217,26 @@
 .w-frame[data-interactive]:hover::after { animation: w-flicker 0.25s linear; filter: brightness(2.2); }
 
 /* ==========================================================================
-   Buttons — hologram panes.
-   A chamfered pane of ice glass (top-left + bottom-right corners cut, like
-   the Floodgear/Winamp frames) behind a 1px luminous edge, with fine
-   scanlines, the Sept corner brackets standing off the two square corners,
-   and wide-spaced Orbitron caps. Hover: a holographic sheen crosses the
-   glass, the caps split into red/cyan for a beat, the brackets step out.
-   No fill slab, no bevel, no drop shadow. Every moving part is transform or
-   opacity; the label shadow and bracket flicker are a few stepped repaints
-   of small boxes.
+   Buttons — hologram panes with a lock-on reticle (round 2, Oct 30).
+   A plain rectangle of ice glass behind a 1px luminous edge, fine
+   scanlines, wide-spaced Orbitron caps, and targeting brackets on ALL FOUR
+   corners (symmetrical). Hover / focus / press: the brackets snap inward
+   with a small overshoot and flicker, like a reticle acquiring a target;
+   a holographic sheen crosses the glass and the caps split red/cyan for a
+   beat. The primary keeps the ▶ transport glyph and pulses every ~5s: its
+   halo flares, a ring pings outward and the brackets tighten (the "click
+   me" beat). Everything that moves is transform or opacity; the label
+   shadow and bracket flicker are a few stepped repaints of small boxes.
+   No fill slab, bevel, drop shadow or backdrop-filter.
    ========================================================================== */
 .w-btn {
-  --w-cut: 8px;
-  /* The pane and its 1px ring (even-odd: outer chamfered rect minus the same rect inset 1px). */
-  --w-pane: polygon(var(--w-cut) 0, 100% 0, 100% calc(100% - var(--w-cut)), calc(100% - var(--w-cut)) 100%, 0 100%, 0 var(--w-cut));
-  --w-ring: polygon(evenodd,
-    var(--w-cut) 0, 100% 0, 100% calc(100% - var(--w-cut)), calc(100% - var(--w-cut)) 100%, 0 100%, 0 var(--w-cut), var(--w-cut) 0,
-    calc(var(--w-cut) + 0.414px) 1px, 1px calc(var(--w-cut) + 0.414px), 1px calc(100% - 1px),
-    calc(100% - var(--w-cut) - 0.414px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--w-cut) - 0.414px),
-    calc(100% - 1px) 1px, calc(var(--w-cut) + 0.414px) 1px);
+  /* The 1px ring (even-odd: the box minus the box inset 1px). */
+  --w-ring: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 1px 1px, 1px calc(100% - 1px), calc(100% - 1px) calc(100% - 1px), calc(100% - 1px) 1px, 1px 1px);
+  /* Lock-on: rest offset of the brackets outside the box, and how far they snap in. */
+  --w-frame-o: -8px;
+  --w-frame-s: 14px;
+  --w-lock: 5px;
+  --w-pulse: 4.8s;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -260,21 +261,21 @@
 }
 /* Trailing letter-spacing pushes text off-centre; pull it back. */
 .w-btn__label { margin-right: -0.32em; position: relative; z-index: 2; }
-.w-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 10px; }
+.w-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 14px; }
 .w-btn[aria-disabled="true"], .w-btn:disabled { opacity: 0.45; pointer-events: none; }
 
-.w-btn[data-size="sm"] { --w-cut: 8px; min-height: 44px; padding: 12px 20px; font-size: 0.6875rem; gap: 8px; }
-.w-btn[data-size="md"] { --w-cut: 8px; min-height: 52px; padding: 16px 28px; }
-.w-btn[data-size="lg"] { --w-cut: 12px; min-height: 60px; padding: 20px 40px; }
+/* Ping scale per size ≈ the same ~12px outset on every edge. */
+.w-btn[data-size="sm"] { --w-frame-o: -6px; --w-frame-s: 10px; --w-lock: 4px; --w-ping: 1.14, 1.55; min-height: 44px; padding: 12px 20px; font-size: 0.6875rem; gap: 8px; }
+.w-btn[data-size="md"] { --w-frame-o: -7px; --w-frame-s: 12px; --w-lock: 4px; --w-ping: 1.1, 1.46; min-height: 52px; padding: 16px 28px; }
+.w-btn[data-size="lg"] { --w-frame-o: -8px; --w-frame-s: 16px; --w-lock: 5px; --w-ping: 1.09, 1.4; min-height: 60px; padding: 20px 40px; }
 
-/* ---- Glass pane (chamfered) + scanlines + sheen ---- */
+/* ---- Glass pane + scanlines + sheen ---- */
 .w-btn__glass {
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  clip-path: var(--w-pane);
   background-color: var(--w-glass, rgba(5, 10, 20, 0.5));
   background-image: linear-gradient(180deg, var(--w-glass-hi, rgba(156, 200, 255, 0.2)) 0%, rgba(156, 200, 255, 0.05) 46%, var(--w-glass-lo, rgba(61, 107, 255, 0.12)) 100%);
   transition: background-color var(--w-dur) ease;
@@ -298,7 +299,7 @@
   opacity: 0;
 }
 
-/* ---- 1px luminous edge: a chamfered ring cut with an even-odd polygon ---- */
+/* ---- 1px luminous edge (ice → volt, top to bottom) ---- */
 .w-btn__edge {
   position: absolute;
   inset: 0;
@@ -310,30 +311,32 @@
   transition: opacity var(--w-dur) ease;
 }
 
-/* ---- Brackets: the Sept corner ticks, on the two square corners only (::before top-right,
-   ::after bottom-left). Hover steps them out with transform, flickers them with opacity. ---- */
-.w-btn--primary::before,
-.w-btn--secondary::before,
-.w-btn--primary::after,
-.w-btn--secondary::after {
-  content: "";
+/* ---- Lock-on brackets: four L ticks, one per corner, standing off the box ---- */
+.w-btn__lock { position: absolute; inset: var(--w-frame-o); z-index: 3; pointer-events: none; }
+.w-btn__lock i {
   position: absolute;
   width: var(--w-frame-s);
   height: var(--w-frame-s);
-  pointer-events: none;
-  z-index: 3;
   border: 0 solid var(--w-frame-c);
-  transition: transform var(--w-dur) var(--w-ease);
+  /* Release: ease back out. Lock (below): snap in with an overshoot. */
+  transition: transform 0.32s var(--w-ease);
 }
-.w-btn--primary::before, .w-btn--secondary::before { top: var(--w-frame-o); right: var(--w-frame-o); border-top-width: 1px; border-right-width: 1px; }
-.w-btn--primary::after, .w-btn--secondary::after { bottom: var(--w-frame-o); left: var(--w-frame-o); border-bottom-width: 1px; border-left-width: 1px; }
-@keyframes w-tick-flicker { 0%, 100% { opacity: 1; } 25% { opacity: 0.3; } 50% { opacity: 1; } 75% { opacity: 0.3; } }
+.w-btn__lock i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; --sx: 1; --sy: 1; }
+.w-btn__lock i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; --sx: -1; --sy: 1; }
+.w-btn__lock i:nth-child(3) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; --sx: -1; --sy: -1; }
+.w-btn__lock i:nth-child(4) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; --sx: 1; --sy: -1; }
+@keyframes w-tick-flicker { 0%, 100% { opacity: 1; } 20% { opacity: 0.25; } 40% { opacity: 1; } 60% { opacity: 0.35; } }
+/* Locked state, shared by hover (fine pointers), keyboard focus and press. */
+.w-btn:focus-visible .w-btn__lock i,
+.w-btn:active .w-btn__lock i {
+  transform: translate(calc(var(--sx) * var(--w-lock)), calc(var(--sy) * var(--w-lock)));
+  transition: transform 0.24s cubic-bezier(0.3, 1.9, 0.45, 1);
+  animation: w-tick-flicker 0.28s steps(1, end);
+}
 
 /* ---- Primary: ice hologram ---- */
 .w-btn--primary {
   --w-frame-c: var(--w-bracket-accent);
-  --w-frame-s: 16px;
-  --w-frame-o: -8px;
   --w-edge-hi: rgba(214, 232, 255, 0.98);
   --w-edge: rgba(156, 200, 255, 0.78);
   --w-edge-lo: rgba(61, 107, 255, 0.85);
@@ -356,25 +359,40 @@
 .w-btn--primary .w-btn__label[data-text]::after { color: rgb(120, 200, 255); }
 .w-btn__play { position: relative; z-index: 2; flex: none; width: 7px; height: 9px; color: var(--w-ice); filter: drop-shadow(0 0 3px rgba(156, 200, 255, 0.8)); transition: transform var(--w-dur) var(--w-ease); }
 .w-btn[data-size="sm"] .w-btn__play { width: 6px; height: 8px; }
-/* Breathing light (the Sept ticket pulse, in ice): a halo cast by the ring itself, so it
-   follows the chamfers. The filter is static; only opacity animates. */
+
+/* Halo: a static box-shadow glow (outer + inner) whose opacity flares on the pulse beat. */
 .w-btn__glow {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  filter: drop-shadow(0 0 4px rgba(61, 107, 255, 0.9)) drop-shadow(0 0 12px rgba(61, 107, 255, 0.5));
-  opacity: 0;
-  animation: w-breathe 4s ease-in-out infinite;
+  box-shadow: 0 0 6px 1px rgba(61, 107, 255, 0.85), 0 0 22px 2px rgba(61, 107, 255, 0.45), inset 0 0 14px rgba(61, 107, 255, 0.35);
+  opacity: 0.3;
+  animation: w-pulse-glow var(--w-pulse) ease-out infinite;
 }
-.w-btn__glow::before { content: ""; position: absolute; inset: 0; background: rgb(156, 200, 255); clip-path: var(--w-ring); }
-@keyframes w-breathe { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes w-pulse-glow { 0%, 100% { opacity: 0.3; } 6% { opacity: 1; } 34% { opacity: 0.3; } }
+/* Ping: the box's outline, rasterised once, scaled outward and faded (compositor only). */
+.w-btn__ping {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(156, 200, 255, 0.75), 0 0 12px rgba(61, 107, 255, 0.55);
+  opacity: 0;
+  animation: w-pulse-ping var(--w-pulse) cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
+}
+@keyframes w-pulse-ping {
+  0% { opacity: 0; transform: none; }
+  3% { opacity: 0.9; transform: none; }
+  30%, 100% { opacity: 0; transform: scale(var(--w-ping, 1.1, 1.45)); }
+}
+/* The brackets tighten on the same beat (on the wrapper, so the per-corner lock still works). */
+.w-btn--primary .w-btn__lock { animation: w-pulse-lock var(--w-pulse) ease-out infinite; }
+@keyframes w-pulse-lock { 0%, 14%, 100% { transform: none; } 5% { transform: scale(0.975, 0.9); } }
 
-/* ---- Secondary: the same pane, quieter (frost edge, faint scan, no glow) ---- */
+/* ---- Secondary: the same pane, quieter (frost edge, faint scan, no halo) ---- */
 .w-btn--secondary {
   --w-frame-c: rgba(233, 235, 236, 0.42);
-  --w-frame-s: 12px;
-  --w-frame-o: -4px;
   --w-glass: rgba(5, 9, 16, 0.55);
   --w-glass-hi: rgba(233, 235, 236, 0.07);
   --w-glass-lo: rgba(233, 235, 236, 0.02);
@@ -383,6 +401,7 @@
   --w-edge: rgba(233, 235, 236, 0.26);
   --w-edge-lo: rgba(233, 235, 236, 0.2);
 }
+.w-btn--secondary[data-size] { --w-frame-o: -5px; --w-lock: 3px; }
 
 /* ---- Interaction ---- */
 @media (hover: hover) {
@@ -395,8 +414,12 @@
     --w-edge-lo: rgba(61, 107, 255, 0.6);
     --w-glass: rgba(10, 22, 44, 0.55);
   }
-  .w-btn--primary:hover::before, .w-btn--secondary:hover::before { transform: translate(4px, -4px); animation: w-tick-flicker 0.25s linear; }
-  .w-btn--primary:hover::after, .w-btn--secondary:hover::after { transform: translate(-4px, 4px); animation: w-tick-flicker 0.25s linear; }
+  .w-btn:hover .w-btn__lock i {
+    transform: translate(calc(var(--sx) * var(--w-lock)), calc(var(--sy) * var(--w-lock)));
+    transition: transform 0.24s cubic-bezier(0.3, 1.9, 0.45, 1);
+    animation: w-tick-flicker 0.28s steps(1, end);
+  }
+  .w-btn--primary:hover .w-btn__lock { animation: none; }
   .w-btn--primary:hover .w-btn__edge, .w-btn--secondary:hover .w-btn__edge { opacity: 1; }
   .w-btn:hover .w-btn__glass::after { animation: w-btn-sheen 0.9s var(--w-ease) both; }
   .w-btn--primary:hover .w-btn__label::before { animation: w-split-r 0.36s steps(1, end); }
@@ -704,9 +727,12 @@
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .w-btn__glow { animation: none; opacity: 0.5; }
+  .w-btn__ping { display: none; }
+  .w-btn--primary .w-btn__lock { animation: none; }
   .w-btn--primary:hover, .w-btn--secondary:hover, .w-btn--primary:active, .w-btn--secondary:active { transform: none; }
-  .w-btn:hover .w-btn__glass::after, .w-btn--primary:hover .w-btn__label::before, .w-btn--primary:hover .w-btn__label::after,
-  .w-btn:hover::before, .w-btn:hover::after { animation: none; }
+  .w-btn:hover .w-btn__glass::after, .w-btn--primary:hover .w-btn__label::before, .w-btn--primary:hover .w-btn__label::after { animation: none; }
+  /* The lock still reads (brackets step in), just without the overshoot or flicker. */
+  .w-btn .w-btn__lock i, .w-btn:hover .w-btn__lock i, .w-btn:focus-visible .w-btn__lock i, .w-btn:active .w-btn__lock i { transition: none; animation: none; }
   .w-marquee__track { animation: none; }
   .w-glitch[data-burst] .w-glitch__base { animation: none; }
   .w-glitch[data-burst] .w-glitch__fringe,

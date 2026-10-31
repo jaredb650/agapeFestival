@@ -183,18 +183,20 @@ export function LabView({ flyer, poster, layers, flashGeaHeadshot }: LabMedia) {
         {/* ---------------- CONTROLS ---------------- */}
         <section className="w-section w-container">
           <SectionHeading index="04" label="Controls" title="Buttons & frames" size="h2">
-            Hologram panes: chamfered ice glass, a 1px luminous edge, scanlines and the Sept corner brackets. Hover for
-            the sheen and the red/cyan split. One primary per view.
+            Hologram panes: a plain rectangle of ice glass, a 1px luminous edge, scanlines, and targeting brackets on
+            all four corners that snap inward (lock on) on hover, focus and press. The primary keeps the ▶ glyph and
+            pulses every ~5s (halo flare, outward ping, brackets tighten). One primary per view; the floating Get
+            tickets dock (FloatingCta) reuses it.
           </SectionHeading>
           <div className="lab-grid-2">
             <div className="lab-panel">
-              <HudLabel size="nano" tone="fog">Primary · lg / md / sm</HudLabel>
+              <HudLabel size="nano" tone="fog">Primary · lg / md / sm · hover or tab to lock on</HudLabel>
               <div className="lab-btn-stack">
                 <Button href={WINTER.tickets.url} external>Get tickets</Button>
                 <Button size="md">Get tickets</Button>
                 <Button size="sm">Buy</Button>
               </div>
-              <HudLabel size="nano" tone="fog">Secondary · ghost · link</HudLabel>
+              <HudLabel size="nano" tone="fog">Secondary (same lock, frost, no pulse) · ghost · link</HudLabel>
               <div className="lab-btn-stack">
                 <Button variant="secondary">Lineup</Button>
                 <Button variant="ghost">FAQ</Button>

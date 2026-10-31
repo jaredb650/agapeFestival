@@ -1,15 +1,13 @@
 import type { ArtistEntry, DayNumber, NamedArtist } from "@/data/winter";
-import { placeWing, pyramidCap, pyramidCells, pyramidRows, ROW_CAP, tagAnchor, type Box } from "./geometry";
+import { placeWing, pyramidCap, pyramidCells, pyramidRows, ROW_CAP, type Box } from "./geometry";
 
 export interface Slot {
   entry: ArtistEntry;
   day: DayNumber;
-  /** 1-based index within its day (tile number, footer counter). */
+  /** 1-based index within its day (tile backdrop crop, splash frame choice). */
   index: number;
   /** Desktop shard. */
   box: Box;
-  /** Desktop cursor-tag anchor, tile units. */
-  tag: ReturnType<typeof tagAnchor>;
   /** Mobile pyramid cell, square steps. */
   cell: { x: number; y: number };
 }
@@ -56,7 +54,7 @@ export function buildRoster(artists: readonly ArtistEntry[]): Roster {
     const slots = list.map((entry, i) => {
       const row = i < topCount ? 0 : 1;
       const box = boxes[row][row === 0 ? i : i - topCount];
-      return { entry, day, index: i + 1, box, tag: tagAnchor(box), cell: cells[i] };
+      return { entry, day, index: i + 1, box, cell: cells[i] };
     });
     return { day, slots, named, locked };
   };
@@ -67,9 +65,9 @@ export function buildRoster(artists: readonly ArtistEntry[]): Roster {
 
 /** Tower-footage frames (from the background scrub) with strong structure, one per act without footage. */
 const FRAMES = [4, 12, 33, 38, 47, 55, 70, 85, 95, 99, 118, 124, 131, 137];
-/** Ghost-negative frames: the "encrypted" look for locked acts. */
+/** Ghost-negative frames: the backdrop for unannounced acts. */
 const LOCKED_FRAMES = [44, 113, 44];
-/** The idle splash: one frame, mirrored across the seam. */
+/** The quiet backdrop frame behind footage / photo splashes. */
 export const IDLE_FRAME = 124;
 
 const pad3 = (n: number) => String(n).padStart(3, "0");
@@ -93,13 +91,8 @@ export function monogram(name: string) {
   return (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).toUpperCase();
 }
 
-export const pad2 = (n: number) => String(n).padStart(2, "0");
-
-/** "2027-02-19" → "02.19.27" (LCD date). */
-export function lcdDate(iso: string) {
-  const [y, m, d] = iso.split("-");
-  return `${m}.${d}.${y.slice(2)}`;
-}
+/** Longest word of a name, in characters: the type size fits it. */
+export const longestWord = (s: string) => Math.max(...s.split(/\s+/).map((w) => w.length));
 
 /** Media the splash can show, best first. */
 export function splashMedia(entry: ArtistEntry | null) {

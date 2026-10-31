@@ -10,6 +10,8 @@
 // with the outer-top corner chamfered. Rows below shift inward by the skew so
 // the slanted gaps run straight through both rows, and the two wings close
 // into one chevron around the centre plates (emblem above, RANDOM below).
+// The wings are the day split of the GRID only; the splash above shows one
+// artist at a time.
 //
 // Mobile: one day at a time, square "PDA keys" in a centred inverted pyramid
 // (positions in square steps, see pyramidCells).
@@ -125,18 +127,6 @@ export function randomBox(): Box {
 export function emblemBox(): Box {
   const w = U.gc + 4 * U.sk - 2 * U.g;
   return { x: WING_W - 2 * U.sk + U.g, y: 0, w, poly: wedge(w) };
-}
-
-/**
- * Where the cursor tag sits on a tile, in tile units: the centre of the
- * tile's top edge (the shard leans, so it's off-centre), above top-row tiles
- * and below bottom-row tiles so it never covers a neighbour's name.
- */
-export function tagAnchor(b: Box): { x: number; y: number; pos: "above" | "below" } {
-  const top = b.poly.filter(([, y]) => y === 0).map(([x]) => x);
-  const cx = top.length ? (Math.min(...top) + Math.max(...top)) / 200 : 0.5;
-  const below = b.y > 0;
-  return { x: r(b.x + b.w * cx), y: r(below ? b.y + U.h : b.y), pos: below ? "below" : "above" };
 }
 
 // ---- Mobile: square keys in a centred inverted pyramid ---------------------

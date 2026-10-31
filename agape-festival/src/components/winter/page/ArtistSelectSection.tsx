@@ -13,8 +13,8 @@ const ArtistSelect =
 const logoFestival = FLYER.layers.find((l) => l.id === "logo-festival")!;
 
 /**
- * "Artist profiler": the split character select (Day 1 blue on the left, Day 2
- * red on the right; one day at a time on phones).
+ * The roster: one artist's splash above the tile grid (Day 1 white, Day 2 red;
+ * one day of keys at a time on phones).
  * Gated by NEXT_PUBLIC_SHOW_ARTIST_SELECT; renders nothing when it's off.
  */
 export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
@@ -31,10 +31,6 @@ export function ArtistSelectSection({ bgAt }: { bgAt?: number }) {
           frameDir: BG.frames.dir,
           tileStill: BG.posterMobile.src,
           emblem: { src: logoFestival.src, width: logoFestival.width, height: logoFestival.height },
-          dayLabels: {
-            1: { src: FLYER.dayLabels[1].src, width: FLYER.dayLabels[1].width, height: FLYER.dayLabels[1].height },
-            2: { src: FLYER.dayLabels[2].src, width: FLYER.dayLabels[2].width, height: FLYER.dayLabels[2].height },
-          },
         }}
       />
     </section>

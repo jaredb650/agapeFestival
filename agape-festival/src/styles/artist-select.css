@@ -1,21 +1,23 @@
 /* ==========================================================================
-   ÄGAPĒ WINTER — ARTIST PROFILER
-   The page's hero chrome object: an SF5-style split select rebuilt in the
-   winter world. Day 1 on the left in P1 blue, Day 2 on the right in P2
-   crimson, mirrored around a centre spine; leaning "shard" tiles close into
-   one chevron with the emblem plate and the RANDOM wedge in the middle.
-   Breeder-unit chrome: chamfered bezel with a centre notch, glass orbs, LCD
-   readouts. Phones get their own one-screen PDA: splash on top, a slim
-   DAY 1 | ? RANDOM | DAY 2 switcher, square keys in an inverted pyramid and
-   a bio sheet that pops over the pad.
+   ÄGAPĒ WINTER — THE ROSTER (red hybrid, Oct 31)
+   One artist at a time: their splash (footage or photo, greyscale, over a dim
+   tower still) covers the whole area above the tile grid, with the day, the
+   name and the bio laid over its lower left. The grid below picks who: the
+   leaning "shard" tiles close into one chevron (Day 1 wing left, Day 2 wing
+   right) around the emblem plate and the RANDOM wedge. Day 1 = white,
+   Day 2 = red, as small marks only; everything else is black / neutral.
+   Chrome is the deployed site's: four faint corner ticks around the section,
+   one short red divider under the title. Phones: the same splash on top, a
+   slim DAY 1 | ? RANDOM | DAY 2 switcher, one day of square keys, the bio in
+   a sheet.
 
    Geometry lives in components/winter/artist-select/geometry.ts: desktop
    tiles are positioned in tile units (--tw) from inline --x/--y; phone keys
    in square steps (--sq) from inline --px/--py.
 
    Performance: transform/opacity animation only; hover states are instant
-   (no transitions on the cursor or rings); no filter / backdrop-filter /
-   blend modes on anything that moves or sits over footage.
+   CSS (no transitions on rings); the only filters are static grades on stills
+   and the clip; no backdrop-filter or blend modes.
    Classes: asel-*. Keyframes: asel-*.
    ========================================================================== */
 
@@ -23,89 +25,80 @@
 .asel-section { position: relative; z-index: 1; scroll-margin-top: -72px; }
 
 .asel {
-  /* Tile unit (desktop). */
+  --nav: 56px; /* the fixed nav (nav.css --hud-h) */
+  /* Tile unit (desktop) and lean. */
   --tw: min(calc(100cqi / 4.62), 104px);
   --sk: calc(var(--tw) * 0.22);
-  --asel-line: rgba(255, 255, 255, 0.22);
-  --asel-glass: rgba(164, 43, 43, 0.16);
-  --asel-scan: none; /* hybrid: per-panel scanlines removed (one global layer, winter.css .w-grain) */
-
-  /* Day colours: fighting-game P1 blue / P2 red. Day 1 is the site's ice → volt;
-     Day 2 is a signal crimson that sits on the same steel. */
-  --d1: #8b0000;
-  --d1-lite: #a42b2b;
-  --d1-deep: #b81e1e;
-  --d1-glow: rgba(200, 0, 0, 0.39);
-  --d1-soft: rgba(164, 43, 43, 0.45);
-  --d2: #f0294b;
-  --d2-lite: #ffa3b1;
-  --d2-deep: #8c0f27;
-  --d2-glow: rgba(240, 41, 75, 0.6);
-  --d2-soft: rgba(255, 140, 160, 0.45);
-  --day: var(--d1);
-  --day-lite: var(--d1-lite);
-  --day-deep: var(--d1-deep);
-  --day-glow: var(--d1-glow);
-  --day-soft: var(--d1-soft);
+  /* Day colour (set per [data-day] below): marks, rings, labels. */
+  --day: var(--w-frost);
+  --day-line: rgba(255, 255, 255, 0.16);
 
   position: relative;
   isolation: isolate;
   container-type: inline-size;
   container-name: asel;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: clip;
   background: var(--w-ink);
   color: var(--w-frost);
 }
-.asel [data-day="1"] { --day: var(--d1); --day-lite: var(--d1-lite); --day-deep: var(--d1-deep); --day-glow: var(--d1-glow); --day-soft: var(--d1-soft); }
-.asel [data-day="2"] { --day: var(--d2); --day-lite: var(--d2-lite); --day-deep: var(--d2-deep); --day-glow: var(--d2-glow); --day-soft: var(--d2-soft); }
+@media (min-width: 1100px) {
+  .asel { --nav: 64px; }
+}
+.asel [data-day="1"] { --day: var(--w-frost); --day-line: rgba(255, 255, 255, 0.16); }
+.asel [data-day="2"] { --day: var(--w-red-hi); --day-line: rgba(164, 43, 43, 0.45); }
 
 /* ==========================================================================
-   SPLIT LAYOUT (≥ 960px): full-bleed, exactly one screen
+   LAYOUT (≥ 960px): one screen. Row 1 = splash (+ title, profile), row 2 = grid.
    ========================================================================== */
 @media (min-width: 960px) {
   .asel {
-    /* Width-limited AND height-limited: the whole select fits the viewport (hud + windows + name + field + keys). */
-    --tw: min(calc((100cqi - 2 * var(--w-gutter)) / 10.38), 142px, calc((100svh - 400px) / 2.8));
-    display: flex;
-    flex-direction: column;
-    /* Definite height: the window track is fixed, so long bios scroll inside it instead of growing the stage. */
+    /* Width-limited AND height-limited, so splash + grid always fit the viewport. */
+    --tw: min(calc((100cqi - 2 * var(--w-gutter)) / 10.38), 116px, calc((100svh - 260px) / 3.6));
+    --stage-w: calc(var(--tw) * 10.38);
+    --name-w: calc(var(--stage-w) * 0.54);
     height: max(640px, 100svh);
-    overflow: hidden;
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding-bottom: max(36px, 4.5svh);
   }
-  .asel-stage {
-    position: relative;
-    z-index: 3;
-    flex: 1;
-    min-height: 0;
-    width: calc(var(--tw) * 10.38);
-    margin-inline: auto;
-    padding: 100px 0 var(--w-s-5);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) calc(var(--tw) * 3) minmax(0, 1fr);
-    /* hud · windows (flex) · name band (fixed: names change length on hover) · field · keys */
-    grid-template-rows: auto minmax(0, 1fr) calc(var(--tw) * 1.06) auto auto;
+  .asel-screen { grid-row: 1; grid-column: 1; }
+  .asel-head, .asel-profile { grid-row: 1; grid-column: 1; justify-self: center; width: var(--stage-w); }
+  .asel-head { align-self: start; padding-top: calc(var(--nav) + 40px); }
+  .asel-profile {
+    align-self: end;
+    /* The text column: the left half of the stage (the footage sits in the right half). */
+    padding: 0 calc(var(--stage-w) * 0.44) 30px 0;
+    /* Never climbs into the title: an open bio scrolls inside this box. */
+    max-height: calc(100% - var(--nav) - 132px);
   }
+  .asel-field { grid-row: 2; grid-column: 1; justify-self: center; width: var(--stage-w); height: calc(var(--tw) * 1.74); }
 }
+
+/* ---- Corner ticks: the deployed .winter-frame, around the whole section ---- */
+.asel-ticks { position: absolute; z-index: 4; inset: calc(var(--nav) + 12px) 25px 25px; pointer-events: none; }
+.asel-ticks i { position: absolute; width: 13px; height: 13px; border: 0 solid var(--w-bracket); }
+.asel-ticks i:nth-child(1) { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.asel-ticks i:nth-child(2) { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.asel-ticks i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.asel-ticks i:nth-child(4) { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 
 /* ==========================================================================
-   SPLASH HALVES
+   SPLASH
    ========================================================================== */
-.asel-screen { display: contents; }
-.asel-screen__btn { display: none; }
-.asel-half { position: absolute; top: 0; bottom: 0; width: 50%; z-index: 0; overflow: hidden; background: var(--w-ink); }
-.asel-half[data-day="1"] { left: 0; --in-x: -4%; }
-.asel-half[data-day="2"] { right: 0; --in-x: 4%; }
-.asel-half__inner { position: absolute; inset: 0; overflow: hidden; container-type: size; }
+.asel-screen { position: relative; min-height: 0; z-index: 0; }
+/* Contained: a new layer's raster never invalidates the rest of the page. */
+.asel-splash { position: absolute; inset: 0; overflow: hidden; background: var(--w-ink); contain: layout paint; }
 
 .asel-layer { position: absolute; inset: 0; }
-.asel-layer[data-enter] { animation: asel-in 0.9s var(--w-ease) both; }
-.asel-layer:not([data-current]) { animation: asel-out 0.6s var(--w-ease-io) both; }
+/* Crossfade, opacity only: the incoming layer fades in over the outgoing one (no scale on a full-bleed layer). */
+.asel-layer[data-enter] { animation: asel-in 0.45s ease-out both; }
 @keyframes asel-in {
-  from { opacity: 0; transform: translate3d(var(--in-x), 0, 0) scale(1.08); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-@keyframes asel-out { to { opacity: 0; transform: scale(1.03); } }
 
-/* Tower footage frames (idle / typographic / locked) */
+/* Tower stills: neutral greyscale, dim (static filter on a still: rasterised once). */
 .asel-layer__frame {
   position: absolute;
   inset: 0;
@@ -113,265 +106,147 @@
   height: 100%;
   object-fit: cover;
   object-position: 50% 42%;
-  /* Cool the footage stills toward the clip's steel blue (static filter on a still: rasterised once). */
-  filter: grayscale(1) sepia(0.4) hue-rotate(178deg) saturate(1.7) brightness(0.6) contrast(1.18);
+  filter: grayscale(1) brightness(0.5) contrast(1.15);
 }
 .asel-layer__frame[data-mirror] { transform: scaleX(-1); }
-.asel-layer[data-kind="idle"] .asel-layer__frame { filter: grayscale(1) sepia(0.35) hue-rotate(178deg) saturate(1.5) brightness(0.68) contrast(1.2); }
-.asel-layer[data-kind="locked"] .asel-layer__frame { filter: grayscale(1) brightness(0.55) contrast(1.4); }
+.asel-layer[data-kind="media"] .asel-layer__frame { filter: grayscale(1) brightness(0.24) contrast(1.1); }
+.asel-layer[data-kind="locked"] .asel-layer__frame { filter: grayscale(1) brightness(0.6) contrast(1.25); }
 
-/* Footage + still splashes: an inner column beside the seam (SF5's renders face the
-   centre), outer edge feathered into the tower, steel-blue toned. */
-.asel-layer__frame--dim { filter: grayscale(1) sepia(0.4) hue-rotate(178deg) saturate(1.6) brightness(0.36) contrast(1.15); }
+/* Footage / photo: the right half of the stage, its inner edge feathered into the tower. */
 .asel-layer__media {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 66%;
-  -webkit-mask-image: linear-gradient(var(--feather-dir, to left), transparent 0%, #000 34%);
-  mask-image: linear-gradient(var(--feather-dir, to left), transparent 0%, #000 34%);
+  right: max(0px, calc((100% - var(--stage-w, 100%)) / 2 - var(--w-gutter)));
+  width: calc(var(--stage-w, 100%) * 0.56);
+  /* Both side edges feathered: the clip floats in the black instead of ending on a hard edge. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 42%, #000 84%, transparent 100%);
 }
-.asel-half[data-day="1"] .asel-layer__media { right: 0; --feather-dir: to right; }
-.asel-half[data-day="2"] .asel-layer__media { left: 0; --feather-dir: to left; }
 .asel-layer__poster, .asel-layer__video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: var(--focus, 50% 30%);
-  /* The steel tone is folded into ONE filter (was grayscale + a mix-blend-mode: color overlay,
-     i.e. an extra blend pass + render surface on every video frame). */
-  filter: grayscale(1) sepia(0.32) hue-rotate(176deg) saturate(1.45) contrast(1.22) brightness(1.02);
+  object-position: var(--focus, 50% 36%);
+  /* Greyscale: the clips arrive in club colour (magenta); the roster stays black / neutral. One filter, no blend layer. */
+  filter: grayscale(1) contrast(1.14) brightness(0.92);
 }
 .asel-layer__video { opacity: 0; transition: opacity var(--w-dur-slow) ease; }
 .asel-layer__video[data-playing] { opacity: 1; }
-.asel-layer__tone { display: none; }
 
-/* Typographic splash: the name huge and cropped, solid / outline rows. */
-.asel-layer__type.w-glitch { position: absolute; inset: 0; }
-.asel-layer__type .w-glitch__base { position: absolute; inset: 0; }
-.asel-typerows {
-  position: absolute;
-  inset: -2% -18%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.5cqh;
-}
-.asel-typerows__row {
-  display: block;
-  font-family: var(--w-font-display);
-  font-weight: 800;
-  font-size: 19cqh;
-  line-height: 0.82;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.1);
-  translate: calc((var(--i) - 1.5) * -9%) 0;
-}
-.asel-half[data-day="2"] .asel-typerows__row { text-align: right; translate: calc((var(--i) - 1.5) * 9%) 0; }
-.asel-typerows__row[data-outline] { color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--day-lite) 34%, transparent); }
-.asel-layer[data-enter] .asel-typerows__row { animation: asel-row 0.95s var(--w-ease) both; animation-delay: calc(var(--i) * 45ms); }
-.asel-layer[data-enter] .asel-typerows__row[data-outline] { animation-name: asel-row-rev; }
-@keyframes asel-row { from { opacity: 0; transform: translate3d(14%, 0, 0); } to { opacity: 1; transform: none; } }
-@keyframes asel-row-rev { from { opacity: 0; transform: translate3d(-14%, 0, 0); } to { opacity: 1; transform: none; } }
-
-/* Encrypted splash: stacked redaction blobs over the ghost-negative tower. */
-.asel-layer__vault { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 3cqh; padding-inline: 6%; }
-.asel-layer__blob { display: block; font-size: 8cqh; line-height: 1; color: rgba(255, 255, 255, 0.5); }
-.asel-layer__blob:nth-child(2) { padding-left: 22%; }
-.asel-half[data-day="2"] .asel-layer__blob:nth-child(2) { padding-left: 0; padding-right: 22%; text-align: right; }
-.asel-layer[data-enter] .asel-layer__blob { animation: asel-row 0.8s var(--w-ease) both; animation-delay: calc(var(--i) * 60ms); }
-
-/* Targeting reticle (no-footage + idle) */
-.asel-reticle {
-  position: absolute;
-  top: 31%;
-  width: 30cqh;
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  color: var(--w-frost);
-  pointer-events: none;
-}
-.asel-half[data-day="1"] .asel-reticle { left: 74%; }
-.asel-half[data-day="2"] .asel-reticle { left: 26%; }
-.asel-reticle svg { display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; }
-.asel-reticle__ring { stroke-width: 1; opacity: 0.32; vector-effect: non-scaling-stroke; }
-.asel-reticle__ring--dash { stroke-dasharray: 2 6; opacity: 0.5; transform-origin: 50% 50%; stroke: var(--day-lite); }
-.asel-reticle__cross, .asel-reticle__tick { stroke-width: 1; opacity: 0.5; vector-effect: non-scaling-stroke; }
-.asel-reticle__dot { fill: var(--day-lite); stroke: none; opacity: 0.9; }
-.asel-reticle__label {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  translate: -50% 0;
-  padding: 4px 8px;
-  white-space: nowrap;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--day-lite);
-  background: rgba(0, 0, 0, 0.72);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--day-lite) 22%, transparent);
-  text-shadow: 0 0 6px var(--day-soft);
-}
-.asel-reticle__label::before { content: "\25A0  "; color: var(--day-lite); }
-.asel-reticle[data-idle] { width: 26cqh; top: 30%; opacity: 0.5; }
-.asel-half[data-day="1"] .asel-reticle[data-idle] { left: 76%; }
-.asel-half[data-day="2"] .asel-reticle[data-idle] { left: 24%; }
-.asel-reticle[data-idle] .asel-reticle__label { display: none; }
-.asel-reticle[data-locked] .asel-reticle__dot { fill: var(--w-frost); }
-.asel-layer[data-enter] .asel-reticle svg { animation: asel-lock 0.9s var(--w-ease) both; }
-.asel-layer[data-enter] .asel-reticle__ring--dash { animation: asel-spin 1.1s var(--w-ease) both; }
-@keyframes asel-lock { from { transform: scale(1.35); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
-@keyframes asel-spin { from { transform: rotate(-90deg); } to { transform: none; } }
-
-/* Viewfinder corners over live footage */
-.asel-viewfinder { position: absolute; inset: 20% 16% 36%; pointer-events: none; }
-.asel-viewfinder__tag.asel-reticle__label { top: -30px; left: 0; translate: none; }
-.asel-viewfinder i { position: absolute; width: 24px; height: 24px; border: 0 solid color-mix(in srgb, var(--day-lite) 70%, transparent); }
-.asel-viewfinder i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-.asel-viewfinder i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
-.asel-viewfinder i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
-.asel-viewfinder i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
-.asel-layer[data-enter] .asel-viewfinder { animation: asel-lock 0.8s var(--w-ease) both; }
-
-/* Shading: seam fade, nav scrim, the field's floor, fine scanlines, and the side's day wash. */
-.asel-half__shade {
+/* Static shading over every layer: the floor the profile reads on (it melts into the grid),
+   the nav + title scrim, the text column, and the deployed hero's vignette. */
+.asel-splash__shade {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    var(--asel-scan),
-    linear-gradient(0deg, var(--w-ink) 0%, rgba(0, 0, 0, 0.88) 24%, rgba(0, 0, 0, 0.2) 52%, transparent 66%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.78) 0%, transparent 22%);
-}
-.asel-half[data-day="1"] .asel-half__shade { box-shadow: inset -120px 0 90px -60px rgba(0, 0, 0, 0.9); }
-.asel-half[data-day="2"] .asel-half__shade { box-shadow: inset 120px 0 90px -60px rgba(0, 0, 0, 0.9); }
-/* P1 / P2 side wash: a static tint from the outer edge (no blend, painted once). */
-.asel-half__shade::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(var(--wash-dir, 90deg), color-mix(in srgb, var(--day) 24%, transparent) 0%, color-mix(in srgb, var(--day) 7%, transparent) 26%, transparent 46%);
-}
-.asel-half[data-day="2"] .asel-half__shade::before { --wash-dir: 270deg; }
-.asel-half__hud { display: none; }
-
-/* ---- Swap FX: iris shutters, scan band, slice bars, flash (in the side's colour) ---- */
-.asel-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.asel-fx__shutter {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 50.5%;
-  background: var(--asel-scan), linear-gradient(180deg, #0e0e0e, #070707);
-}
-.asel-fx__shutter--a { top: 0; box-shadow: 0 1px 0 var(--day-lite); animation: asel-shut-a 0.46s cubic-bezier(0.7, 0, 0.2, 1) both; }
-.asel-fx__shutter--b { bottom: 0; box-shadow: 0 -1px 0 var(--day-lite); animation: asel-shut-b 0.46s cubic-bezier(0.7, 0, 0.2, 1) both; }
-@keyframes asel-shut-a { from { transform: translateY(0); } to { transform: translateY(-101%); } }
-@keyframes asel-shut-b { from { transform: translateY(0); } to { transform: translateY(101%); } }
-.asel-fx__band {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 22%;
-  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--day-lite) 12%, transparent) 70%, rgba(255, 255, 255, 0.5) 99%, transparent 100%);
-  animation: asel-band 0.7s 0.12s cubic-bezier(0.5, 0, 0.3, 1) both;
-}
-@keyframes asel-band { from { transform: translateY(-100%); opacity: 1; } 85% { opacity: 1; } to { transform: translateY(460%); opacity: 0; } }
-.asel-fx__slice { position: absolute; left: 0; right: 0; height: 3px; background: color-mix(in srgb, var(--day-lite) 60%, transparent); opacity: 0; }
-.asel-fx__slice--1 { top: 31%; animation: asel-slice 0.32s 0.26s steps(4, end) both; }
-.asel-fx__slice--2 { top: 47%; height: 6px; background: rgba(255, 255, 255, 0.32); animation: asel-slice 0.28s 0.32s steps(3, end) both; }
-.asel-fx__slice--3 { top: 64%; height: 2px; animation: asel-slice 0.3s 0.38s steps(4, end) both; }
-@keyframes asel-slice {
-  0% { opacity: 1; transform: translateX(-12%) scaleX(0.6); }
-  50% { opacity: 1; transform: translateX(8%) scaleX(0.9); }
-  100% { opacity: 0; transform: translateX(-4%) scaleX(0.3); }
-}
-.asel-fx__flash { position: absolute; inset: 0; background: color-mix(in srgb, var(--day) 18%, transparent); opacity: 0; animation: asel-flash 0.42s 0.3s ease-out both; }
-@keyframes asel-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
-
-/* ==========================================================================
-   BEZEL: chamfered frame + centre notch connector (desktop stage, phone PDA shell)
-   ========================================================================== */
-.asel-frame { position: absolute; z-index: 2; inset: 80px 20px 16px; pointer-events: none; }
-.asel-frame svg { position: absolute; inset: 0; overflow: visible; fill: none; }
-.asel-frame__outer { stroke: rgba(255, 255, 255, 0.26); stroke-width: 1; }
-.asel-frame__inner { stroke: rgba(164, 43, 43, 0.14); stroke-width: 1; }
-.asel-frame__notch { stroke: var(--w-ice); stroke-width: 2; opacity: 0.7; }
-.asel-frame__label {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 24px;
-  translate: -50% 0;
-  display: flex;
-  align-items: center;
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  white-space: nowrap;
+    linear-gradient(0deg, var(--w-ink) 0%, rgba(0, 0, 0, 0.84) 20%, rgba(0, 0, 0, 0.32) 46%, transparent 66%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, transparent calc(var(--nav) + 140px)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.22) 38%, transparent 56%),
+    radial-gradient(ellipse at 50% 42%, transparent 30%, rgba(0, 0, 0, 0.45) 100%);
 }
 
 /* ==========================================================================
-   CORE (centre column): spine, title
+   TITLE + PROFILE
    ========================================================================== */
-.asel-core { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
-.asel-core__kicker { margin-top: var(--w-s-4); }
+.asel-head { position: relative; z-index: 3; pointer-events: none; }
 .asel-title {
-  margin: var(--w-s-2) 0 0;
+  margin: 0;
   font-family: var(--w-font-display);
   font-weight: 800;
-  font-size: clamp(1.75rem, calc(var(--tw) * 0.3), 2.75rem);
-  line-height: 0.95;
+  font-size: var(--w-fs-h2);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--w-frost);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.45);
+}
+/* The one glowing mark: the deployed red divider. */
+.asel-divider { display: block; width: 30px; height: 1px; margin-top: 18px; background: var(--w-red-line); box-shadow: 0 0 14px var(--w-red-glow); }
+
+.asel-profile { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; min-height: 0; }
+.asel-day {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  font: 700 10px / 1 var(--w-font-hud);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--day);
+}
+.asel-day i { flex: none; width: 6px; height: 6px; background: currentColor; }
+.asel-name {
+  margin: 0;
+  max-width: 100%;
+  font-family: var(--w-font-display);
+  font-weight: 800;
+  /* Fit the longest word into the text column, capped. */
+  font-size: min(clamp(2.5rem, 5vw, 5rem), calc(var(--name-w) / (var(--lw) * 0.94)));
+  line-height: 0.92;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-wrap: balance;
-  text-shadow: 0 0 1px currentColor;
   color: var(--w-frost);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.45);
 }
-.asel-tally {
-  margin: var(--w-s-3) 0 0;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  color: var(--w-red-hi);
-  text-shadow: 0 0 6px rgba(164, 43, 43, 0.45);
+.asel-name__text { display: block; }
+.asel-name .asel-name__blob { font-size: 0.56em; color: rgba(255, 255, 255, 0.5); }
+.asel-bio {
+  margin: 18px 0 0;
+  max-width: 54ch;
+  font-size: var(--w-fs-small);
+  line-height: 1.6;
+  color: var(--w-mist);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.asel-tally i, .asel-keys i { font-style: normal; color: rgba(164, 43, 43, 0.45); }
-
-.asel-spine { display: none; }
-@media (min-width: 960px) {
-  .asel-core { grid-column: 2; grid-row: 1 / 4; justify-content: flex-end; padding-bottom: var(--w-s-4); }
-  .asel-spine { display: flex; flex: 1; flex-direction: column; align-items: center; min-height: 64px; margin-top: -48px; }
-  .asel-spine__rail { flex: 1; width: 8px; border-inline: 1px solid var(--asel-line); }
-  .asel-spine__rail--short { flex: 0 0 var(--w-s-5); }
-  .asel-spine__node {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--w-s-3);
-    padding: 8px 16px;
-    background: linear-gradient(180deg, #e6e6e6 0%, #bebebe 48%, #9b9b9b 52%, #b0b0b0 100%);
-    clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  }
-  .asel-spine__node > span[data-day] { display: flex; }
-  .asel-spine__label { font: 700 var(--w-fs-nano) / 1 var(--w-font-hud); letter-spacing: 0.26em; color: #0e0e0e; }
-  .asel-spine__label b { font-weight: 800; color: var(--day-deep); }
+.asel-bio[data-open] {
+  display: block;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The last line can scroll clear of the bottom fade, so the box never cuts a line in half. */
+  padding: 0 var(--w-s-2) 1.6em 0;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 2.2em), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 2.2em), transparent);
+  scrollbar-width: thin;
+  scrollbar-color: var(--w-steel) transparent;
+}
+.asel-bio:focus-visible { outline: 1px solid var(--w-line-strong); outline-offset: 4px; }
+.asel-note { margin: 16px 0 0; font-size: var(--w-fs-small); line-height: 1.5; color: var(--w-mist); }
+.asel-actions { display: flex; flex-wrap: wrap; gap: 0 var(--w-s-6); margin-top: 8px; }
+.asel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--w-s-2);
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: 700 10px / 1 var(--w-font-hud);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--w-frost);
+  cursor: pointer;
+  transition: color var(--w-dur-fast) ease;
+}
+.asel-link span { color: var(--w-red-hi); }
+.asel-link:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 4px; }
+@media (hover: hover) {
+  .asel-link:hover { color: var(--w-red-hi); }
 }
 
 /* ==========================================================================
    FIELD: the tile chevron (desktop) / the key pyramid (phones)
    ========================================================================== */
-.asel-field { position: relative; }
-@media (min-width: 960px) {
-  .asel-field { grid-column: 1 / -1; grid-row: 4; width: calc(var(--tw) * 10.38); height: calc(var(--tw) * 1.74); }
-}
+.asel-field { position: relative; z-index: 2; }
 
 .asel-slot, .asel-plate {
   position: absolute;
@@ -402,13 +277,12 @@
 .asel-tile:focus-visible { outline: none; }
 
 .asel-tile__media { position: absolute; inset: 0; transition: transform 0.6s var(--w-ease); }
-/* Zoom on the loaded tile only (it follows hover after the 70ms intent): one animation per pick
-   instead of one per tile crossed, which kept re-layerizing the grid. */
-.asel-slot[data-pressed] .asel-tile__media { transform: scale(1.07); }
-.asel-tile__media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; filter: grayscale(0.9) contrast(1.12) brightness(0.9); }
+/* Zoom on the locked tile only: one animation per lock, never one per tile crossed. */
+.asel-slot[data-pressed] .asel-tile__media { transform: scale(1.06); }
+.asel-tile__media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; filter: grayscale(1) contrast(1.1) brightness(0.92); }
 .asel-slot[data-kind="type"] .asel-tile__media {
-  background: var(--asel-tile-img, none) var(--bgx) var(--bgy) / 360% auto no-repeat, linear-gradient(180deg, #292929, #151515);
-  filter: grayscale(0.3) brightness(0.62) contrast(1.2);
+  background: var(--asel-tile-img, none) var(--bgx) var(--bgy) / 360% auto no-repeat, #141414;
+  filter: grayscale(1) brightness(0.5) contrast(1.15);
 }
 .asel-tile__mono {
   position: absolute;
@@ -421,39 +295,30 @@
   font-size: calc(var(--tw) * 0.42);
   line-height: 1;
   letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.12);
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.08);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.42);
 }
-.asel-slot[data-kind="locked"] .asel-tile { background: #090909; }
-.asel-slot[data-kind="locked"][data-day="1"] .asel-tile__media { background: repeating-linear-gradient(-58deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px); }
-.asel-slot[data-kind="locked"][data-day="2"] .asel-tile__media { background: repeating-linear-gradient(58deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 7px); }
-.asel-tile__vault { position: absolute; inset: 0; display: grid; place-items: center; padding-bottom: 10%; font-size: calc(var(--tw) * 0.26); color: var(--w-frost); opacity: 0.88; }
+.asel-slot[data-kind="locked"] .asel-tile { background: #070707; }
+.asel-tile__vault { position: absolute; inset: 0; display: grid; place-items: center; padding-bottom: 10%; font-size: calc(var(--tw) * 0.24); color: var(--w-frost); opacity: 0.38; }
 
-/* Rest dim: instant on/off (a fighting-game cursor highlights the frame it lands on, no fade). */
-.asel-tile__shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.88) 100%), var(--asel-scan); }
-.asel-tile__shade::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.42); }
+/* Rest dim: instant on/off (the highlight lands where the cursor is, no fade). */
+.asel-tile__shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.86) 100%); }
+.asel-tile__shade::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.44); }
 .asel-slot:hover .asel-tile__shade::after,
 .asel-slot[data-pressed] .asel-tile__shade::after,
 .asel-slot[data-roll] .asel-tile__shade::after,
 .asel-tile:focus-visible .asel-tile__shade::after { opacity: 0; }
-.asel-slot[data-pressed] .asel-tile::after {
-  /* inner top highlight on the selected tile, in its day colour */
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--day-lite) 26%, transparent), transparent 34%);
-  pointer-events: none;
-}
 
-.asel-tile__idx {
+/* Day label (D1 white / D2 red) at the tile's square top corner. */
+.asel-tile__day {
   position: absolute;
   top: 8px;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--day-lite) 80%, var(--w-mist));
+  font: 700 9px / 1 var(--w-font-hud);
+  letter-spacing: 0.18em;
+  color: var(--day);
 }
-.asel-slot[data-day="2"] .asel-tile__idx { left: calc(var(--sk) + 2px); }
-.asel-slot[data-day="1"] .asel-tile__idx { right: calc(var(--sk) + 2px); }
+.asel-slot[data-day="2"] .asel-tile__day { left: calc(var(--sk) + 3px); }
+.asel-slot[data-day="1"] .asel-tile__day { right: calc(var(--sk) + 1px); }
 .asel-tile__name {
   position: absolute;
   bottom: 8px;
@@ -470,25 +335,21 @@
 }
 .asel-slot[data-day="2"] .asel-tile__name { left: 8px; right: calc(var(--sk) + 4px); }
 .asel-slot[data-day="1"] .asel-tile__name { left: calc(var(--sk) + 4px); right: 8px; text-align: right; }
-.asel-slot[data-kind="locked"] .asel-tile__name { color: var(--w-fog); }
+.asel-slot[data-kind="locked"] .asel-tile__name { color: var(--w-fog); letter-spacing: 0.24em; }
 
-/* Edge, rings and glow: vector strokes on the tile's own outline, outside the clip (no filters). */
+/* Hairline + ring: vector strokes on the tile's own outline, outside the clip (no filters, no glow). */
 .asel-tile__edge, .asel-plate__edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; fill: none; }
 .asel-tile__edge polygon, .asel-plate__edge polygon { vector-effect: non-scaling-stroke; stroke-linejoin: miter; }
 .asel-tile__shape--m { display: none; }
-.asel-tile__line { stroke: color-mix(in srgb, var(--day-lite) 26%, rgba(255, 255, 255, 0.1)); stroke-width: 1; }
-.asel-tile__ring { stroke: var(--day-lite); stroke-width: 2; opacity: 0; }
-.asel-tile__glow { stroke: var(--day); stroke-width: 9; opacity: 0; }
-.asel-slot:hover .asel-tile__ring { opacity: 0.75; }
+.asel-tile__line { stroke: var(--day-line); stroke-width: 1; }
+.asel-tile__ring { stroke: var(--day); stroke-width: 2; opacity: 0; }
+.asel-slot:hover .asel-tile__ring { opacity: 0.6; }
 .asel-slot[data-pressed] .asel-tile__ring, .asel-slot[data-roll] .asel-tile__ring { opacity: 1; }
-.asel-slot[data-pressed] .asel-tile__glow { opacity: 0.32; }
-.asel-slot[data-roll] .asel-tile__glow { opacity: 0.5; }
-.asel-tile:focus-visible + .asel-tile__edge .asel-tile__ring { opacity: 1; stroke-width: 4; }
-.asel-tile:focus-visible + .asel-tile__edge .asel-tile__glow { opacity: 0.45; }
+.asel-tile:focus-visible + .asel-tile__edge .asel-tile__ring { opacity: 1; stroke-width: 3; }
 
 /* RANDOM wedge */
-.asel-slot--random { --day-lite: #e6e6e6; --day: #9b9b9b; }
-.asel-tile--random { background: linear-gradient(180deg, #303030 0%, #1a1a1a 55%, #0f0f0f 100%); }
+.asel-slot--random { --day: var(--w-frost); --day-line: rgba(255, 255, 255, 0.16); }
+.asel-tile--random { background: var(--w-panel); }
 .asel-random__q {
   position: absolute;
   inset: 0 0 18%;
@@ -496,7 +357,7 @@
   place-items: center;
   font-family: var(--w-font-display);
   font-weight: 800;
-  font-size: calc(var(--tw) * 0.5);
+  font-size: calc(var(--tw) * 0.42);
   line-height: 1;
   color: var(--w-mist);
   transition: transform var(--w-dur) var(--w-ease);
@@ -505,486 +366,108 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 8px;
-  font: 700 clamp(8px, calc(var(--tw) * 0.075), 10px) / 1 var(--w-font-hud);
+  bottom: 9px;
+  font: 700 clamp(8px, calc(var(--tw) * 0.075), 9px) / 1 var(--w-font-hud);
   letter-spacing: 0.3em;
   text-transform: uppercase;
   text-align: center;
   color: var(--w-mist);
 }
 .asel-slot--random:hover .asel-random__q, .asel-tile--random:focus-visible .asel-random__q { color: var(--w-frost); transform: scale(1.08); }
-.asel-slot--random:hover .asel-tile__ring { opacity: 0.75; }
 .asel-slot--random[data-rolling] .asel-random__q { color: var(--w-frost); animation: asel-q 0.24s steps(2, end) infinite; }
 .asel-slot--random[data-rolling] .asel-tile__ring { opacity: 1; }
 @keyframes asel-q { 50% { opacity: 0.35; } }
 
-/* Centre plate (desktop emblem) */
-.asel-plate__body { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, #303030 0%, #212121 50%, #121212 100%); }
-.asel-plate__body::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 22%), var(--asel-scan); pointer-events: none; }
-.asel-plate__edge polygon { stroke: rgba(255, 255, 255, 0.3); stroke-width: 2; }
-.asel-plate__logo.w-glitch { position: absolute; left: 50%; top: 50%; width: 62%; translate: -50% -50%; }
+/* Emblem plate (desktop): flat, the festival mark at rest; it glitches only under the pointer. */
+.asel-plate__body { position: absolute; inset: 0; overflow: hidden; background: var(--w-deep); }
+.asel-plate__edge polygon { stroke: rgba(255, 255, 255, 0.14); stroke-width: 1; }
+.asel-plate__logo.w-glitch { position: absolute; left: 50%; top: 50%; width: 56%; translate: -50% -50%; opacity: 0.72; }
 .asel-plate__logo img { width: 100%; height: auto; }
 
-/* ---- Cursor tag: DAY 1 (blue) / DAY 2 (red). Moved by one transform write: no transition, no smoothing. ---- */
-.asel-cursor {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 6;
-  pointer-events: none;
-  will-change: transform;
-}
-.asel-cursor[data-day="r"] { --day: #b0b0b0; --day-lite: #f6f6f6; --day-deep: #626262; --day-glow: rgba(255, 255, 255, 0.35); }
-.asel-cursor__tag {
-  position: absolute;
-  left: 0;
-  bottom: 8px;
-  translate: -50% 0;
-  padding: 5px 9px 4px;
-  white-space: nowrap;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--day-lite) 60%, var(--day)) 0%, var(--day) 55%, var(--day-deep) 100%);
-  color: #fff;
-  font: 800 10px / 1 var(--w-font-hud);
-  letter-spacing: 0.22em;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
-  box-shadow: 0 0 16px var(--day-glow), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
-}
-.asel-cursor[data-day="r"] .asel-cursor__tag { color: #0e0e0e; text-shadow: none; }
-.asel-cursor__tag::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  translate: -50% 0;
-  border: 5px solid transparent;
-  border-top-color: var(--day-deep);
-  border-bottom-width: 0;
-}
-.asel-cursor[data-pos="below"] .asel-cursor__tag { bottom: auto; top: 8px; }
-.asel-cursor[data-pos="below"] .asel-cursor__tag::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: color-mix(in srgb, var(--day-lite) 60%, var(--day)); border-top-width: 0; border-bottom-width: 5px; }
-
-/* ==========================================================================
-   SIDE PANELS: player banner, bio window, name band
-   ========================================================================== */
-.asel-side { min-width: 0; }
-.asel-side__hud { display: flex; align-items: center; gap: var(--w-s-4); }
-
-/* Player banner plate: the day's colour, leaning inward like the shards, with the flyer scrawl. */
-.asel-dayplate {
-  position: relative;
-  flex: none;
-  display: block;
-  padding: 7px 26px 7px 14px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, transparent 46%),
-    linear-gradient(180deg, color-mix(in srgb, var(--day-lite) 45%, var(--day)) 0%, var(--day) 56%, var(--day-deep) 100%);
-  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 100%, 0 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.3);
-}
-.asel-dayplate::after { content: ""; position: absolute; inset: 0; background: var(--asel-scan); opacity: 0.5; pointer-events: none; }
-.asel-dayplate__scrawl { position: relative; z-index: 1; display: block; width: auto; height: 40px; }
-.asel-side__meta { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.asel-side__date {
-  font: 400 15px / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  color: var(--day-lite);
-  text-shadow: 0 0 8px var(--day-soft);
-  white-space: nowrap;
-}
-.asel-side__count {
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  white-space: nowrap;
-}
-.asel-side__rule { flex: 0 1 var(--w-s-8); display: flex; align-items: center; gap: 4px; min-width: 24px; height: 2px; background: linear-gradient(90deg, var(--day), transparent); }
-.asel-side__rule i { display: none; }
-
-.asel-name {
-  margin: 0;
-  font-family: var(--w-font-display);
-  font-weight: 800;
-  /* Fit the longest word into the side column (3.69 tile units), capped. */
-  font-size: min(calc(var(--tw) * 0.62), calc(var(--tw) * 3.69 / (var(--lw) * 0.84)));
-  line-height: 0.9;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  text-shadow: 0 0 1px currentColor;
-  color: var(--w-frost);
-}
-.asel-name__text { display: block; }
-.asel-name[data-idle] { color: transparent; text-shadow: none; -webkit-text-stroke: 1px color-mix(in srgb, var(--day-lite) 55%, transparent); }
-.asel-name__blob { font-size: 0.8em; color: rgba(255, 255, 255, 0.86); }
-
-.asel-window { width: min(400px, 100%); text-align: left; }
-/* No backdrop blur here: it re-blurred the splash (footage + swap FX) under both windows every frame. */
-.asel-window.w-window {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: linear-gradient(180deg, rgba(46, 46, 46, 0.9) 0%, rgba(27, 27, 27, 0.94) 38%, rgba(15, 15, 15, 0.96) 100%);
-}
-.asel-window .w-window__title { font-weight: 700; }
-.asel-window .w-window__body { display: flex; flex-direction: column; gap: var(--w-s-3); padding: var(--w-s-4); }
-.asel-window .w-window__status { gap: var(--w-s-3); padding-block: 0; padding-right: 4px; }
-/* Active window: LED + underline in the side's colour. */
-.asel [data-day] .w-window[data-active] .w-window__led { background: var(--day-lite); box-shadow: 0 0 6px var(--day), inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
-.asel [data-day] .w-window[data-active] .w-window__bar::after { background: linear-gradient(90deg, var(--day-lite), var(--day)); }
-
-.asel-lcd {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #080808 0%, #111111 100%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px color-mix(in srgb, var(--day-lite) 18%, transparent), 0 1px 0 rgba(255, 255, 255, 0.08);
-  font: 400 var(--w-fs-micro) / 1.15 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--day-lite);
-  text-shadow: 0 0 6px var(--day-soft);
-  flex: none;
-  contain: layout paint;
-}
-.asel-lcd::after { content: ""; position: absolute; inset: 0; background: var(--asel-scan); pointer-events: none; }
-.asel-lcd i { font-style: normal; color: color-mix(in srgb, var(--day-lite) 45%, transparent); }
-.asel-lcd__row { position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.asel-lcd__row + .asel-lcd__row { color: color-mix(in srgb, var(--day-lite) 78%, transparent); }
-
-.asel-window__bio {
-  margin: 0;
-  font-size: var(--w-fs-small);
-  line-height: 1.55;
-  color: var(--w-mist);
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.asel-window__bio[data-open] { display: block; max-height: min(42svh, calc(var(--tw) * 2.4)); overflow-y: auto; padding-right: var(--w-s-2); scrollbar-width: thin; scrollbar-color: var(--w-steel) transparent; }
-.asel-window__note { margin: 0; font-size: var(--w-fs-small); line-height: 1.55; color: var(--w-mist); }
-.asel-window__note b { display: block; margin-bottom: var(--w-s-1); font: 400 var(--w-fs-small) / 1.2 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-frost); }
-.asel-window__actions { display: flex; flex-wrap: wrap; gap: 0 var(--w-s-5); }
-.asel-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--w-s-2);
-  min-height: 32px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--w-frost);
-  cursor: pointer;
-  transition: color var(--w-dur-fast) ease;
-}
-.asel-link:hover { color: var(--day-lite); }
-
-.asel-pager__orbs { flex: 1; display: flex; align-items: center; gap: 4px; min-width: 0; }
-.asel-pager__count { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-mist); font-variant-numeric: tabular-nums; }
-.asel-pager__nav { display: flex; }
-.asel-pager__btn {
-  width: 32px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: 400 13px / 1 var(--w-font-pixel);
-  color: var(--w-frost);
-  cursor: pointer;
-  transition: color var(--w-dur-fast) ease;
-}
-.asel-pager__btn:hover { color: var(--day-lite); }
-
-/* Glass orbs (lit in the day's colour) */
-.asel-orb {
-  --d: 10px;
-  position: relative;
-  flex: none;
-  width: var(--d);
-  height: var(--d);
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.5) 0 12%, #545454 32%, #212121 72%, #0e0e0e 100%);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-.asel-orb[data-size="sm"] { --d: 8px; }
-.asel-orb[data-size="lg"] { --d: 12px; }
-.asel-orb[data-locked] { background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.25) 0 10%, #252525 40%, #090909 100%); }
-.asel-orb::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #fff 0 10%, color-mix(in srgb, var(--day-lite) 55%, #fff) 22%, var(--day-lite) 44%, var(--day) 74%, var(--day-deep) 100%);
-  box-shadow: 0 0 8px 1px var(--day-glow), 0 0 2px var(--day-lite);
-  opacity: 0;
-  transition: opacity var(--w-dur) ease;
-}
-.asel-orb[data-lit]::after { opacity: 1; }
-
-/* Keyboard legend (fine pointers) */
-.asel-keys { display: none; }
-@media (min-width: 960px) and (hover: hover) and (pointer: fine) {
-  .asel-keys {
-    grid-column: 1 / -1;
-    grid-row: 5;
-    justify-self: center;
-    display: flex;
-    align-items: center;
-    gap: var(--w-s-2);
-    margin: var(--w-s-4) 0 0;
-    font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-    letter-spacing: 0.26em;
-    text-transform: uppercase;
-    color: var(--w-fog);
-  }
-  .asel-keys i { margin-inline: var(--w-s-2); }
-  .asel-keys kbd { min-width: 20px; padding: 4px; font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0; text-align: center; color: var(--w-mist); box-shadow: inset 0 0 0 1px var(--w-line-strong), inset 0 -2px 0 rgba(0, 0, 0, 0.6); }
-}
-
-/* ---- Split placement of the side panels -------------------------------- */
 .asel-switch, .asel-sheet { display: none; }
-@media (min-width: 960px) {
-  .asel-side { grid-row: 1 / 4; display: grid; grid-template-rows: subgrid; }
-  .asel-side[data-day="1"] { grid-column: 1; justify-items: start; }
-  .asel-side[data-day="2"] { grid-column: 3; justify-items: end; text-align: right; }
-  .asel-side[data-day="2"] .asel-side__hud { flex-direction: row-reverse; }
-  .asel-side[data-day="2"] .asel-side__meta { align-items: flex-end; }
-  .asel-side[data-day="2"] .asel-dayplate { padding: 7px 14px 7px 26px; clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%); }
-  .asel-side[data-day="2"] .asel-side__rule { background: linear-gradient(270deg, var(--day), transparent); }
-  .asel-side__hud { grid-row: 1; align-self: start; }
-  .asel-window { grid-row: 2; align-self: end; margin: var(--w-s-4) 0 var(--w-s-4); max-height: calc(100% - var(--w-s-4) - var(--w-s-4)); }
-  /* The window never grows the grid: an expanded bio scrolls inside its track. */
-  .asel-window .w-window__body { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--w-steel) transparent; }
-  .asel-window__bio[data-open] { max-height: none; overflow: visible; }
-  /* Fixed box (the band's row) + size containment: the decode effect rewrites this
-     text every frame for ~0.4s without relaying out the page. */
-  .asel-name { grid-row: 3; align-self: stretch; justify-self: stretch; display: flex; align-items: flex-end; padding-bottom: var(--w-s-4); contain: size layout style; }
-  .asel-side[data-day="2"] .asel-name { justify-content: flex-end; }
-  .asel-name__text { max-width: 100%; }
-}
 
 /* ==========================================================================
-   PHONES (< 960px): the PDA. One screen, top to bottom:
-   title · splash (tap → bio sheet) · DAY 1 | ? RANDOM | DAY 2 · key pyramid
+   PHONES (< 960px): one screen, top to bottom:
+   splash (title over its top, profile over its foot) · DAY 1 | ? RANDOM | DAY 2 · keys
    ========================================================================== */
 @media (max-width: 959.98px) {
   .asel-section { scroll-snap-align: end; }
 
   .asel {
-    /* Clearance for the fixed HUD bar on phones: the 56px bar plus the 18px notch hanging under its
-       centre (nav.css --hud-h / --hud-nd), so the bezel's ":: Select artist ::" label sits below it. */
-    --nav: 74px;
-    --shell-x: max(8px, calc((100% - 520px) / 2));
+    --pad: 20px;
     --sqg: 8px;
-    /* Key size: fit the width, AND leave the splash ≥ ~180px of the screen height. */
-    --sq: max(50px, min(calc((100cqi - (var(--cols) - 1) * var(--sqg)) / var(--cols)), calc((100svh - 450px) / var(--rows)), 92px));
-    --side: var(--d1);
-    --side-lite: var(--d1-lite);
-    --side-deep: var(--d1-deep);
-    --side-glow: var(--d1-glow);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    /* Key size: fit the width (100cqi = the content box), AND leave the splash ≥ ~220px of the screen. */
+    --sq: max(50px, min(calc((100cqi - (var(--cols) - 1) * var(--sqg)) / var(--cols)), calc((100svh - 470px) / var(--rows)), 88px));
+    --name-w: 100cqi;
     height: 100svh;
-    min-height: 540px;
-    padding: calc(var(--nav) + 8px + 28px) calc(var(--shell-x) + 12px) 20px;
-    overflow: clip;
+    min-height: 560px;
+    grid-template-rows: minmax(220px, 1fr) auto auto;
+    row-gap: 12px;
+    padding: 0 var(--pad) 20px;
   }
-  .asel[data-side="2"] { --side: var(--d2); --side-lite: var(--d2-lite); --side-deep: var(--d2-deep); --side-glow: var(--d2-glow); }
-  .asel-stage { display: contents; }
-  .asel-frame { inset: calc(var(--nav) + 8px) var(--shell-x) 8px; }
-  .asel-frame__label { height: 20px; letter-spacing: 0.26em; }
+  .asel-ticks { inset: calc(var(--nav) + 10px) 10px 10px; }
 
-  /* Title row */
-  .asel-core { order: 1; flex: none; }
-  .asel-spine { display: none; }
-  .asel-core__kicker { margin: 4px 0 6px; }
-  .asel-title { margin: 0; font-size: clamp(1.25rem, 6.6cqi, 1.75rem); line-height: 1; }
-  .asel-tally { margin-top: 6px; }
+  .asel-screen { grid-row: 1; grid-column: 1; margin-inline: calc(var(--pad) * -1); }
+  .asel-head, .asel-profile { grid-row: 1; grid-column: 1; }
+  .asel-head { align-self: start; padding-top: calc(var(--nav) + 26px); }
+  .asel-title { font-size: clamp(1.25rem, 6cqi, 1.625rem); }
+  .asel-divider { margin-top: 14px; }
+  .asel-profile { align-self: end; padding-bottom: 4px; }
+  .asel-day { margin-bottom: 10px; }
+  .asel-name { font-size: min(clamp(1.75rem, 9.5cqi, 2.75rem), calc(var(--name-w) / (var(--lw) * 0.94))); }
+  .asel-note { margin-top: 10px; }
+  .asel-actions { margin-top: 4px; }
 
-  /* Splash screen: one day at a time */
-  .asel-screen {
-    order: 2;
-    position: relative;
-    display: block;
-    flex: 1 1 0;
-    min-height: 150px;
-    box-shadow: 0 0 0 1px var(--asel-line), 0 0 0 4px #0c0c0c, 0 0 0 5px rgba(255, 255, 255, 0.12);
+  /* The splash fills the box: footage edge to edge, a heavier floor for the profile. */
+  .asel-layer__media { left: 0; right: 0; width: auto; -webkit-mask-image: none; mask-image: none; }
+  .asel-splash__shade {
+    background:
+      linear-gradient(0deg, var(--w-ink) 0%, rgba(0, 0, 0, 0.82) 26%, rgba(0, 0, 0, 0.28) 54%, transparent 72%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, transparent calc(var(--nav) + 110px));
   }
-  .asel-screen::before, .asel-screen::after {
-    /* day-coloured corner brackets */
-    content: "";
-    position: absolute;
-    z-index: 5;
-    width: 18px;
-    height: 18px;
-    border: 0 solid var(--side-lite);
-    pointer-events: none;
-  }
-  .asel-screen::before { top: -5px; left: -5px; border-top-width: 2px; border-left-width: 2px; }
-  .asel-screen::after { bottom: -5px; right: -5px; border-bottom-width: 2px; border-right-width: 2px; }
-  .asel-half { inset: 0; width: auto; height: auto; }
-  .asel-half:not([data-shown]) { display: none; }
-  .asel-half::before {
-    /* chrome bezel bar, in the day's colour at the centre */
-    content: "";
-    position: absolute;
-    z-index: 3;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #9b9b9b, var(--day-lite) 50%, #9b9b9b);
-  }
-  .asel-half__shade { background: var(--asel-scan), linear-gradient(0deg, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.55) 36%, transparent 62%), linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, transparent 26%); box-shadow: none !important; }
-  .asel-half__shade::before { background: linear-gradient(180deg, color-mix(in srgb, var(--day) 15%, transparent) 0%, transparent 36%); }
-  .asel-half__hud { position: absolute; z-index: 2; inset: 12px 14px 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: var(--w-s-2); pointer-events: none; }
-  .asel-half__chips { display: flex; align-items: center; gap: 6px; }
-  .asel-half__day {
-    padding: 5px 8px 4px;
-    font: 800 10px / 1 var(--w-font-hud);
-    letter-spacing: 0.2em;
-    color: #fff;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--day-lite) 50%, var(--day)), var(--day) 60%, var(--day-deep));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  }
-  .asel-half__status {
-    padding: 4px 8px;
-    font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-    letter-spacing: 0.08em;
-    color: var(--day-lite);
-    background: rgba(0, 0, 0, 0.72);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--day-lite) 24%, transparent);
-  }
-  .asel-half__name {
-    margin-top: auto;
-    max-width: 100%;
-    font-family: var(--w-font-display);
-    font-weight: 800;
-    font-size: clamp(1.6rem, 10cqw, 2.75rem);
-    line-height: 0.92;
-    text-transform: uppercase;
-    text-shadow: 0 0 1px currentColor;
-    overflow-wrap: anywhere;
-  }
-  .asel-half__name[data-idle] { color: transparent; text-shadow: none; -webkit-text-stroke: 1px color-mix(in srgb, var(--day-lite) 70%, transparent); }
-  .asel-half__lcd { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.08em; color: color-mix(in srgb, var(--day-lite) 85%, transparent); }
-  .asel-layer__frame { filter: grayscale(1) sepia(0.4) hue-rotate(178deg) saturate(1.7) brightness(0.78) contrast(1.15); }
-  .asel-reticle { top: 42%; width: 50cqh; }
-  .asel-half[data-day] .asel-reticle, .asel-half[data-day] .asel-reticle[data-idle] { left: 50%; }
-  .asel-reticle__label { display: none; }
-  .asel-viewfinder { inset: 14% 12% 42%; }
-  .asel-viewfinder__tag { display: none; }
-  .asel-half[data-day] .asel-layer__media { left: 0; right: 0; width: 100%; -webkit-mask-image: none; mask-image: none; }
-  .asel-typerows { inset: 0 -30%; }
 
-  /* Tap target over the footage → bio sheet */
-  .asel-screen__btn {
-    position: absolute;
-    z-index: 6;
-    inset: 0;
-    display: block;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .asel-screen__btn[hidden] { display: none; }
-  .asel-screen__btn:focus-visible { outline: 2px solid var(--side-lite); outline-offset: 3px; }
-  .asel-screen__cue {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 8px 6px 10px;
-    font: 700 10px / 1 var(--w-font-hud);
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--w-frost);
-    background: rgba(0, 0, 0, 0.78);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--side-lite) 55%, transparent), 0 0 12px -2px var(--side-glow);
-    transition: transform 0.12s ease;
-  }
-  .asel-screen__cue b { color: var(--side-lite); animation: asel-nudge 32s steps(2, end) infinite; }
-  .asel-screen__btn:active .asel-screen__cue { transform: scale(0.95); }
-  /* 20 nudges per iteration (32s): each iteration boundary costs a main-thread frame (React listens for animationiteration). */
-  @keyframes asel-nudge { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { transform: none; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { transform: translateX(3px); } }
-
-  /* Day switcher: slim chrome segments, the active day lit in its colour */
-  .asel-switch { order: 3; flex: none; display: flex; gap: 4px; height: 36px; }
+  /* Day switcher: two hairline segments around RANDOM; the visible day is outlined in its colour. */
+  .asel-switch { grid-row: 2; grid-column: 1; display: flex; gap: 6px; height: 40px; }
   .asel-switch button {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--w-s-2);
+    min-width: 0;
     margin: 0;
+    padding: 0 var(--w-s-3);
     border: 0;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--w-line-strong);
+    font: 700 10px / 1 var(--w-font-hud);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--w-mist);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  .asel-switch__day {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    min-width: 0;
-    padding: 0 10px;
-    white-space: nowrap;
-    color: var(--day-lite);
-    background: linear-gradient(180deg, #303030 0%, #212121 52%, #161616 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px color-mix(in srgb, var(--day-lite) 30%, transparent);
-  }
-  .asel-switch__day[data-day="1"] { clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%); padding-right: 18px; }
-  .asel-switch__day[data-day="2"] { clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%); padding-left: 18px; }
-  .asel-switch__day[aria-pressed="true"] {
-    color: #fff;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 48%),
-      linear-gradient(180deg, color-mix(in srgb, var(--day-lite) 45%, var(--day)) 0%, var(--day) 56%, var(--day-deep) 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.3);
-  }
-  .asel-switch__label { font: 800 11px / 1 var(--w-font-hud); letter-spacing: 0.2em; text-transform: uppercase; }
-  .asel-switch__date { font: 400 10px / 1 var(--w-font-pixel); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.8; }
-  .asel-switch__day[aria-pressed="true"] .asel-switch__date { opacity: 0.92; }
-  .asel-switch__rnd {
-    flex: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 16px;
-    font: 700 10px / 1 var(--w-font-hud);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #0e0e0e;
-    background: linear-gradient(180deg, #e6e6e6 0%, #bebebe 48%, #9b9b9b 52%, #b0b0b0 100%);
-    clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  }
-  .asel-switch__rnd b { font: 800 15px / 1 var(--w-font-display); }
+  .asel-switch__day { flex: 1; }
+  .asel-switch__day::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--day); opacity: 0.45; }
+  .asel-switch__day[aria-pressed="true"] { color: var(--w-frost); background: var(--w-deep); box-shadow: inset 0 0 0 1px var(--day); }
+  .asel-switch__day[aria-pressed="true"]::before { opacity: 1; }
+  .asel-switch__rnd { flex: none; padding-inline: var(--w-s-4); }
+  .asel-switch__rnd b { font: 800 13px / 1 var(--w-font-display); color: var(--w-frost); }
   .asel[data-rolling] .asel-switch__rnd b { animation: asel-q 0.24s steps(2, end) infinite; }
-  .asel-switch button:focus-visible { outline: 2px solid var(--w-frost); outline-offset: -4px; }
+  .asel-switch button:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 2px; }
   .asel-switch button:active { transform: translateY(1px); }
 
   /* Key pyramid */
   .asel-field {
-    order: 4;
-    flex: none;
-    align-self: center;
+    grid-row: 3;
+    grid-column: 1;
+    justify-self: center;
     width: calc(var(--cols) * var(--sq) + (var(--cols) - 1) * var(--sqg));
     height: calc(var(--rows) * var(--sq) + (var(--rows) - 1) * var(--sqg));
   }
-  .asel-plate--emblem, .asel-slot--random, .asel-cursor { display: none; }
+  .asel-plate, .asel-slot--random { display: none; }
   .asel[data-side="1"] .asel-slot[data-day="2"],
   .asel[data-side="2"] .asel-slot[data-day="1"] { display: none; }
   .asel-slot {
@@ -995,169 +478,137 @@
     animation: asel-key-in 0.42s var(--w-ease) both;
     animation-delay: calc((var(--py) * 4 + var(--px)) * 28ms);
   }
-  @keyframes asel-key-in { from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.86); } to { opacity: 1; transform: none; } }
+  @keyframes asel-key-in { from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.9); } to { opacity: 1; transform: none; } }
   .asel-tile { clip-path: polygon(0 0, 84% 0, 100% 16%, 100% 100%, 16% 100%, 0 84%); }
   .asel-tile__shape--d { display: none; }
   .asel-tile__shape--m { display: inline; }
-  .asel-tile__mono { padding-bottom: 14%; font-size: calc(var(--sq) * 0.4); color: rgba(255, 255, 255, 0.14); -webkit-text-stroke-color: rgba(255, 255, 255, 0.66); }
-  .asel-tile__vault { padding-bottom: 16%; font-size: calc(var(--sq) * 0.26); }
-  .asel-slot[data-day] .asel-tile__idx { top: 6px; left: 7px; right: auto; font-size: 10px; }
+  .asel-tile__mono { padding-bottom: 14%; font-size: calc(var(--sq) * 0.4); }
+  .asel-tile__vault { padding-bottom: 16%; font-size: calc(var(--sq) * 0.24); }
+  .asel-slot[data-day] .asel-tile__day { top: 7px; left: 7px; right: auto; font-size: 8px; }
   .asel-slot[data-day] .asel-tile__name {
     left: 7px;
-    right: 6px;
+    right: 5px;
     bottom: 6px;
     text-align: left;
-    font-size: clamp(7px, min(calc(var(--sq) * 0.11), calc((var(--sq) - 14px) / (var(--lw, 8) * 0.88))), 10px);
+    /* Tighter tracking on keys, and the fit measured at ~1em per glyph, so HEGGEMANN / ONLYNUMBERS fit their key. */
+    font-size: clamp(6.5px, min(calc(var(--sq) * 0.11), calc((var(--sq) - 13px) / var(--lw, 8))), 10px);
+    letter-spacing: 0.05em;
     line-height: 1.2;
   }
-  .asel-tile__shade { background: linear-gradient(180deg, transparent 34%, rgba(0, 0, 0, 0.9) 100%), var(--asel-scan); }
-  .asel-tile__glow { stroke-width: 7; }
 
-  .asel-side, .asel-keys { display: none; }
-
-  /* ---- Bio sheet: a GlassWindow popped over the pad ---- */
+  /* ---- Bio sheet: a flat panel over the roster ---- */
   .asel-sheet {
     position: absolute;
     z-index: 12;
-    inset: calc(var(--nav) + 8px + 26px) calc(var(--shell-x) + 8px) 16px;
+    inset: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: calc(var(--nav) + 16px) 16px 16px;
+    /* Touches on the scrim/chrome pan nothing; only the bio pans (and never chains to the page). */
+    touch-action: none;
   }
   .asel-sheet[hidden] { display: none; }
-  .asel-sheet__scrim {
-    position: absolute;
-    inset: -4px;
-    padding: 0;
-    border: 0;
-    background: var(--asel-scan), rgba(0, 0, 0, 0.88);
-    cursor: default;
-    animation: asel-fade 0.24s ease both;
-  }
-  .asel-sheet__win.w-window {
+  .asel-sheet__scrim { position: absolute; inset: 0; padding: 0; border: 0; background: rgba(0, 0, 0, 0.9); cursor: default; animation: asel-fade 0.24s ease both; }
+  .asel-sheet__panel {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     max-height: 100%;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: linear-gradient(180deg, rgba(46, 46, 46, 0.97) 0%, rgba(25, 25, 25, 0.98) 40%, rgba(14, 14, 14, 0.99) 100%);
-    border-color: color-mix(in srgb, var(--day-lite) 30%, transparent);
-    transform-origin: 50% 50%;
-    animation: asel-unfold 0.46s var(--w-ease) both;
+    padding: 10px 18px 6px;
+    background: var(--w-deep);
+    box-shadow: inset 0 0 0 1px var(--w-line);
+    animation: asel-rise 0.34s var(--w-ease) both;
   }
-  .asel-sheet__win .w-window__bar { padding-right: 0; }
-  .asel-sheet__win .w-window__body { display: flex; flex-direction: column; gap: var(--w-s-3); min-height: 0; padding: var(--w-s-4); overflow: hidden; animation: asel-fade 0.3s 0.18s ease both; }
-  .asel-sheet__win .w-window__status { gap: var(--w-s-3); padding-block: 0; padding-right: 4px; }
+  .asel-sheet__panel::after {
+    /* corner ticks (the deployed frame) */
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--w-bracket), var(--w-bracket)) left top / 13px 1px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) left top / 1px 13px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) right top / 13px 1px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) right top / 1px 13px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) left bottom / 13px 1px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) left bottom / 1px 13px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) right bottom / 13px 1px,
+      linear-gradient(var(--w-bracket), var(--w-bracket)) right bottom / 1px 13px;
+    background-repeat: no-repeat;
+  }
+  .asel-sheet__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--w-s-3); }
+  .asel-sheet__bar .asel-day { margin: 0; }
+  .asel-sheet__close {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--w-s-2);
+    min-height: 44px;
+    margin-right: -4px;
+    padding: 0 4px 0 var(--w-s-3);
+    border: 0;
+    background: none;
+    font: 700 10px / 1 var(--w-font-hud);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--w-frost);
+    cursor: pointer;
+  }
+  .asel-sheet__close span { font-size: 12px; letter-spacing: 0; color: var(--w-red-hi); }
+  .asel-sheet__close:focus-visible { outline: 2px solid var(--w-frost); outline-offset: -2px; }
   .asel-sheet__name {
-    margin: 0;
+    margin: 2px 0 14px;
     font-family: var(--w-font-display);
     font-weight: 800;
-    font-size: clamp(1.5rem, 9cqi, 2.25rem);
-    line-height: 0.92;
+    font-size: clamp(1.5rem, 8.5cqi, 2.25rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
-    text-shadow: 0 0 1px currentColor;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.45);
     overflow-wrap: anywhere;
   }
-  /* The bio scrolls inside the sheet: the window never grows past the PDA and the page never moves.
-     Touches on the sheet chrome/scrim pan nothing; only the bio pans (and never chains to the page). */
-  .asel-sheet { touch-action: none; }
-  .asel-sheet__scroll { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   .asel-sheet__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; scrollbar-color: var(--w-steel) transparent; }
-  /* More text below: fade the last lines out and show a MORE cue, so a long bio never reads as cut off. */
+  /* More text below: fade the last lines, so a long bio never reads as cut off. */
   .asel-sheet__body[data-more] {
-    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
-    mask-image: linear-gradient(180deg, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
+    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 52px), transparent);
+    mask-image: linear-gradient(180deg, #000 calc(100% - 52px), transparent);
   }
-  /* Scrolled: the top edge fades too, so text never looks sliced under the LCD. */
-  .asel-sheet__body[data-up] {
-    -webkit-mask-image: linear-gradient(180deg, transparent, #000 22px);
-    mask-image: linear-gradient(180deg, transparent, #000 22px);
-  }
-  .asel-sheet__body[data-up][data-more] {
-    -webkit-mask-image: linear-gradient(180deg, transparent, #000 22px, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
-    mask-image: linear-gradient(180deg, transparent, #000 22px, #000 calc(100% - 52px), rgba(0, 0, 0, 0.18) calc(100% - 6px), transparent);
-  }
-  .asel-sheet__more {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    padding: 4px 6px 3px 8px;
-    font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--day-lite);
-    background: rgba(0, 0, 0, 0.82);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--day-lite) 30%, transparent);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--w-dur-fast) ease;
-  }
-  .asel-sheet__more b { font-weight: 400; }
-  .asel-sheet__body[data-more] + .asel-sheet__more { opacity: 1; }
-  .asel-sheet__body:focus-visible { outline: 1px solid var(--day-lite); outline-offset: 2px; }
-  .asel-sheet__bio { margin: 0; font-size: var(--w-fs-small); line-height: 1.55; color: var(--w-mist); }
-  .asel-sheet .w-window__meta { display: flex; align-items: center; align-self: stretch; gap: 10px; opacity: 1; }
-  .asel-sheet__meta { opacity: 0.75; }
-  .asel-sheet__close {
-    align-self: stretch;
-    width: 44px;
-    height: 30px;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font: 700 14px / 1 var(--w-font-hud);
-    color: #0e0e0e;
-    background: linear-gradient(180deg, #f6f6f6, #adadad);
-    box-shadow: inset 0 1px 0 #fff, inset 1px 0 0 rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-    animation: asel-fade 0.2s 0.2s ease both;
-  }
-  .asel-sheet__close:focus-visible { outline: 2px solid var(--day); outline-offset: -4px; }
-  @keyframes asel-unfold {
-    0% { opacity: 0; transform: scale(0.92, 0.04); }
-    45% { opacity: 1; transform: scale(1.02, 0.06); }
-    100% { opacity: 1; transform: none; }
-  }
+  .asel-sheet__body:focus-visible { outline: 1px solid var(--w-line-strong); outline-offset: 2px; }
+  .asel-sheet__bio { margin: 0; font-size: var(--w-fs-small); line-height: 1.6; color: var(--w-mist); }
+  .asel-sheet .asel-actions { margin-top: 6px; }
+  @keyframes asel-rise { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
   @keyframes asel-fade { from { opacity: 0; } to { opacity: 1; } }
 }
 
-/* Short phones (≈ 375×667): tighter title, smaller keys budget already in --sq. */
+/* Short phones (≈ 375×667): tighter rhythm. */
 @media (max-width: 959.98px) and (max-height: 720px) {
-  .asel { gap: 8px; padding-bottom: 16px; }
-  .asel .asel-core__kicker { display: none; }
-  .asel-tally { margin-top: 4px; }
-  .asel-switch { height: 32px; }
+  .asel { row-gap: 8px; padding-bottom: 14px; }
+  .asel-head { padding-top: calc(var(--nav) + 20px); }
+  .asel-switch { height: 36px; }
 }
 
-/* Tablets in portrait: a wider pad, same structure. */
+/* Tablets in portrait: same structure, a wider gutter. */
 @media (max-width: 959.98px) and (min-width: 600px) {
-  .asel { --shell-x: max(16px, calc((100% - 560px) / 2)); }
+  /* vw, not %: the splash's negative margin resolves this inside the grid area, where % means something else. */
+  .asel { --pad: max(32px, calc((100vw - 560px) / 2)); }
 }
 
-/* Soft lock (phones): the PDA settles into place when a scroll ends near it. Proximity, never a trap. */
+/* Soft lock (phones): the roster settles into place when a scroll ends near it. Proximity, never a trap. */
 @media (max-width: 959.98px) and (prefers-reduced-motion: no-preference) {
   html:has(.asel-section) { scroll-snap-type: y proximity; }
 }
 
 /* ==========================================================================
-   REDUCED MOTION: no swap FX, no roulette flicker, no slides
+   REDUCED MOTION: no crossfade settle, no roulette flicker, no slides
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .asel-layer[data-enter],
-  .asel-layer:not([data-current]),
-  .asel-layer[data-enter] .asel-typerows__row,
-  .asel-layer[data-enter] .asel-layer__blob,
-  .asel-layer[data-enter] .asel-reticle svg,
-  .asel-layer[data-enter] .asel-reticle__ring--dash,
-  .asel-layer[data-enter] .asel-viewfinder,
   .asel-slot--random[data-rolling] .asel-random__q,
   .asel-slot,
-  .asel-screen__cue b,
   .asel-sheet__scrim,
-  .asel-sheet__win.w-window,
-  .asel-sheet__win .w-window__body,
-  .asel-sheet__close,
+  .asel-sheet__panel,
   .asel[data-rolling] .asel-switch__rnd b { animation: none; }
-  .asel-fx { display: none; }
-  .asel-tile__media, .asel-random__q, .asel-orb::after { transition: none; }
-  .asel-slot:hover .asel-tile__media, .asel-slot[data-pressed] .asel-tile__media { transform: none; }
+  .asel-tile__media, .asel-random__q, .asel-layer__video { transition: none; }
+  .asel-slot[data-pressed] .asel-tile__media { transform: none; }
 }

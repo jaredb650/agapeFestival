@@ -16,6 +16,7 @@ import { Nav } from "@/components/winter/page/Nav";
 import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
 import { Tickets } from "@/components/winter/page/Tickets";
 import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
+import { Preloader } from "@/components/winter/preloader/Preloader";
 import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
 import "@/styles/winter.css";
@@ -66,6 +67,7 @@ export default function Home() {
       <a className="wskip" href="#main">
         Skip to content
       </a>
+      <Preloader />
       <GestureRescue />
       <ScrollBackground media={BG} startTime={BG_TIMES.top} endTime={BG_TIMES.end} />
       <Nav

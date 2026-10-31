@@ -3,7 +3,7 @@
 **Jared, verbatim: "This site is grinding my laptop to a halt so it needs to be butter smooth."** His machine is an **8 GB RAM MacBook**. This is the top priority now. The design is approved ("each one nailed it"), so **performance work must have zero visual downgrade**: same look, same animations, same feel. Cheaper implementations are fine, and better looking is a bonus.
 
 ## Setup
-- You're in a git worktree that may have started on `main`. FIRST run: `git checkout -B "$(git branch --show-current)" fd51e16`, then confirm `git log --oneline -1` shows `fd51e16 Rename Artist Profiler to The Roster`. Then `cd agape-festival && npm ci --prefer-offline --no-audit --no-fund` (under the lock, see below).
+- You're in a git worktree that may have started on `main`. FIRST run: `git checkout -B "$(git branch --show-current)" 619c55e`, then confirm `git log --oneline -1` shows `619c55e Perf wave brief`. Then `cd agape-festival && npm ci --prefer-offline --no-audit --no-fund` (under the lock, see below).
 - **8 GB RAM, three agents at once:**
   - Gate `npm ci`, `next build`, Lighthouse and perf traces behind the shared lock: `L=/private/tmp/claude-501/-Users-jaredbeguelin-code-agape-festival/1ca46e4c-138f-4f9e-8a9f-6cb15d7af4df/scratchpad/locks/heavy; until mkdir $L 2>/dev/null; do sleep 10; done; <cmd>; rmdir $L` (always release it).
   - Stop your dev server and close your browser between measurement rounds.

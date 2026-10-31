@@ -78,8 +78,9 @@ export default function Home() {
       <main id="main" tabIndex={-1}>
         <Hero />
         <FlyerSection />
-        <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
+        {/* Preview: the explorable profiler first, then the plain lineup for anyone who skips it. */}
         {SHOW_ARTIST_SELECT && <ArtistSelectSection bgAt={BG_TIMES.afterLineup} />}
+        <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
         <Tickets bgAt={SHOW_ARTIST_SELECT ? undefined : BG_TIMES.afterLineup} />
         <Merch />
         <Faq />

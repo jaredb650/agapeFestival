@@ -4,8 +4,6 @@
 /** Fired on window when the preloader hands over and the page's own intro should start. */
 export const BOOT_EVENT = "w:boot-done";
 
-/** sessionStorage flag: a repeat visit in the same session gets the quick fade. */
-export const BOOT_SEEN_KEY = "w:boot-seen";
 
 export interface BootState {
   /** True once the handover has started (the page intro may play). */

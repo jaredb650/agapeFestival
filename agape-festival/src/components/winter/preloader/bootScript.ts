@@ -5,7 +5,7 @@
 // which hydration leaves alone, so the script may mutate and remove it freely.
 //
 // What it does:
-//  - Flags the overlay (data-js; data-fast on a repeat visit this session)
+//  - Flags the overlay (data-js; data-fast on a back/forward return)
 //    before first paint, and parks the hero + nav CSS intros (c.hold) until the
 //    handover. Nothing touches React-owned elements.
 //  - Finds the hero logo <img> ([data-boot-logo] img, else the #hero img whose
@@ -29,8 +29,6 @@ export interface BootConfig {
   min: number;
   /** Hard cap: exit even if assets are slow, ms. */
   max: number;
-  /** sessionStorage key for repeat visits. */
-  key: string;
   /** Window event fired at handover. */
   ev: string;
   /** Sheet that parks the page's CSS intros until the handover. */
@@ -51,12 +49,14 @@ export function wBoot(c: BootConfig): void {
   const state: BootState = { done: false, at: 0, logo: false };
   w.__wboot = state;
 
+  // Every load plays the full boot, reloads included (Jared: a hard refresh should replay it). Only a
+  // back/forward return gets the quick fade.
   let seen = false;
   try {
-    seen = sessionStorage.getItem(c.key) === "1";
-    sessionStorage.setItem(c.key, "1");
+    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    seen = nav?.type === "back_forward";
   } catch {
-    /* storage blocked: treat as a first visit */
+    /* no Navigation Timing: treat as a first visit */
   }
   const reduced = !!w.matchMedia && w.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fast = seen || d.visibilityState === "hidden";

@@ -1,4 +1,4 @@
-import { BOOT_EVENT, BOOT_SEEN_KEY } from "./boot";
+import { BOOT_EVENT } from "./boot";
 import { wBoot, type BootConfig } from "./bootScript";
 import { BOOT_MARKUP } from "./markup";
 import { BOOT_CSS, HOLD_CSS } from "./styles";
@@ -7,7 +7,6 @@ import { BootGuard } from "./BootGuard";
 const CONFIG: BootConfig = {
   min: 900,
   max: 2500,
-  key: BOOT_SEEN_KEY,
   ev: BOOT_EVENT,
   // Parks the hero + nav CSS intros until the handover.
   hold: HOLD_CSS,
@@ -27,7 +26,7 @@ const CONFIG: BootConfig = {
  * are already where the hero has them, and the hero's intro starts right then
  * (`w:boot-done`). Markup, critical CSS and runtime are all inline in the
  * initial HTML, so it paints with the first frame (no request) while the page
- * renders and hydrates underneath. Repeat visits this session and any
+ * renders and hydrates underneath. A back/forward return and any
  * key/click/scroll get a quick fade; reduced motion a plain fade; without JS it
  * fades itself out after ~4 s. Decorative: aria-hidden, nothing focusable.
  */

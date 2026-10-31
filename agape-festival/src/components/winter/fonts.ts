@@ -21,7 +21,10 @@ export const hudFont = localFont({
   src: "./load/fonts/orbitron.woff2",
   weight: "400 900",
   style: "normal",
-  display: "swap",
+  // block, not swap: the hero types its lines in this face (and the pixel one) right after the preloader. With
+  // swap, a hard refresh (empty cache) could start the intro in the wider fallback and visibly shrink the text
+  // when the real font lands. Both files are tiny and preloaded, and the preloader covers the block period.
+  display: "block",
   variable: "--font-hud",
 });
 
@@ -39,7 +42,7 @@ export const bodyFont = localFont({
 // Chonky Pixels: the hero's WINTER EDITION + date (as deployed), so it is above the fold now. 4 KB: preloaded.
 export const pixelFont = localFont({
   src: "../../../public/assets/fonts/ChonkyPixels.woff2",
-  display: "swap",
+  display: "block",
   preload: true,
   variable: "--font-pixel",
 });

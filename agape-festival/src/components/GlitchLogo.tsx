@@ -278,7 +278,11 @@ class LogoBoundary extends Component<{ children: ReactNode; onFailure: () => voi
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-export default function GlitchLogo({ imageSrc }: { imageSrc: string }) {
+/**
+ * `overlay`: the caller keeps its own static image in place (no <img> here, so nothing is swapped or re-decoded)
+ * and hides it when `onShow` fires, once the canvas has painted the logo.
+ */
+export default function GlitchLogo({ imageSrc, overlay = false, onShow }: { imageSrc: string; overlay?: boolean; onShow?: (shown: boolean) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
   const [ready, setReady] = useState(false);
@@ -291,10 +295,29 @@ export default function GlitchLogo({ imageSrc }: { imageSrc: string }) {
     return () => query.removeEventListener("change", update);
   }, []);
   const show = enabled && ready && !failed;
+  // Report only once the drawing surface has its final size (R3F mounts it at a default 300x150 and measures a
+  // frame or more later) and has then had two frames to paint, so the caller never swaps over a blank or a
+  // wrongly sized logo.
+  useEffect(() => {
+    if (!onShow) return;
+    if (!show) { onShow(false); return; }
+    let raf = 0;
+    let settled = 0;
+    const check = () => {
+      const box = containerRef.current?.getBoundingClientRect();
+      const surface = containerRef.current?.querySelector("canvas")?.getBoundingClientRect();
+      const sized = !!box && !!surface && Math.abs(box.width - surface.width) < 1 && Math.abs(box.height - surface.height) < 1;
+      settled = sized ? settled + 1 : 0;
+      if (settled >= 3) onShow(true);
+      else raf = requestAnimationFrame(check);
+    };
+    raf = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(raf);
+  }, [show, onShow]);
   return (
-    <div ref={containerRef} className={`glitch-logo ${enabled ? "glitch-logo-interactive" : ""} ${show ? "glitch-logo-ready" : ""}`}>
+    <div ref={containerRef} className={`glitch-logo ${overlay ? "glitch-logo-overlay" : ""} ${enabled ? "glitch-logo-interactive" : ""} ${show ? "glitch-logo-ready" : ""}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageSrc} alt="ÄGAPĒ Festival" width={586} height={310} draggable={false} fetchPriority="high" />
+      {!overlay && <img src={imageSrc} alt="ÄGAPĒ Festival" width={586} height={310} draggable={false} fetchPriority="high" />}
       {enabled && !failed && <div className="glitch-logo-canvas" aria-hidden="true">
         <LogoBoundary onFailure={() => setFailed(true)}>
           <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 1.5]} frameloop="demand"

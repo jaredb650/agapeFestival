@@ -28,9 +28,14 @@ export interface HeroLogoAsset {
  * glitches in with the CSS `wh-logo-in`), then desktop mice get the deployed
  * three.js mouse-trail distortion (GlitchLogo, render-on-demand) using the same
  * cached file as its texture. Reduced motion: static image only.
+ *
+ * The static image is never unmounted: the canvas is laid exactly over it and
+ * the image is hidden only once the canvas has painted, so the logo can't
+ * blink, re-decode or change size at the swap.
  */
 export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }) {
   const [webgl, setWebgl] = useState(false);
+  const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
@@ -56,12 +61,14 @@ export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }
     };
   }, []);
 
-  if (webgl) return <GlitchLogo imageSrc={logo.src} />;
   return (
-    <GlitchLayer intensity="subtle" className="wh__logo-static">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={logo.src} srcSet={logo.srcSet} sizes={sizes} width={logo.width} height={logo.height} alt="" draggable={false} fetchPriority="high" />
-    </GlitchLayer>
+    <span className="wh__logo-stack" data-gl={shown ? "" : undefined}>
+      <GlitchLayer intensity="subtle" className="wh__logo-static">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logo.src} srcSet={logo.srcSet} sizes={sizes} width={logo.width} height={logo.height} alt="" draggable={false} fetchPriority="high" />
+      </GlitchLayer>
+      {webgl && <GlitchLogo imageSrc={logo.src} overlay onShow={setShown} />}
+    </span>
   );
 }
 

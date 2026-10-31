@@ -95,7 +95,14 @@
 .wh__logo-box { display: block; aspect-ratio: 1233 / 682; } /* reserves the logo's height through the static → WebGL swap */
 .wh__logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 22px #0009); }
 /* The hi-res master is 1233x682 (the deployed PNG was 586x310): keep the WebGL box on the image's own ratio. */
-.wh__logo .glitch-logo { aspect-ratio: 1233 / 682; }
+/* The WebGL logo sits exactly over the static one (same box, same contain fit); the static image hides only once
+   the canvas has painted (data-gl), with no crossfade, so the logo never dims, blinks or resizes. */
+.wh__logo-stack { position: relative; display: block; width: 100%; height: 100%; }
+.wh__logo-stack > .wh__logo-static { width: 100%; height: 100%; }
+.wh__logo .glitch-logo-overlay { position: absolute; inset: 0; aspect-ratio: auto; }
+.wh__logo .glitch-logo-overlay .glitch-logo-canvas { opacity: 0; transition: none; filter: drop-shadow(0 3px 22px #0009); }
+.wh__logo-stack[data-gl] .glitch-logo-overlay .glitch-logo-canvas { opacity: 1; }
+.wh__logo-stack[data-gl] > .wh__logo-static { visibility: hidden; }
 
 .wh__details { display: grid; justify-items: center; gap: 15px; text-transform: uppercase; }
 .wh__edition,
@@ -137,7 +144,8 @@
 
 /* ---- Intro (deployed choreography at ~0.6x) --------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
-  .wh__logo { animation: wh-logo-in 0.8s 0.15s both; }
+  /* On the text-free logo box, so the preloader (which already revealed the logo) can find and skip it. */
+  .wh__logo-box { animation: wh-logo-in 0.8s 0.15s both; }
   .wh__edition span { animation: wh-type 0.85s steps(14, end) 0.75s both; }
   .wh__date span { animation: wh-type 0.6s steps(9, end) 1.45s both; }
   .wh__reveal { animation: wh-quiet-in 1s 1.9s both; }

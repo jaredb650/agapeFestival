@@ -57,7 +57,7 @@ const CSS = String.raw`
 [data-exit=full] .wb-bg,[data-exit=full] .wb-k{animation:wb-o .5s var(--e) .3s both}
 /* Landed: the copy and the hairline dissolve into the hero's own logo and divider. */
 [data-out] .wb-sl,[data-out] .wb-ln{animation:wb-o .2s var(--e) both}
-/* Repeat visit, a key/click/scroll during the boot, or reduced motion: a plain fade. */
+/* Back/forward return, a key/click/scroll during the boot, or reduced motion: a plain fade. */
 .wb[data-exit=quick],.wb[data-exit=fade]{animation:wb-o .3s var(--e) both!important}
 [data-fast] .wb-k,[data-fast] .wb-ln{visibility:hidden}
 

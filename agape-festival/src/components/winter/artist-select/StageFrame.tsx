@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * The "breeder unit" bezel around the desktop stage: chamfered corners, a
- * centre notch connector on the top edge (it houses the section label), and
- * a second hairline 6px inside. Drawn as SVG at the measured pixel size so
- * the chamfers and notch never stretch. Decorative.
+ * The "breeder unit" bezel around the stage (desktop) / the PDA shell
+ * (phones): chamfered corners, a centre notch connector on the top edge (it
+ * houses the section label), and a second hairline 6px inside. Drawn as SVG
+ * at the measured pixel size so the chamfers and notch never stretch; the
+ * notch and chamfers scale down on narrow shells. Decorative.
  */
 export function StageFrame({ label }: { label: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -29,7 +30,7 @@ export function StageFrame({ label }: { label: string }) {
         <svg width={size.w} height={size.h} viewBox={`0 0 ${size.w} ${size.h}`} focusable="false">
           <path className="asel-frame__outer" d={bezel(size.w, size.h, 0)} />
           <path className="asel-frame__inner" d={bezel(size.w, size.h, 6)} />
-          <path className="asel-frame__notch" d={notchCap(size.w, 0)} />
+          <path className="asel-frame__notch" d={notchCap(size.w)} />
         </svg>
       )}
       <span className="asel-frame__label">{label}</span>
@@ -37,13 +38,12 @@ export function StageFrame({ label }: { label: string }) {
   );
 }
 
-const C = 24; // corner chamfer
-const NW = 300; // notch floor width
-const ND = 24; // notch depth
-const NS = 24; // notch slope run
+/** Corner chamfer, notch floor width, notch depth, notch slope run: full size ≥ 600px, compact below. */
+const dims = (w: number) => (w >= 600 ? { C: 24, NW: 300, ND: 24, NS: 24 } : { C: 16, NW: Math.min(196, w * 0.52), ND: 20, NS: 18 });
 
 /** Chamfered rectangle with the top-centre notch, inset by `i`. */
 function bezel(w: number, h: number, i: number) {
+  const { C, NW, ND, NS } = dims(w);
   const c = C - i * 0.42;
   const l = i + 0.5;
   const t = i + 0.5;
@@ -69,8 +69,9 @@ function bezel(w: number, h: number, i: number) {
 }
 
 /** Short chrome ticks either side of the notch floor (the connector "pins"). */
-function notchCap(w: number, i: number) {
+function notchCap(w: number) {
+  const { NW, ND } = dims(w);
   const mid = w / 2;
-  const y = i + 0.5 + ND;
+  const y = 0.5 + ND;
   return `M${mid - NW / 2 + 10} ${y + 5}h18M${mid + NW / 2 - 28} ${y + 5}h18`;
 }

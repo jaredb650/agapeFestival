@@ -1,15 +1,18 @@
-// Tile geometry for the artist select ("shard" tiles).
+// Tile geometry for the artist profiler ("shard" tiles).
 //
-// Every length is in tile units (1 unit = --tw, the regular tile width, set
-// per breakpoint in artist-select.css). Polygons are emitted in % of each
-// tile's own box, so one definition drives the clip-path AND the SVG edge
-// (a non-scaling stroke on the same points), and focus/hover rings follow the
-// shape at every size.
+// Desktop: every length is in tile units (1 unit = --tw, the regular tile
+// width, set per breakpoint in artist-select.css). Polygons are emitted in %
+// of each tile's own box, so one definition drives the clip-path AND the SVG
+// edge (a non-scaling stroke on the same points), and focus/hover rings follow
+// the shape at every size.
 //
 // Shape: a parallelogram that leans OUTWARD (Day 1 wing "\", Day 2 wing "/")
 // with the outer-top corner chamfered. Rows below shift inward by the skew so
 // the slanted gaps run straight through both rows, and the two wings close
 // into one chevron around the centre plates (emblem above, RANDOM below).
+//
+// Mobile: one day at a time, square "PDA keys" in a centred inverted pyramid
+// (positions in square steps, see pyramidCells).
 
 import type { DayNumber } from "@/data/winter";
 
@@ -27,8 +30,6 @@ export const U = {
   chy: 0.17,
   /** Width of the centre channel at the bottom of the grid. */
   gc: 1.14,
-  /** Mobile: gap between the stacked blocks (wing / centre strip / wing). */
-  mg: 0.2,
 } as const;
 
 /** Distance between neighbouring regular tiles. */
@@ -40,20 +41,14 @@ export const WING_W = U.sk + (ROW_CAP[0] - 1) * STEP + 1;
 /** Both wings and the centre channel. */
 export const FIELD_W = 2 * WING_W + U.gc;
 export const FIELD_H = 2 * U.h + U.vg;
-/** Mobile (stacked): wing, centre strip, wing. */
-export const MOBILE_W = WING_W;
-export const MOBILE_H = 2 * FIELD_H + U.h + 2 * U.mg;
 
 export type Pt = readonly [number, number];
 
 export interface Box {
-  /** Desktop (split) position + size, in units. */
+  /** Desktop position + size, in units. */
   x: number;
   y: number;
   w: number;
-  /** Mobile (stacked) position, in units. Same width. */
-  mx: number;
-  my: number;
   /** Outline in % of the box. */
   poly: Pt[];
 }
@@ -61,25 +56,18 @@ export interface Box {
 const r = (n: number) => Math.round(n * 1000) / 1000;
 
 /** Leaning shard, chamfered on the outer-top corner. `lean` 1 = Day 1 ("\"), 2 = Day 2 ("/"). */
-function shard(w: number, lean: DayNumber, chamfer = true): Pt[] {
+function shard(w: number, lean: DayNumber): Pt[] {
   const sk = (U.sk / w) * 100;
   const cx = (U.chx / w) * 100;
   const cy = (U.chy / U.h) * 100;
   // Day 2 ("/", outer edge on the right), then mirrored for Day 1.
-  const pts: Pt[] = chamfer
-    ? [
-        [sk, 0],
-        [100 - cx, 0],
-        [100 - (sk * cy) / 100, cy],
-        [100 - sk, 100],
-        [0, 100],
-      ]
-    : [
-        [sk, 0],
-        [100, 0],
-        [100 - sk, 100],
-        [0, 100],
-      ];
+  const pts: Pt[] = [
+    [sk, 0],
+    [100 - cx, 0],
+    [100 - (sk * cy) / 100, cy],
+    [100 - sk, 100],
+    [0, 100],
+  ];
   return (lean === 2 ? pts : pts.map(([x, y]) => [100 - x, y] as Pt)).map(([x, y]) => [r(x), r(y)] as Pt);
 }
 
@@ -94,8 +82,8 @@ function wedge(w: number): Pt[] {
   ];
 }
 
-export const toClipPath = (poly: Pt[]) => `polygon(${poly.map(([x, y]) => `${x}% ${y}%`).join(", ")})`;
-export const toSvgPoints = (poly: Pt[]) => poly.map(([x, y]) => `${x},${y}`).join(" ");
+export const toClipPath = (poly: readonly Pt[]) => `polygon(${poly.map(([x, y]) => `${x}% ${y}%`).join(", ")})`;
+export const toSvgPoints = (poly: readonly Pt[]) => poly.map(([x, y]) => `${x},${y}`).join(" ");
 
 /** Width of each tile when a bottom row holds fewer than 4: they stretch to the same outline. */
 function bottomWidth(n: number) {
@@ -105,8 +93,6 @@ function bottomWidth(n: number) {
 }
 
 const ROW_Y = (row: number) => row * (U.h + U.vg);
-/** Mobile: where the Day 2 wing starts. */
-const MOBILE_D2_Y = FIELD_H + U.mg + U.h + U.mg;
 
 /**
  * Place one wing's tiles. `count` per row, k = 0 is the tile nearest the centre.
@@ -119,14 +105,10 @@ export function placeWing(day: DayNumber, rows: readonly [number, number]): Box[
     return Array.from({ length: count }, (_, k) => {
       // Offset of the tile's inner side from the wing's inner edge.
       const o = (row === 0 ? U.sk : 0) + k * pitch;
-      const y = ROW_Y(row);
-      const xLeftWing = WING_W - o - w;
       return {
-        x: day === 1 ? xLeftWing : WING_W + U.gc + o,
-        y,
+        x: day === 1 ? WING_W - o - w : WING_W + U.gc + o,
+        y: ROW_Y(row),
         w,
-        mx: day === 1 ? xLeftWing : o,
-        my: day === 1 ? y : MOBILE_D2_Y + y,
         poly: shard(w, day),
       } satisfies Box;
     });
@@ -136,43 +118,67 @@ export function placeWing(day: DayNumber, rows: readonly [number, number]): Box[
 /** RANDOM: the wedge in the bottom row of the centre channel. */
 export function randomBox(): Box {
   const w = U.gc + 2 * U.sk - 2 * U.g;
-  return {
-    x: WING_W - U.sk + U.g,
-    y: ROW_Y(1),
-    w,
-    mx: (MOBILE_W - w) / 2,
-    my: FIELD_H + U.mg,
-    poly: wedge(w),
-  };
+  return { x: WING_W - U.sk + U.g, y: ROW_Y(1), w, poly: wedge(w) };
 }
 
-/** Emblem plate: the wider wedge in the top row of the centre channel (desktop only). */
+/** Emblem plate: the wider wedge in the top row of the centre channel. */
 export function emblemBox(): Box {
   const w = U.gc + 4 * U.sk - 2 * U.g;
-  return { x: WING_W - 2 * U.sk + U.g, y: 0, w, mx: 0, my: 0, poly: wedge(w) };
+  return { x: WING_W - 2 * U.sk + U.g, y: 0, w, poly: wedge(w) };
 }
 
-/** Mobile centre strip: the two day plates either side of RANDOM, parallel to its slanted sides. */
-export function mobilePlates(): Record<DayNumber, { mx: number; my: number; w: number; poly: Pt[] }> {
-  const rnd = randomBox();
-  const my = rnd.my;
-  // Left plate leans like the Day 1 wing; its right edge runs parallel to RANDOM's left edge.
-  const lw = rnd.mx - U.g + U.sk;
-  const rx = rnd.mx + rnd.w + U.g - U.sk;
-  const rw = MOBILE_W - rx;
-  return {
-    1: { mx: 0, my, w: lw, poly: shard(lw, 1, false) },
-    2: { mx: rx, my, w: rw, poly: shard(rw, 2, false) },
-  };
+/**
+ * Where the cursor tag sits on a tile, in tile units: the centre of the
+ * tile's top edge (the shard leans, so it's off-centre), above top-row tiles
+ * and below bottom-row tiles so it never covers a neighbour's name.
+ */
+export function tagAnchor(b: Box): { x: number; y: number; pos: "above" | "below" } {
+  const top = b.poly.filter(([, y]) => y === 0).map(([x]) => x);
+  const cx = top.length ? (Math.min(...top) + Math.max(...top)) / 200 : 0.5;
+  const below = b.y > 0;
+  return { x: r(b.x + b.w * cx), y: r(below ? b.y + U.h : b.y), pos: below ? "below" : "above" };
+}
+
+// ---- Mobile: square keys in a centred inverted pyramid ---------------------
+
+/** Square "PDA key": chamfered top-right and bottom-left corners (% of the box). */
+export const SQUARE: readonly Pt[] = [
+  [0, 0],
+  [84, 0],
+  [100, 16],
+  [100, 100],
+  [16, 100],
+  [0, 84],
+];
+
+/** Inverted pyramid rows for `n` tiles with `cap` in the top row: 9 → 4·3·2, 8 → 4·3·1. */
+export function pyramidRows(n: number, cap: number): number[] {
+  const rows: number[] = [];
+  let left = n;
+  let c = cap;
+  while (left > 0) {
+    const k = Math.min(c, left);
+    rows.push(k);
+    left -= k;
+    c = Math.max(1, c - 1);
+  }
+  return rows;
+}
+
+/** Smallest top row that fits `n` tiles in three pyramid rows (min 3). */
+export const pyramidCap = (n: number) => Math.max(3, Math.ceil((n + 3) / 3));
+
+/** Cell positions in square steps (x is fractional on short rows: they're centred). */
+export function pyramidCells(n: number, cap: number): { x: number; y: number }[] {
+  const cells: { x: number; y: number }[] = [];
+  pyramidRows(n, cap).forEach((k, row) => {
+    const x0 = (cap - k) / 2;
+    for (let i = 0; i < k; i++) cells.push({ x: x0 + i, y: row });
+  });
+  return cells;
 }
 
 /** Inline CSS custom properties for a box (consumed by artist-select.css). */
-export function boxVars(b: { x?: number; y?: number; w: number; mx: number; my: number }) {
-  return {
-    "--x": r(b.x ?? 0),
-    "--y": r(b.y ?? 0),
-    "--w": r(b.w),
-    "--mx": r(b.mx),
-    "--my": r(b.my),
-  } as Record<string, number>;
+export function boxVars(b: { x: number; y: number; w: number }) {
+  return { "--x": r(b.x), "--y": r(b.y), "--w": r(b.w) } as Record<string, number>;
 }

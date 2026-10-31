@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { memo, type CSSProperties } from "react";
 import { GlassWindow, Redaction } from "@/components/winter/ui";
 import type { ArtistEntry, DayNumber, WinterDay } from "@/data/winter";
 import { useScramble } from "./hooks";
@@ -34,7 +34,7 @@ interface SidePanelProps {
 const longestWord = (s: string) => Math.max(...s.split(/\s+/).map((w) => w.length));
 
 /** One side's readout: HUD header, the big name band, and the skinned bio window with LCD + orb pager. */
-export function SidePanel({ id, day, info, wing, entry, index, active, reduced, bioOpen, dayLabel, pending, onStep, onToggleBio }: SidePanelProps) {
+export const SidePanel = memo(function SidePanel({ id, day, info, wing, entry, index, active, reduced, bioOpen, dayLabel, pending, onStep, onToggleBio }: SidePanelProps) {
   const named = entry && isNamed(entry) ? entry : null;
   const locked = !!entry && !named;
   const idle = !entry;
@@ -55,14 +55,25 @@ export function SidePanel({ id, day, info, wing, entry, index, active, reduced, 
 
   return (
     <section id={id} className="asel-side" data-day={day} data-state={idle ? "idle" : locked ? "locked" : "named"} data-active={active || undefined} aria-labelledby={`${id}-name`}>
+      {/* Player banner: the day's colour plate (P1 blue / P2 red) with the flyer's hand-scrawled DAY label. */}
       <header className="asel-side__hud">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="asel-side__scrawl" src={dayLabel.src} width={dayLabel.width} height={dayLabel.height} alt={`Day ${day}`} loading="lazy" decoding="async" />
-        <span className="asel-side__date">
-          {info.weekday.slice(0, 3).toUpperCase()} {date}
+        <span className="asel-dayplate">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="asel-dayplate__scrawl" src={dayLabel.src} width={dayLabel.width} height={dayLabel.height} alt={`Day ${day}`} loading="lazy" decoding="async" />
         </span>
-        <span className="asel-side__rule" aria-hidden="true" />
-        <span className="asel-side__count">{pad2(wing.slots.length)} slots</span>
+        <span className="asel-side__meta">
+          <span className="asel-side__date">
+            {info.weekday.slice(0, 3).toUpperCase()} {date}
+          </span>
+          <span className="asel-side__count">
+            {pad2(wing.named)} confirmed{wing.locked ? ` + ${pad2(wing.locked)} locked` : ""}
+          </span>
+        </span>
+        <span className="asel-side__rule" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
       </header>
 
       <h3 id={`${id}-name`} className="asel-name" data-idle={idle || undefined} style={{ "--lw": lw } as CSSProperties}>
@@ -148,10 +159,10 @@ export function SidePanel({ id, day, info, wing, entry, index, active, reduced, 
           </p>
         ) : (
           <p className="asel-window__note">
-            <b>{info.dateLong}</b> Hover or tap a Day {day} tile to load a fighter.
+            <b>{info.dateLong}</b> Hover or tap a Day {day} tile to load an artist profile.
           </p>
         )}
       </GlassWindow>
     </section>
   );
-}
+});

@@ -18,7 +18,6 @@ import { LoopBackground } from "@/components/winter/page/LoopBackground";
 import { Merch } from "@/components/winter/page/Merch";
 import { Nav } from "@/components/winter/page/Nav";
 import { Tickets } from "@/components/winter/page/Tickets";
-import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
 import { Preloader } from "@/components/winter/preloader/Preloader";
 import { BG, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
@@ -102,7 +101,6 @@ export default function Home() {
         <Gap />
       </main>
       <Footer links={NAV_LINKS} />
-      <OffscreenPauser />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

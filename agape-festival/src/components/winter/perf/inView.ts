@@ -1,9 +1,5 @@
-"use client";
-
-import { useEffect, useState, type RefObject } from "react";
-
 // One IntersectionObserver per (rootMargin, threshold) pair, shared by every
-// caller on the page: dozens of "pause me when off screen" elements cost one
+// caller on the page: dozens of "tell me when I'm on screen" elements cost one
 // observer, not dozens.
 
 export interface InViewOptions {
@@ -72,40 +68,4 @@ export function observeInView(
       pools.delete(key);
     }
   };
-}
-
-/**
- * Toggle `data-offscreen` on `el` while it is out of view. With the rule in
- * winter.css, every CSS animation inside it (pseudo-elements included) parks
- * via `animation-play-state` and resumes where it left off.
- */
-export function pauseWhenOffscreen(el: HTMLElement, opts: InViewOptions = { rootMargin: "64px 0px" }): () => void {
-  const off = observeInView(el, (inView) => el.toggleAttribute("data-offscreen", !inView), opts);
-  return () => {
-    off();
-    el.removeAttribute("data-offscreen");
-  };
-}
-
-/** Live in-view flag for React consumers that genuinely need to re-render on it (prefer observeInView). */
-export function useInView(ref: RefObject<Element | null>, opts: InViewOptions = {}): boolean {
-  const [inView, setInView] = useState(false);
-  const { rootMargin, threshold } = opts;
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    return observeInView(el, setInView, { rootMargin, threshold });
-  }, [ref, rootMargin, threshold]);
-  return inView;
-}
-
-/** Hook form of pauseWhenOffscreen. */
-export function usePauseOffscreen(ref: RefObject<HTMLElement | null>, opts?: InViewOptions) {
-  const rootMargin = opts?.rootMargin;
-  const threshold = opts?.threshold;
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    return pauseWhenOffscreen(el, { rootMargin: rootMargin ?? "64px 0px", threshold });
-  }, [ref, rootMargin, threshold]);
 }

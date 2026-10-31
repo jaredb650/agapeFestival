@@ -12,8 +12,7 @@
 
    The hero, flyer and preloader are frozen: they keep Orbitron, Chonky
    Pixels and their exact old values through a scoped block at the end of
-   this file. Legacy --w-* names survive only as deprecated aliases so the
-   sections still being rebuilt keep rendering.
+   this file (the only --w-* names left, set on .wh).
    ========================================================================== */
 
 .winter {
@@ -59,8 +58,7 @@
 
   /* ---- Grid (grid.css). Mobile values first; breakpoints below. ---- */
   --g-cols: 4;
-  --g-margin: 16px;        /* page margin: the frame lines sit here */
-  --g-max: 1760px;         /* widest the 12 columns get; margins grow past it */
+  --g-margin: 16px;        /* page margin: the frame lines sit here (full bleed: no max width) */
   --g-pad: 16px;           /* cell padding */
   --g-gutter: 32px;        /* the empty band between two sections (<Gap />) */
   --g-row-1: 56px;         /* link cells, button rows, the nav */
@@ -185,22 +183,6 @@ html:has(.winter) { scrollbar-color: rgba(255, 255, 255, 0.24) var(--c-ink, #000
 .w-btn[aria-disabled="true"], .w-btn:disabled { opacity: 0.4; pointer-events: none; }
 .w-btn__label { position: relative; }
 .w-btn__icon { flex: none; width: 16px; height: 16px; }
-
-/* ==========================================================================
-   Redaction — the flyer's white marker blob for an unannounced act. Content,
-   not chrome: kept for sections that show "To be announced" as the flyer does.
-   ========================================================================== */
-.w-redaction { display: inline-block; height: 0.84em; vertical-align: -0.08em; color: var(--c-fg); line-height: 0; }
-.w-redaction svg { display: block; width: 100%; height: 100%; overflow: visible; }
-
-/* ==========================================================================
-   Off-screen parking (components/winter/perf): [data-offscreen] stops every
-   CSS animation inside an element while it is out of view.
-   ========================================================================== */
-[data-offscreen],
-[data-offscreen] *,
-[data-offscreen] *::before,
-[data-offscreen] *::after { animation-play-state: paused !important; }
 
 /* ##########################################################################
    FROZEN: the hero, the flyer layover and the preloader look exactly as
@@ -364,63 +346,4 @@ html:has(.winter) { scrollbar-color: rgba(255, 255, 255, 0.24) var(--c-ink, #000
   .w-glitch[data-burst] .w-glitch__fringe,
   .w-glitch[data-burst] .w-glitch__slice,
   .w-glitch[data-burst] .w-glitch__sweep { display: none; }
-}
-
-/* ##########################################################################
-   DEPRECATED ALIASES — the old --w-* names, re-pointed at the new tokens so
-   sections that have not been rebuilt yet still render. Do not use them in
-   new code. Delete this block once no stylesheet references a --w-* name
-   (except the frozen ones scoped to .wh above). Glow, bracket, volt and ice
-   tokens are gone on purpose.
-   ########################################################################## */
-.winter {
-  --w-ink: var(--c-ink);
-  --w-ink-2: #050505;
-  --w-deep: #0b0b0b;
-  --w-panel: #121212;
-  --w-steel: #1f1f1f;
-  --w-fog: var(--c-fg-3);
-  --w-mist: var(--c-fg-2);
-  --w-soft: var(--c-fg-2);
-  --w-frost: var(--c-fg);
-  --w-red: var(--c-red);
-  --w-red-hover: var(--c-red-hover);
-  --w-red-line: var(--c-red-line);
-  --w-red-hi: var(--c-mark);
-  --w-line: var(--c-rule);
-  --w-line-strong: var(--c-rule-control);
-  --w-font-display: var(--f-ui);
-  --w-font-hud: var(--f-ui);
-  --w-font-body: var(--f-ui);
-  --w-font-pixel: var(--f-ui);
-  --w-fs-display: var(--t-display);
-  --w-fs-h1: var(--t-display);
-  --w-fs-h2: var(--t-title);
-  --w-fs-h3: var(--t-lead);
-  --w-fs-lineup: var(--t-title);
-  --w-fs-lead: var(--t-lead);
-  --w-fs-body: var(--t-body);
-  --w-fs-small: var(--t-small);
-  --w-fs-micro: var(--t-small);
-  --w-fs-nano: var(--t-small);
-  --w-s-1: var(--s-1);
-  --w-s-2: var(--s-2);
-  --w-s-3: var(--s-3);
-  --w-s-4: var(--s-4);
-  --w-s-5: var(--s-6);
-  --w-s-6: var(--s-8);
-  --w-s-7: var(--s-12);
-  --w-s-8: var(--s-16);
-  --w-s-9: var(--s-24);
-  --w-s-10: var(--s-32);
-  --w-gutter: var(--g-margin);
-  --w-section-y: var(--s-24);
-  --w-max: var(--g-max);
-  --w-ease: var(--m-ease);
-  --w-ease-io: var(--m-ease);
-  --w-dur-fast: var(--m-dur-1);
-  --w-dur: var(--m-dur-2);
-  --w-dur-slow: var(--m-dur-3);
-  --w-z-content: var(--z-content);
-  --w-z-chrome: 20;
 }

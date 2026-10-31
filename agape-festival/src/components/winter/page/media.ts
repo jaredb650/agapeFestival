@@ -109,8 +109,6 @@ export interface BgMedia {
   flyerStill: Still;
   /** ~0.5 KB inline still under everything, so the background is never plain black. */
   placeholder: string;
-  /** Scroll-scrub frames (720x1280 WebP), kept for the artist select's tile backdrops. */
-  frames: { dir: string };
 }
 
 export const BG: BgMedia = {
@@ -121,7 +119,6 @@ export const BG: BgMedia = {
   posterMobile: { src: bg.posterMobile.src, width: bg.posterMobile.width, height: bg.posterMobile.height },
   flyerStill: { src: manifest.flyer.backgroundStill.src, width: manifest.flyer.backgroundStill.width, height: manifest.flyer.backgroundStill.height },
   placeholder: bg.placeholder.dataUri,
-  frames: { dir: bg.frames.dir },
 };
 
 /**
@@ -172,19 +169,8 @@ export const FLYER = {
     layer("day2-names"),
     layer("date"),
   ],
-  dayLabels: { 1: layer("day1-label"), 2: layer("day2-label") },
-  date: layer("date"),
-  /** 640px copy of the date scrawl for the hero (J4). */
-  dateSmall: { src: fl.dateSmall.src, width: fl.dateSmall.width, height: fl.dateSmall.height },
   /** The Ä mark for the nav, where it shows 20 CSS px wide (64 px file instead of 170 px). */
   mark: { src: fl.navMark.src, width: fl.navMark.width, height: fl.navMark.height },
-  logos: layer("logos"),
-  story: { src: fl.storyFlyer.src, width: fl.storyFlyer.width, height: fl.storyFlyer.height },
 };
 
 export const OG_IMAGE = manifest.og.image;
-
-// ---- Artists -----------------------------------------------------------------
-
-/** The artist-select "no signal" preview behind artists without footage. */
-export const NO_SIGNAL_STILL = BG.posterMobile;

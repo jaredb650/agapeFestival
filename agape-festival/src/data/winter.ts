@@ -213,9 +213,6 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
   { ...WINTER_DAYS[1], acts: DAY2_LINES.flat(), lines: DAY2_LINES },
 ];
 
-/** Label for unannounced acts (redaction blobs). */
-export const TBA_LABEL = "TO BE REVEALED";
-
 // ============================================================
 // ARTISTS (artist profiler). Only Flash Gea has media and a bio so far.
 // ============================================================
@@ -339,12 +336,6 @@ export const ARTISTS: ArtistEntry[] = [...NAMED_ARTISTS, ...LOCKED_ARTISTS];
 export const ARTIST_BY_SLUG: Record<ArtistSlug, NamedArtist> = Object.fromEntries(
   NAMED_ARTISTS.map((artist) => [artist.slug, artist]),
 ) as Record<ArtistSlug, NamedArtist>;
-
-/** Placeholder copy for artists without a bio/media yet. */
-export const ARTIST_PENDING = {
-  bio: "INTEL PENDING",
-  locked: "TO BE REVEALED",
-} as const;
 
 // ============================================================
 // FAQ (rewritten for winter)

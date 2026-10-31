@@ -71,7 +71,7 @@ export function wBoot(c: BootConfig): void {
   }
 
   const line = root.querySelector(".wb-ln") as HTMLElement;
-  const bar = line.firstChild as HTMLElement;
+  const bar = line.firstElementChild as HTMLElement;
   const slit = root.querySelector(".wb-sl") as HTMLElement;
   const ok = [false, false, false, false, false];
   const timers: number[] = [];
@@ -86,7 +86,7 @@ export function wBoot(c: BootConfig): void {
   let copied = false;
   let logo: HTMLImageElement | null = null;
   let divider: Element | null = null;
-  // The hairline's first placement [left, centre y, width]; later fits glide from it by transform.
+  // The hairline's first placement [left, centre y]; later fits glide from it by transform.
   let base: number[] | null = null;
 
   const mark = (i: number) => {
@@ -107,16 +107,16 @@ export function wBoot(c: BootConfig): void {
     const r = e && e.getBoundingClientRect();
     return r && r.width && r.bottom > 0 && r.top < innerHeight ? r : null;
   };
-  /** Lay the hairline across the hero logo's centre line, `drop` px lower. */
+  /** Lay the edge-to-edge hairline across the hero logo's centre line (centred on it), `drop` px lower. */
   const fit = (drop: number) => {
     const r = box(logo);
     if (!r) return;
     const y = r.top + r.height / 2;
     if (!base) {
-      base = [r.left, y, r.width];
-      line.style.cssText = `left:${px(r.left)};top:${px(y)};width:${px(r.width)};margin:0`;
+      base = [0, y];
+      line.style.top = px(y);
     }
-    line.style.transform = `translate(${px(r.left - base[0])},${px(y - base[1] + drop)}) scaleX(${r.width / base[2]})`;
+    line.style.transform = `translate(${px(r.left + r.width / 2 - innerWidth / 2)},${px(y - base[1] + drop)})`;
   };
 
   // The hero logo, copied into the slit: same src, srcset and sizes, so the same request and image.
@@ -216,12 +216,11 @@ export function wBoot(c: BootConfig): void {
     if (mode === "full") {
       const r = box(logo);
       const dv = box(divider);
-      let width = line.offsetWidth;
+      const width = line.offsetWidth;
       if (r) {
         const cy = r.top + r.height / 2;
         const drop = (dv ? dv.top : r.bottom + r.height * 0.55) - cy;
         fit(drop);
-        width = r.width;
         if (copied) {
           slit.style.cssText = `left:${px(r.left + 1)};top:${px(r.top + 1)};width:${px(r.width - 2)};height:${px(r.height - 2)}`;
           root.style.setProperty("--o", px(Math.max(drop, r.height / 2)));

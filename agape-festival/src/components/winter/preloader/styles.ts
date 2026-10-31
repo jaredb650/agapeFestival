@@ -2,7 +2,7 @@
 // markup so it paints with the very first frame: no request, no JS. Classes
 // wb-*, keyframes wb-*. Self-contained colours (the deployed site's): #000
 // ground, #a42b2b hairline with the divider's own 0 0 14px #a42b2b66, #ffffff35
-// ticks. No gradients, no text, no circles.
+// ticks. No gradients, no circles; the only text is a small CSS-generated "Loading".
 //
 // Story: black, the hero frame's corner ticks, and one red hairline across the
 // hero logo's centre line that draws outward with real loading progress. Then
@@ -37,9 +37,21 @@ const CSS = String.raw`
 .wb-k i:nth-child(odd){left:0;border-left-width:1px}
 .wb-k i:nth-child(even){right:0;border-right-width:1px}
 
-/* The hairline. Until the script measures the hero logo, it sits where the deployed layout centres it. */
-.wb-ln{left:50%;top:calc(50% - 195px);width:var(--w);height:1px;margin-left:calc(var(--w)/-2);transition:transform .4s var(--e)}
-.wb-ln i{inset:0;background:#a42b2b;box-shadow:0 0 14px #a42b2b66;transform:scaleX(0);transition:transform .25s linear}
+/* The hairline runs edge to edge and fills outward from the centre with real progress. Until the script measures
+   the hero logo, it sits where the deployed layout centres it. */
+.wb-ln{left:0;top:calc(50% - 195px);width:100%;height:1px;transition:transform .4s var(--e)}
+.wb-ln>i:first-child{inset:0;background:#a42b2b;box-shadow:0 0 14px #a42b2b66;transform:scaleX(0);transition:transform .25s linear}
+
+/* Under the hairline: LOADING with its dots appearing one at a time, then the small Ä mark glowing red. */
+.wb-ld{left:50%;top:22px;display:flex!important;flex-direction:column;align-items:center;gap:16px;transform:translateX(-50%);transition:opacity .25s var(--e)}
+.wb .wb-ld i,.wb .wb-ld b{position:static}
+.wb-tx{display:flex!important;align-items:baseline;font:400 9px/1 var(--font-hud),sans-serif;letter-spacing:.32em;text-transform:uppercase;color:#a6a6a6;white-space:nowrap;padding-left:.32em}
+.wb-tx::before{content:"Loading"}
+.wb-tx b{display:inline-block!important;width:.62em;text-align:left;letter-spacing:0;opacity:0}
+.wb-tx b::before{content:"."}
+.wb-mk{width:15px;height:21px;filter:drop-shadow(0 0 6px #e52424aa)}
+.wb-mk svg{display:block;width:100%;height:100%}
+[data-exit] .wb-ld{opacity:0;transition-duration:.15s}
 
 /* The slit: the script sets its box 1px inside the hero logo's (the art has a transparent margin), so the
    copy is never larger than the hero's own logo, the page's LCP element. */
@@ -53,7 +65,7 @@ const CSS = String.raw`
 
 /* Full exit: the hairline falls into the divider (the script sets its target) and narrows, the black lifts. */
 [data-exit=full] .wb-ln{transition-duration:.85s}
-[data-exit=full] .wb-ln i{transition:transform .5s var(--e) .3s}
+[data-exit=full] .wb-ln>i:first-child{transition:transform .5s var(--e) .3s}
 [data-exit=full] .wb-bg,[data-exit=full] .wb-k{animation:wb-o .5s var(--e) .3s both}
 /* Landed: the copy and the hairline dissolve into the hero's own logo and divider. */
 [data-out] .wb-sl,[data-out] .wb-ln{animation:wb-o .2s var(--e) both}
@@ -68,16 +80,26 @@ const CSS = String.raw`
 }
 @media (prefers-reduced-motion:no-preference){
   .wb-k{animation:wb-i .6s var(--e) both}
+  .wb-ld{animation:wb-i .5s var(--e) .15s both}
+  .wb-tx b{animation:wb-d1 1.6s steps(1,end) infinite}
+  .wb-tx b+b{animation-name:wb-d2}
+  .wb-tx b+b+b{animation-name:wb-d3}
+  .wb-mk{animation:wb-gl 1.6s ease-in-out infinite alternate}
   /* No JS: the hairline still fills, on a timer. */
-  .wb:not([data-js]) .wb-ln i{animation:wb-g 2.4s var(--e) .2s both}
+  .wb:not([data-js]) .wb-ln>i:first-child{animation:wb-g 2.4s var(--e) .2s both}
 }
 @media (prefers-reduced-motion:reduce){
-  .wb .wb-ln i{transform:none}
+  .wb .wb-ln>i:first-child{transform:none}
+  .wb-tx b{opacity:1}
 }
 @keyframes wb-fs{to{opacity:0;visibility:hidden}}
 @keyframes wb-o{to{opacity:0}}
 @keyframes wb-i{from{opacity:0}}
 @keyframes wb-g{to{transform:none}}
+@keyframes wb-d1{0%{opacity:0}25%{opacity:1}}
+@keyframes wb-d2{0%{opacity:0}50%{opacity:1}}
+@keyframes wb-d3{0%{opacity:0}75%{opacity:1}}
+@keyframes wb-gl{from{opacity:.55}}
 `;
 
 /**

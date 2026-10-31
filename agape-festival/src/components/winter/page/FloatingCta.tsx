@@ -14,15 +14,16 @@ const HIDE_ON_SHORT = "#flyer";
 const SHORT = "(max-width: 899px), (max-height: 860px)";
 
 /**
- * Floating Get tickets: a glowing hologram CTA docked at the bottom centre of
- * the viewport, in HUD chrome (rails, ticks, readouts). It docks once the
- * hero's CTA has scrolled out of view and steps aside while the Tickets
- * section, the footer (or any `data-cta-hide` element; on phones also the
- * artist profiler; on phones and short windows also the flyer) is on screen. Visibility is a data
- * attribute toggled from IntersectionObservers: no React state, no re-render.
- * Hidden = `inert` + `visibility: hidden`, so it is never tabbable unseen.
+ * Floating Get tickets: the deployed red ticket button (flat, corner ticks, the
+ * soft 4s breathing glow) docked at the bottom centre of the viewport. It docks
+ * once the hero's CTA has scrolled out of view and steps aside while the
+ * Tickets section, the footer (or any `data-cta-hide` element; on phones also
+ * the artist profiler; on phones and short windows also the flyer) is on
+ * screen. Visibility is a data attribute toggled from IntersectionObservers: no
+ * React state, no re-render. Hidden = `inert` + `visibility: hidden`, so it is
+ * never tabbable unseen.
  */
-export function FloatingCta({ href, label, meta }: { href: string; label: string; meta: { left: string; right: string } }) {
+export function FloatingCta({ href, label }: { href: string; label: string }) {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,16 +80,7 @@ export function FloatingCta({ href, label, meta }: { href: string; label: string
 
   return (
     <div ref={root} className="wcta" inert>
-      <div className="wcta__rig" aria-hidden="true">
-        <span className="wcta__floor" />
-        <span className="wcta__rail" data-side="l">
-          <b>{meta.left}</b>
-        </span>
-        <span className="wcta__rail" data-side="r">
-          <b>{meta.right}</b>
-        </span>
-        <span className="wcta__pip" />
-      </div>
+      <span className="wcta__pool" aria-hidden="true" />
       <Button href={href} external size="md" className="wcta__btn">
         {label}
       </Button>

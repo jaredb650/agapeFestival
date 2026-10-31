@@ -12,7 +12,7 @@
 .wpage main:focus { outline: none; }
 :where(.wpage) a:focus-visible,
 :where(.wpage) button:focus-visible,
-:where(.wpage) summary:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 4px; }
+:where(.wpage) summary:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 4px; }
 
 .wskip {
   position: fixed;
@@ -48,6 +48,10 @@
   background-size: cover;
   background-position: 50% 50%;
   contain: strict;
+  /* Red hybrid grade: the footage is the flyer's steel-blue tower; pull it to neutral grey and down a touch so
+     the red reads as the only colour. One static filter on the fixed layer (applied by the compositor; the
+     scrub logic is untouched). */
+  filter: saturate(0.12) brightness(0.82);
 }
 /* Landscape: the 9:16 footage is shown full-width and panned vertically by scroll. */
 .wbg__media { position: absolute; left: 0; top: 0; width: 100%; height: max(100%, calc(100vw * 2276 / 1280)); will-change: transform; }
@@ -61,10 +65,11 @@
 .wbg__video, .wbg__canvas { opacity: 0; transition: opacity var(--w-dur-slow) ease; }
 .wbg[data-live] .wbg__video, .wbg[data-live] .wbg__canvas { opacity: 1; }
 .wbg__scrim { position: absolute; inset: 0; background: var(--w-ink); opacity: 0; will-change: opacity; }
-.wbg__vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 35%, rgba(4, 6, 10, 0.55) 100%); }
-@media (min-aspect-ratio: 1/1) { .wbg__vignette { background: radial-gradient(ellipse 60% 75% at 50% 48%, rgba(4, 6, 10, 0.12) 20%, rgba(4, 6, 10, 0.72) 100%); } }
+.wbg__vignette { position: absolute; inset: 0; background: radial-gradient(ellipse 85% 70% at 50% 45%, transparent 35%, rgba(0, 0, 0, 0.55) 100%); }
+@media (min-aspect-ratio: 1/1) { .wbg__vignette { background: radial-gradient(ellipse 60% 75% at 50% 48%, rgba(0, 0, 0, 0.12) 20%, rgba(0, 0, 0, 0.72) 100%); } }
 
-/* Scrub rail: the footage's timeline, glitch cuts marked. Desktop only. */
+/* Scrub rail: the footage's timeline, glitch cuts marked. Hidden in the red hybrid (a decorative readout under
+   the text diet; the nav's meter already shows progress). Its rules stay so it can come back with one line. */
 .wbg__rail { display: none; }
 @media (min-width: 1024px) and (hover: hover) {
   .wbg__rail {
@@ -73,7 +78,7 @@
     top: 50%;
     height: 36vh;
     transform: translateY(-50%);
-    display: flex;
+    /* display: flex; (hidden in the red hybrid) */
     flex-direction: column;
     align-items: center;
     gap: 12px;
@@ -117,7 +122,7 @@
    Mobile: no backdrop blur over the scrubbing canvas (re-blurs every frame).
    ========================================================================== */
 @media (hover: none), (max-width: 899px) {
-  .wpage .w-window { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(180deg, rgba(36, 42, 53, 0.96) 0%, rgba(20, 24, 32, 0.97) 40%, rgba(14, 17, 23, 0.98) 100%); }
+  .wpage .w-window { -webkit-backdrop-filter: none; backdrop-filter: none; background: linear-gradient(180deg, rgba(42, 42, 42, 0.96) 0%, rgba(24, 24, 24, 0.97) 40%, rgba(17, 17, 17, 0.98) 100%); }
 }
 
 /* Page leads sit over moving footage: Outfit 300 shimmers against the grain there. */

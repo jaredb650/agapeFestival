@@ -1,615 +1,166 @@
 /* ==========================================================================
-   HERO (round 2): centred lockup inside a targeting HUD over the footage.
-   Classes wh-* / keyframes wh-*. The old .whero rules in winter-page.css are
-   dead code (integrator deletes them).
+   HERO (red hybrid, Oct 31): the deployed site's hero (agape-festival.com,
+   main: app/page.tsx + globals.css .winter-*), ported nearly pixel for pixel
+   and adapted to the top of a scrolling page: it is one screen tall instead
+   of position: fixed, clears the fixed nav, and dissolves into the tower on
+   scroll (HeroExit). Classes wh-* / keyframes wh-*.
 
-   Perf contract: the poster paints on the first frame and never animates in;
-   the logo paints on the first frame too (its power-on only jitters it).
-   Every intro and loop animates transform/opacity (plus a few stepped clips
-   on tiny text rows). The two rotating reticle layers are plain HTML boxes
-   (composited), never SVG-internal transforms. Loops park when the hero is
-   off screen ([data-off], set by HeroExit). Reduced motion: static, no intro.
+   Differences from the deployed CSS, on purpose:
+   - The still is visible from the first frame (it is the LCP and the preloader
+     opens onto it); only the text, countdown and controls run the intro.
+   - Intro delays are ~0.6x the deployed ones (the preloader comes first); the
+     preloader parks them (#hero * paused) until its hand-off.
+   - Hidden states live in the keyframes' `from`, never in the base rule, so
+     if animations never run the content is simply visible.
+   - Scanlines come from the page's one global layer (.w-grain).
+   Perf: transform / opacity / short stepped clips only; the countdown writes
+   text once a second while visible; loops park off screen ([data-off]).
    ========================================================================== */
 
 .wh {
-  --wh-top: 76px;      /* clear of the fixed nav */
-  --wh-pb: 76px;       /* room for the bottom HUD row */
-  --wh-inset: 24px;    /* HUD frame inset from the viewport */
-  --wh-r: min(40svh, 372px, 38vw); /* reticle radius */
-  --wh-line: rgba(233, 235, 236, 0.3);
-  --wh-line-dim: rgba(233, 235, 236, 0.14);
-  --wh-ice-glow: 0 0 6px rgba(156, 200, 255, 0.5);
+  --wh-nav: 56px; /* the fixed nav's height: the lockup and frame clear it */
   position: relative;
   z-index: 2;
   height: 100vh;
   height: 100svh;
-  min-height: 600px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--wh-top) var(--w-gutter) var(--wh-pb);
+  min-height: 480px;
+  /* Not clipped: the footage box runs 160px past the bottom (see .wh__bg). The page root clips x. */
+  overflow: visible;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  place-items: center;
+  padding: var(--wh-nav) 24px 72px;
+  color: #fff;
+  font-family: var(--w-font-hud);
+  line-height: 1.5;
 }
+@media (min-width: 1100px) { .wh { --wh-nav: 64px; } }
 
-/* ---- Media (poster = LCP; video fades in only once playing) ---------------- */
-.wh__media {
+/* ---- Footage: poster (LCP) + video at the deployed .65 grade -------------- */
+/* The black box runs 160px below the hero and feathers out there: at rest the hero's bottom is solid black like
+   the deployed one, and as it scrolls away the edge over the tower is a soft fade, never a seam. */
+.wh__bg {
+  --wh-feather: 160px;
   position: absolute;
-  inset: 0;
+  inset: 0 0 calc(var(--wh-feather) * -1);
+  z-index: 0;
+  pointer-events: none;
+  background: #000;
   will-change: transform, opacity;
-  background: var(--w-ink);
-  /* Feathered bottom edge: as the footage sinks and fades on exit, the hero box never shows a hard seam over the tower. */
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 180px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 180px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - var(--wh-feather)), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - var(--wh-feather)), transparent 100%);
 }
-.wh__media picture, .wh__img, .wh__video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wh__img, .wh__video { object-fit: cover; object-position: var(--hero-pos, 50% 50%); }
-.wh__img { filter: saturate(0.72) contrast(1.05); }
-/* The Kobosil clip runs warm (sodium windows, red crowd light): pull it toward the flyer's steel greys. */
-.wh__media[data-kind="video"] .wh__img,
-.wh__media[data-kind="video"] .wh__video { filter: saturate(0.5) contrast(1.1) brightness(0.92); }
-@media (max-aspect-ratio: 3/4) { .wh__img, .wh__video { object-position: var(--hero-pos-m, 50% 40%); } }
+.wh__footage { position: absolute; inset: 0 0 var(--wh-feather); opacity: 0.65; filter: saturate(0.65) contrast(1.2); }
+.wh__footage picture,
+.wh__poster,
+.wh__video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wh__poster,
+.wh__video { object-fit: cover; object-position: var(--hero-pos, 50% 50%); }
+@media (max-aspect-ratio: 3/4) { .wh__poster, .wh__video { object-position: var(--hero-pos-m, 50% 50%); } }
 /* Playing-gated: a blocked or paused video is never visible (iOS Low Power Mode), only the poster. */
-.wh__video { opacity: 0; transition: opacity 0.8s ease; }
+.wh__video { opacity: 0; transition: opacity 0.6s ease; }
 .wh__video[data-playing] { opacity: 1; }
-.wh__shade {
+.wh__vignette {
   position: absolute;
-  inset: 0;
+  inset: 0 0 var(--wh-feather);
   background:
-    repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.24) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse 46% 50% at 50% 54%, rgba(4, 6, 10, 0.5) 0%, rgba(4, 6, 10, 0.18) 60%, transparent 100%),
-    linear-gradient(180deg, rgba(4, 6, 10, 0.72) 0%, rgba(4, 6, 10, 0.1) 22%, rgba(4, 6, 10, 0.1) 62%, rgba(4, 6, 10, 0.86) 100%),
-    radial-gradient(ellipse 120% 90% at 50% 50%, transparent 55%, rgba(4, 6, 10, 0.6) 100%);
+    /* Last 80px reach full black, so the footage meets the black run-out below without a seam (deployed: #000b). */
+    linear-gradient(transparent calc(100% - 80px), #000),
+    radial-gradient(ellipse at 50% 42%, transparent 10%, #0008 65%, #000e 100%),
+    linear-gradient(#0004, #0003 50%, #000b);
 }
 
-/* ==========================================================================
-   HUD
-   ========================================================================== */
-.wh-hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; transform-origin: 50% 50%; }
+/* ---- Corner frame (the deployed .winter-frame) ----------------------------- */
+.wh__frame { position: absolute; z-index: 1; inset: calc(var(--wh-nav) + 12px) 25px 25px; pointer-events: none; }
+.wh__frame i { position: absolute; width: 13px; height: 13px; border-color: var(--w-bracket); border-style: solid; }
+.wh__frame i:nth-child(1) { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.wh__frame i:nth-child(2) { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.wh__frame i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.wh__frame i:nth-child(4) { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 
-/* Scan band: one sweep at load, then every 8s (transform only). */
-.wh-hud__scan {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -28vh;
-  height: 28vh;
-  background: linear-gradient(180deg, transparent 0%, rgba(156, 200, 255, 0.035) 60%, rgba(156, 200, 255, 0.12) 97%, rgba(233, 235, 236, 0.3) 99.5%, transparent 100%);
-  opacity: 0;
-}
-
-/* Viewfinder corners */
-.wh-hud__frame { position: absolute; inset: var(--wh-top) var(--wh-inset) var(--wh-inset); }
-.wh-hud__frame i { position: absolute; width: 34px; height: 34px; border: 0 solid var(--wh-line); }
-.wh-hud__frame i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; --sx: 1; --sy: 1; }
-.wh-hud__frame i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; --sx: -1; --sy: 1; }
-.wh-hud__frame i:nth-child(3) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; --sx: -1; --sy: -1; }
-.wh-hud__frame i:nth-child(4) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; --sx: 1; --sy: -1; }
-/* A short ice tick on each bracket's knee. */
-.wh-hud__frame i::after { content: ""; position: absolute; width: 6px; height: 6px; background: var(--w-ice); opacity: 0.7; box-shadow: var(--wh-ice-glow); }
-.wh-hud__frame i:nth-child(1)::after { top: -1px; left: -1px; }
-.wh-hud__frame i:nth-child(2)::after { top: -1px; right: -1px; }
-.wh-hud__frame i:nth-child(3)::after { bottom: -1px; right: -1px; }
-.wh-hud__frame i:nth-child(4)::after { bottom: -1px; left: -1px; }
-
-/* Registration crosses, just inside the corners */
-.wh-hud__reg { position: absolute; width: 11px; height: 11px; background: linear-gradient(var(--wh-line), var(--wh-line)) center / 100% 1px no-repeat, linear-gradient(var(--wh-line), var(--wh-line)) center / 1px 100% no-repeat; }
-.wh-hud__reg[data-pos="tl"] { top: calc(var(--wh-top) + 52px); left: calc(var(--wh-inset) + 52px); }
-.wh-hud__reg[data-pos="tr"] { top: calc(var(--wh-top) + 52px); right: calc(var(--wh-inset) + 52px); }
-.wh-hud__reg[data-pos="bl"] { bottom: calc(var(--wh-inset) + 52px); left: calc(var(--wh-inset) + 52px); }
-.wh-hud__reg[data-pos="br"] { bottom: calc(var(--wh-inset) + 52px); right: calc(var(--wh-inset) + 52px); }
-
-/* ---- Reticle ringing the lockup ------------------------------------------- */
-.wh-ret {
-  position: absolute;
-  left: 50%;
-  top: calc(50% + (var(--wh-top) - var(--wh-pb)) / 2);
-  width: calc(var(--wh-r) * 2);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-}
-.wh-ret__in { position: absolute; inset: 0; }
-.wh-ret svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--w-frost); }
-.wh-ret__ring { stroke-width: 1; opacity: 0.16; vector-effect: non-scaling-stroke; }
-.wh-ret__ring--in { opacity: 0.08; stroke-dasharray: 2 5; }
-.wh-ret__cross { stroke-width: 1; opacity: 0.45; vector-effect: non-scaling-stroke; }
-.wh-ret__cross--in { opacity: 0.3; }
-.wh-ret__pip { fill: var(--w-ice); stroke: none; opacity: 0.85; }
-.wh-ret__spin { position: absolute; inset: 0; }
-/* 120 minor + 24 major radial ticks: a thick dashed stroke around the ring. */
-.wh-ret__ticks { stroke-width: 6; stroke-dasharray: 1 8.53; opacity: 0.22; }
-.wh-ret__ticks--major { stroke-width: 12; stroke-dasharray: 1.4 46.25; opacity: 0.4; }
-.wh-ret__arc { stroke: var(--w-frost); stroke-width: 1.5; opacity: 0.35; vector-effect: non-scaling-stroke; }
-.wh-ret__arc--hot { stroke: var(--w-ice); stroke-width: 3; opacity: 0.75; }
-.wh-ret__tag { position: absolute; }
-.wh-ret__tag[data-pos="ne"] { left: 85%; top: 12%; }
-.wh-ret__tag[data-pos="sw"] { right: 85%; bottom: 12%; text-align: right; }
-
-/* Axis lines from the frame to the reticle, at its centre height */
-.wh-hud__axis {
-  position: absolute;
-  top: calc(50% + (var(--wh-top) - var(--wh-pb)) / 2);
-  height: 9px;
-  width: calc(50% - var(--wh-r) - var(--wh-inset) - 118px);
-  translate: 0 -50%;
-  background:
-    linear-gradient(var(--wh-line-dim), var(--wh-line-dim)) center / 100% 1px no-repeat,
-    repeating-linear-gradient(90deg, var(--wh-line) 0 1px, transparent 1px 24px) center / 100% 5px no-repeat;
-}
-.wh-hud__axis[data-side="l"] { left: calc(var(--wh-inset) + 100px); transform-origin: 0 50%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%); mask-image: linear-gradient(90deg, transparent, #000 30%); }
-.wh-hud__axis[data-side="r"] { right: calc(var(--wh-inset) + 100px); transform-origin: 100% 50%; -webkit-mask-image: linear-gradient(270deg, transparent, #000 30%); mask-image: linear-gradient(270deg, transparent, #000 30%); }
-
-/* ---- Pitch rulers (left/right edges) -------------------------------------- */
-.wh-hud__ruler {
-  --rh: min(46svh, 400px);
-  position: absolute;
-  top: calc(50% + (var(--wh-top) - var(--wh-pb)) / 2);
-  height: var(--rh);
-  width: 44px;
-  translate: 0 -50%;
-}
-.wh-hud__ruler[data-side="l"] { left: calc(var(--wh-inset) + 30px); }
-.wh-hud__ruler[data-side="r"] { right: calc(var(--wh-inset) + 30px); }
-.wh-hud__ticks {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 12px;
-  background:
-    repeating-linear-gradient(180deg, var(--wh-line) 0 1px, transparent 1px calc(var(--rh) / 8)) 0 0 / 12px 100% no-repeat,
-    repeating-linear-gradient(180deg, var(--wh-line-dim) 0 1px, transparent 1px calc(var(--rh) / 40)) 0 0 / 6px 100% no-repeat;
-}
-.wh-hud__ruler[data-side="l"] .wh-hud__ticks { left: 0; }
-.wh-hud__ruler[data-side="r"] .wh-hud__ticks { right: 0; background-position: 100% 0, 100% 0; }
-.wh-hud__nums {
-  position: absolute;
-  top: -5px;
-  bottom: -5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font: 400 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.06em;
-  color: var(--w-fog);
-}
-.wh-hud__nums b { font-weight: 400; display: block; height: 10px; }
-.wh-hud__nums b:nth-child(5) { color: var(--w-ice); text-shadow: var(--wh-ice-glow); }
-.wh-hud__ruler[data-side="l"] .wh-hud__nums { left: 18px; }
-.wh-hud__ruler[data-side="r"] .wh-hud__nums { right: 18px; text-align: right; }
-.wh-hud__pin { position: absolute; top: 50%; translate: 0 -50%; font-size: 10px; line-height: 1; color: var(--w-ice); text-shadow: var(--wh-ice-glow); }
-.wh-hud__ruler[data-side="l"] .wh-hud__pin { left: -12px; }
-.wh-hud__ruler[data-side="r"] .wh-hud__pin { right: -12px; }
-
-/* ---- Heading tape + scroll cue (bottom centre) ---------------------------- */
-.wh-hud__tape { position: absolute; left: 50%; bottom: calc(var(--wh-inset) + 10px); width: 300px; height: 40px; translate: -50% 0; }
-.wh-hud__tape-ticks {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 10px;
-  background:
-    repeating-linear-gradient(90deg, var(--wh-line) 0 1px, transparent 1px 50px) 0 0 / 100% 10px no-repeat,
-    repeating-linear-gradient(90deg, var(--wh-line-dim) 0 1px, transparent 1px 10px) 0 0 / 100% 5px no-repeat;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
-}
-.wh-hud__tape-nums {
-  position: absolute;
-  left: -25px;
-  right: -25px;
-  top: 14px;
-  display: flex;
-  justify-content: space-between;
-  font: 400 var(--w-fs-nano) / 1 var(--w-font-hud);
-  color: var(--w-fog);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
-}
-.wh-hud__tape-nums b { width: 50px; text-align: center; font-weight: 400; }
-.wh-hud__tape-nums b[data-n] { color: var(--w-frost); font-weight: 700; }
-.wh-hud__tape-pin { position: absolute; left: 50%; top: -12px; translate: -50% 0; font-size: 8px; line-height: 1; color: var(--w-ice); text-shadow: var(--wh-ice-glow); }
-.wh-hud__scroll {
-  position: absolute;
-  left: 50%;
-  bottom: -2px;
-  translate: -50% 0;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  white-space: nowrap;
-}
-.wh-hud__scroll::after { content: " \25BE"; color: var(--w-ice); }
-
-/* ---- LCD data blocks ------------------------------------------------------- */
-.wh-hud__data {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  text-shadow: 0 0 4px rgba(4, 6, 10, 0.9);
-  white-space: nowrap;
-}
-.wh-hud__data[data-pos="tl"] { top: calc(var(--wh-top) + 18px); left: calc(var(--wh-inset) + 18px); }
-.wh-hud__data[data-pos="tr"] { top: calc(var(--wh-top) + 18px); right: calc(var(--wh-inset) + 18px); align-items: flex-end; }
-.wh-hud__data[data-pos="bl"] { bottom: calc(var(--wh-inset) + 18px); left: calc(var(--wh-inset) + 18px); }
-.wh-type { display: block; }
-.wh-type[data-tone="ice"], .wh-ret__tag .wh-type[data-tone="ice"] { color: var(--w-ice); text-shadow: var(--wh-ice-glow); }
-.wh-type[data-tone="fog"] { color: var(--w-fog); }
-.wh-type i { font-style: normal; color: rgba(156, 200, 255, 0.45); }
-.wh-ret__tag .wh-type { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.08em; color: var(--w-mist); white-space: nowrap; }
-.wh-hud__rec { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: rgb(255, 52, 80); box-shadow: 0 0 6px rgba(255, 52, 80, 0.8); vertical-align: 0; }
-.wh-hud__vtext {
-  position: absolute;
-  left: calc(var(--wh-inset) + 6px);
-  top: 0;
-  bottom: 0;
-  height: max-content;
-  /* Physical margins: in vertical-rl the logical block axis is horizontal. */
-  margin-top: auto;
-  margin-bottom: auto;
-  translate: -50% 0;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: var(--w-fog);
-  opacity: 0.8;
-  white-space: nowrap;
-}
-
-/* Intro glitch slices across the lockup */
-.wh-hud__slice { position: absolute; left: 22%; right: 22%; height: 2px; background: rgba(156, 200, 255, 0.55); opacity: 0; }
-.wh-hud__slice[data-n="1"] { top: 33%; }
-.wh-hud__slice[data-n="2"] { top: 41%; height: 5px; background: rgba(233, 235, 236, 0.3); }
-.wh-hud__slice[data-n="3"] { top: 50%; }
-
-/* ==========================================================================
-   LOCKUP
-   ========================================================================== */
-.wh__copy {
+/* ---- The lockup -------------------------------------------------------------- */
+.wh__content {
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width: min(100%, 640px);
+  margin: 0 auto;
   text-align: center;
-  width: 100%;
-  max-width: 760px;
-  will-change: transform, opacity;
-}
-.wh__logo { width: min(560px, 40vw, calc(33svh * 1.808)); }
-.wh__logo-box { position: relative; width: 100%; aspect-ratio: 1233 / 682; }
-.wh__logo-box .w-glitch, .wh__logo-box .glitch-logo { width: 100%; aspect-ratio: 1233 / 682; }
-.wh__logo-box img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 22px rgba(4, 6, 10, 0.75)); }
-.wh__logo-static { cursor: crosshair; }
-
-.wh__title { margin: clamp(10px, 2svh, 20px) 0 0; font-weight: 400; }
-.wh__edition {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  font: 700 clamp(0.75rem, 0.55rem + 0.6vw, 1.0625rem) / 1 var(--w-font-hud);
-  letter-spacing: 0.62em;
-  text-transform: uppercase;
-  color: var(--w-frost);
-  text-shadow: 0 0 1px rgba(233, 235, 236, 0.6), 0 0 14px rgba(4, 6, 10, 0.9);
-  white-space: nowrap;
-}
-.wh__edition .wh-decode { margin-right: -0.62em; }
-.wh__rule { position: relative; display: block; width: clamp(28px, 5vw, 72px); height: 1px; background: var(--wh-line); }
-.wh__rule::before { content: ""; position: absolute; top: -3px; width: 1px; height: 7px; background: var(--w-ice); box-shadow: var(--wh-ice-glow); }
-.wh__rule:first-child::before { left: 0; }
-.wh__rule:last-child::before { right: 0; }
-.wh__when {
-  margin: 12px 0 0;
-  font: 400 var(--w-fs-micro) / 1.2 var(--w-font-pixel);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  text-shadow: 0 0 6px rgba(4, 6, 10, 0.95);
+  /* HeroFit: short screens scale the lockup down to fit. `scale` composes with the exit's transform. */
+  scale: var(--content-scale, 1);
+  transform-origin: center;
 }
 
-/* Per-glyph decode */
-.wh-decode__c { position: relative; display: inline-block; }
-.wh-decode__ch { display: inline-block; }
-.wh-decode__c::before { content: attr(data-g); position: absolute; left: 0; top: 0; color: var(--w-ice); opacity: 0; }
+.wh__logo { margin: 0 auto 32px; width: min(100%, 510px, 60svh); font-size: inherit; font-weight: inherit; line-height: 0; }
+.wh__logo-box { display: block; }
+.wh__logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 3px 22px #0009); }
+/* The hi-res master is 1233x682 (the deployed PNG was 586x310): keep the WebGL box on the image's own ratio. */
+.wh__logo .glitch-logo { aspect-ratio: 1233 / 682; }
 
-/* ---- Countdown LCD ----------------------------------------------------------
-   Secondary to Get tickets (hierarchy: logo > CTA > timer > meta): a slim, wide
-   one-line HUD strip, about half the CTA's height. T–MINUS lead, the recessed
-   digit window (unit letters beside the digits), then the DAY 01 meta. A dim
-   hairline with the video chip's two corner ticks (the CTA keeps the four-corner
-   lock-on and the light), so it reads as a readout, not a second button. */
-.wh-lcd {
-  --lcd-fs: 17px;
-  position: relative;
-  margin-top: clamp(12px, 2.4svh, 22px);
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: linear-gradient(180deg, rgba(20, 24, 32, 0.6) 0%, rgba(8, 11, 16, 0.72) 100%);
-  box-shadow: inset 0 0 0 1px var(--wh-line-dim), 0 0 16px rgba(110, 170, 255, 0.06);
-}
-.wh-lcd::before, .wh-lcd::after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--w-ice); opacity: 0.8; pointer-events: none; }
-.wh-lcd::before { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-.wh-lcd::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
-/* One line: the header's parts flow around the digit window (orb, lead, rule | screen | meta, orb). */
-.wh-lcd__bar { display: contents; }
-.wh-lcd__screen { order: 1; }
-.wh-lcd__meta { order: 2; }
-.wh-lcd__orb[data-blink] { order: 3; }
-.wh-lcd__lead { font: 700 8px / 1 var(--w-font-hud); letter-spacing: 0.26em; margin-right: -0.26em; text-transform: uppercase; color: var(--w-mist); white-space: nowrap; }
-.wh-lcd__rule { flex: none; width: 14px; height: 5px; background: linear-gradient(var(--wh-line-dim), var(--wh-line-dim)) center / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--wh-line) 0 1px, transparent 1px 4px); }
-.wh-lcd__meta { font: 400 10px / 1 var(--w-font-pixel); letter-spacing: 0.06em; color: var(--w-ice); opacity: 0.8; white-space: nowrap; }
-.wh-lcd__orb {
-  position: relative;
-  flex: none;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, rgba(233, 235, 236, 0.5) 0 12%, #4a5566 32%, #1b212c 72%, #0b0e14 100%);
-  box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.7);
-}
-.wh-lcd__orb::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #fff 0 10%, #cfe6ff 22%, #7ab8ff 44%, #2f62ff 74%, #0d2a99 100%);
-  box-shadow: 0 0 4px rgba(110, 170, 255, 0.55);
-}
-.wh-lcd__screen {
-  position: relative;
-  display: block;
-  padding: 3px 8px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #04070c 0%, #0a1220 100%);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(156, 200, 255, 0.14);
-}
-.wh-lcd__screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.32) 0 1px, transparent 1px 3px); }
-.wh-lcd__digits { position: relative; display: flex; align-items: baseline; }
-.wh-lcd__grp { display: flex; align-items: baseline; }
-.wh-lcd__colon { padding-inline: 0.22em; font: 400 var(--lcd-fs) / 1 var(--w-font-pixel); color: var(--w-ice); text-shadow: 0 0 4px rgba(156, 200, 255, 0.4); }
-.wh-lcd__cells { display: flex; }
-/* Unit letters (D H M S) beside the digits; the full words stay in the markup. */
-.wh-lcd__unit { margin-left: 2px; font-size: 0; }
-.wh-lcd__unit::before { font: 700 8px / 1 var(--w-font-hud); color: var(--w-mist); }
-.wh-lcd__grp[data-unit="days"] .wh-lcd__unit::before { content: "D"; }
-.wh-lcd__grp[data-unit="hrs"] .wh-lcd__unit::before { content: "H"; }
-.wh-lcd__grp[data-unit="min"] .wh-lcd__unit::before { content: "M"; }
-.wh-lcd__grp[data-unit="sec"] .wh-lcd__unit::before { content: "S"; }
-.wh-lcd__d {
-  position: relative;
-  display: block;
-  width: 0.86em;
-  font: 400 var(--lcd-fs) / 1 var(--w-font-pixel);
-  text-align: center;
-  color: var(--w-ice);
-  text-shadow: 0 0 5px rgba(156, 200, 255, 0.4), 0 0 1px rgba(214, 232, 255, 0.7);
-}
-/* Unlit segments behind every digit */
-.wh-lcd__d::before { content: "8"; position: absolute; inset: 0; color: rgba(156, 200, 255, 0.08); text-shadow: none; }
-.wh-lcd[data-short] [data-d="0"] { display: none; }
-.wh-lcd[data-done] { display: none; }
+.wh__details { display: grid; justify-items: center; gap: 15px; text-transform: uppercase; }
+.wh__edition,
+.wh__date { margin: 0; font-weight: 400; }
+.wh__edition { font-family: var(--w-font-pixel); font-size: clamp(20px, 4.4vw, 29px); letter-spacing: 0.055em; line-height: 1.5; }
+.wh__date { font-family: var(--w-font-pixel); font-size: clamp(16px, 3.3vw, 21px); letter-spacing: 0.04em; line-height: 1.9; color: var(--w-soft); }
+.wh__edition span,
+.wh__date span { display: block; white-space: nowrap; }
 
-/* ---- CTA: the hero's primary action, a step up from the stock lg key ------- */
-.wh__cta { margin-top: clamp(24px, 4.4svh, 44px); }
-.wh__cta .w-btn[data-size] { min-height: 64px; padding: 22px 48px; font-size: 0.875rem; }
+/* The one glowing mark: the deployed red divider. */
+.wh__divider { width: 30px; height: 1px; margin: 28px auto; background: var(--w-red-line); box-shadow: 0 0 14px var(--w-red-glow); }
 
-/* ---- Video chip (bottom right) --------------------------------------------- */
-.wh__meta { position: absolute; z-index: 3; right: calc(var(--wh-inset) + 14px); bottom: calc(var(--wh-inset) + 10px); }
-.wh-chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 0 14px;
-  border: 0;
-  background: rgba(4, 6, 10, 0.45);
-  box-shadow: inset 0 0 0 1px var(--wh-line-dim);
-  color: var(--w-mist);
-  font: 700 var(--w-fs-nano) / 1 var(--w-font-hud);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color var(--w-dur-fast) ease, box-shadow var(--w-dur-fast) ease;
-}
-.wh-chip::before, .wh-chip::after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--w-ice); }
-.wh-chip::before { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-.wh-chip::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
-.wh-chip svg { width: 8px; height: 8px; flex: none; }
-.wh-chip__feed { font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel); letter-spacing: 0.08em; color: var(--w-fog); }
-.wh-chip__label { margin-right: -0.3em; }
-.wh-chip__led { width: 6px; height: 6px; border-radius: 50%; background: var(--w-fog); }
-.wh-chip[data-playing] .wh-chip__led { background: var(--w-ice); box-shadow: 0 0 6px rgba(156, 200, 255, 0.9); }
-.wh-chip:hover { color: var(--w-ice); box-shadow: inset 0 0 0 1px rgba(156, 200, 255, 0.45); }
+/* ---- Countdown (the deployed 4 boxes) ------------------------------------- */
+.wh-count { display: grid; grid-template-columns: repeat(4, 1fr); width: min(100%, 360px); margin: 0 auto 34px; }
+.wh-count__cell { position: relative; display: grid; gap: 9px; }
+.wh-count__cell + .wh-count__cell::before { content: ":"; position: absolute; left: -3px; top: 3px; font-size: 23px; color: #ffffff40; }
+.wh-count__n { font-size: clamp(28px, 6vw, 36px); font-variant-numeric: tabular-nums; font-weight: 700; letter-spacing: 0.04em; contain: layout paint; }
+.wh-count__unit { font-size: 8px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--w-mist); }
 
-.wh__credit {
+/* ---- Controls --------------------------------------------------------------- */
+.wh__meta { position: absolute; z-index: 2; right: max(24px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); }
+.wh__motion { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: #aaa; cursor: pointer; transition: color var(--w-dur-fast) ease; }
+.wh__motion:hover { color: #fff; }
+.wh__motion:focus-visible, .wh__next:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+
+/* Scroll cue: the deployed red chevron. */
+.wh__next {
   position: absolute;
   z-index: 2;
-  right: calc(var(--wh-inset) + 4px);
-  bottom: 140px;
-  margin: 0;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-hud);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--w-mist);
+  left: calc(50% - 24px);
+  bottom: max(13px, env(safe-area-inset-bottom));
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  color: var(--w-red-hi);
 }
+.wh__next svg { filter: drop-shadow(0 0 8px #e5242440); }
 
-/* ==========================================================================
-   INTRO (assemble / decode / glitch-in) + loops
-   ========================================================================== */
+/* ---- Intro (deployed choreography at ~0.6x) --------------------------------- */
 @media (prefers-reduced-motion: no-preference) {
-  .wh-hud__scan { animation: wh-sweep 8s cubic-bezier(0.5, 0, 0.3, 1) 0.05s infinite; }
-  .wh-hud__frame i { animation: wh-corner 0.62s var(--w-ease) 0.05s both; }
-  .wh-hud__reg { animation: wh-blink-in 0.5s steps(1, end) 0.3s both; }
-  .wh-ret__in { animation: wh-lock 1s var(--w-ease) 0.15s both; }
-  /* The wind-in and the endless spin live on different boxes (svg / wrapper): two transform animations on one
-     element can't share the compositor, which pushed the 120s/48s loops onto the main thread at 60fps. */
-  .wh-ret__spin--ticks > svg { animation: wh-spin-in 1.5s var(--w-ease) 0.15s backwards; }
-  .wh-ret__spin--ticks { animation: wh-spin 120s linear 1.65s infinite; }
-  .wh-ret__spin--arcs > svg { animation: wh-spin-in-rev 1.3s var(--w-ease) 0.2s backwards; }
-  .wh-ret__spin--arcs { animation: wh-spin-rev 48s linear 1.5s infinite; }
-  .wh-hud__axis { animation: wh-draw-x 0.7s var(--w-ease) 0.35s both; }
-  .wh-hud__ticks { animation: wh-draw-y 0.8s var(--w-ease) 0.15s both; }
-  .wh-hud__nums b { animation: wh-blink-in 0.4s steps(1, end) both; }
-  .wh-hud__nums b:nth-child(1), .wh-hud__nums b:nth-child(9) { animation-delay: 0.5s; }
-  .wh-hud__nums b:nth-child(2), .wh-hud__nums b:nth-child(8) { animation-delay: 0.44s; }
-  .wh-hud__nums b:nth-child(3), .wh-hud__nums b:nth-child(7) { animation-delay: 0.38s; }
-  .wh-hud__nums b:nth-child(4), .wh-hud__nums b:nth-child(6) { animation-delay: 0.32s; }
-  .wh-hud__nums b:nth-child(5) { animation-delay: 0.26s; }
-  .wh-hud__pin { animation: wh-blink-in 0.5s steps(1, end) 0.6s both; }
-  .wh-hud__tape-ticks, .wh-hud__tape-nums { animation: wh-draw-x 0.8s var(--w-ease) 0.5s both; }
-  .wh-hud__tape-pin, .wh-hud__scroll { animation: wh-blink-in 0.5s steps(1, end) 1.2s both; }
-  .wh-type { animation: wh-type 0.42s steps(16, end) calc(1.05s + var(--i) * 0.11s) both; }
-  .wh-hud__vtext { animation: wh-type-v 0.9s steps(24, end) 0.9s both; }
-  .wh-hud__rec { animation: wh-rec 32s steps(1, end) infinite; }
-  .wh-hud__slice[data-n="1"] { animation: wh-slice 0.3s steps(4, end) 0.32s both; }
-  .wh-hud__slice[data-n="2"] { animation: wh-slice 0.26s steps(3, end) 0.4s both; }
-  .wh-hud__slice[data-n="3"] { animation: wh-slice 0.3s steps(4, end) 0.48s both; }
-
-  .wh__logo { animation: wh-logo-in 0.9s steps(1, end) 0.08s both; }
-  .wh__rule { animation: wh-draw-x 0.6s var(--w-ease) 0.45s both; }
-  .wh__rule:first-child { transform-origin: 100% 50%; }
-  .wh__rule:last-child { transform-origin: 0 50%; }
-  /* No fill modes: the glyph is hidden while its "hide" runs, the cipher shows only while its flash runs. */
-  .wh-decode__ch { animation: wh-dc-hold calc(var(--d0) + var(--i) * 30ms + 110ms) linear; }
-  .wh-decode__c::before { animation: wh-dc-flash 0.11s linear calc(var(--d0) + var(--i) * 30ms); }
-  .wh-lcd { animation: wh-power 0.55s var(--w-ease) 0.85s both; }
-  .wh-lcd__orb[data-blink]::after { animation: wh-rec 20s steps(1, end) infinite; }
-  .wh-lcd[data-live] .wh-lcd__colon { animation: wh-colon 20s steps(1, end) infinite; }
-  .wh__cta { animation: wh-rise 0.6s var(--w-ease) 1.05s both; }
-  .wh__cta .w-btn__lock i { animation: wh-acquire 0.75s var(--w-ease) 1.2s backwards; }
-  /* First halo pulse right as the CTA lands, then every beat. */
-  .wh__cta .w-btn__glow, .wh__cta .w-btn__ping, .wh__cta .w-btn__lock { animation-delay: 1.75s; }
-  .wh__meta { animation: wh-blink-in 0.5s steps(1, end) 1.4s both; }
-
-  /* Loops park once their layer has faded out on scroll (HeroExit: HUD at 34%, copy at 45%) or the hero is off screen. */
-  .wh:is([data-off], [data-hud-off]) .wh-hud *,
-  .wh:is([data-off], [data-faded]) .wh__copy *,
-  .wh:is([data-off], [data-faded]) .wh__copy *::before,
-  .wh:is([data-off], [data-faded]) .wh__copy *::after { animation-play-state: paused; }
+  .wh__logo { animation: wh-logo-in 0.8s 0.15s both; }
+  .wh__edition span { animation: wh-type 0.85s steps(14, end) 0.75s both; }
+  .wh__date span { animation: wh-type 0.6s steps(9, end) 1.45s both; }
+  .wh__reveal { animation: wh-quiet-in 1s 1.9s both; }
+  .wh__frame, .wh__meta, .wh__next { animation: wh-quiet-in 1.5s 2.2s both; }
+  .wh__next svg { animation: wh-pixel-down 2.2s ease-in-out infinite; }
 }
-
-@keyframes wh-sweep {
-  0% { opacity: 0.9; transform: translateY(0); }
-  17% { opacity: 0.9; transform: translateY(128vh); }
-  17.1%, 100% { opacity: 0; transform: translateY(128vh); }
-}
-@keyframes wh-corner {
-  0% { opacity: 0; transform: translate(calc(var(--sx) * -36px), calc(var(--sy) * -36px)); }
-  55% { opacity: 1; transform: translate(calc(var(--sx) * 4px), calc(var(--sy) * 4px)); }
-  68% { opacity: 0.25; }
-  80% { opacity: 1; transform: none; }
-  100% { opacity: 1; transform: none; }
-}
-@keyframes wh-blink-in { 0% { opacity: 0; } 20% { opacity: 1; } 40% { opacity: 0; } 60%, 100% { opacity: 1; } }
-@keyframes wh-lock { 0% { opacity: 0; transform: scale(1.32); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
-@keyframes wh-spin-in { from { transform: rotate(-140deg); } to { transform: none; } }
-@keyframes wh-spin-in-rev { from { transform: rotate(110deg); } to { transform: none; } }
-@keyframes wh-spin { to { transform: rotate(360deg); } }
-@keyframes wh-spin-rev { to { transform: rotate(-360deg); } }
-@keyframes wh-draw-x { from { transform: scaleX(0); } to { transform: none; } }
-@keyframes wh-draw-y { from { transform: scaleY(0); } to { transform: none; } }
-@keyframes wh-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
-@keyframes wh-type-v { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
-/* Blinks fold 20 cycles into one iteration (durations x20): every iteration boundary costs a main-thread frame
-   (React listens for animationiteration), so short loops are written long. Same blink, same timing. */
-@keyframes wh-rec { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.15; } }
-@keyframes wh-colon { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.25; } }
-@keyframes wh-slice {
-  0% { opacity: 1; transform: translateX(-14%) scaleX(0.6); }
-  50% { opacity: 1; transform: translateX(9%) scaleX(0.95); }
-  100% { opacity: 0; transform: translateX(-4%) scaleX(0.3); }
-}
-/* Power-on glitch: visible from the first frame (LCP-safe), stepped jitter + slice clips. */
 @keyframes wh-logo-in {
-  0% { transform: translateX(-12px) scale(1.05); clip-path: inset(42% 0 40% 0); }
-  10% { transform: translateX(9px) scale(1.03); clip-path: inset(0 0 56% 0); }
-  20% { transform: translateX(-6px); clip-path: inset(34% 0 6% 0); }
-  30% { transform: translateX(4px) skewX(-6deg); clip-path: inset(0); }
-  42% { transform: translateX(-2px); clip-path: inset(64% 0 0 0); }
-  52% { transform: none; clip-path: inset(0); }
-  70% { transform: translateX(2px); clip-path: inset(0 0 0 0); }
-  76%, 100% { transform: none; clip-path: inset(0); }
+  0% { opacity: 0; transform: scale(1.13); clip-path: inset(48% 0 48% 0); }
+  20% { opacity: 0.85; transform: translateX(-8px) scale(1.04); clip-path: inset(0 0 60% 0); }
+  36% { opacity: 0.5; transform: translateX(6px); clip-path: inset(30% 0 10% 0); }
+  55% { opacity: 1; transform: translateX(-3px); clip-path: inset(0); }
+  70% { opacity: 0.65; transform: translateX(2px); }
+  100% { opacity: 1; transform: none; clip-path: inset(0); }
 }
-@keyframes wh-dc-hold { from, to { opacity: 0; } }
-@keyframes wh-dc-flash { from, to { opacity: 1; } }
-/* CRT power-on */
-@keyframes wh-power {
-  0% { opacity: 0; transform: scale(0.5, 0.03); }
-  30% { opacity: 1; transform: scale(1, 0.03); }
-  62% { transform: scale(1, 1.06); }
-  78% { opacity: 0.6; }
-  100% { opacity: 1; transform: none; }
-}
-@keyframes wh-rise { from { opacity: 0; transform: translateY(14px) scale(0.95); } to { opacity: 1; transform: none; } }
-/* Lock-on: the CTA's brackets fly in from wide and snap to rest. */
-@keyframes wh-acquire {
-  0% { opacity: 0; transform: translate(calc(var(--sx) * -26px), calc(var(--sy) * -26px)); }
-  45% { opacity: 1; transform: translate(calc(var(--sx) * 6px), calc(var(--sy) * 6px)); }
-  60% { opacity: 0.3; }
-  72% { opacity: 1; transform: translate(calc(var(--sx) * -2px), calc(var(--sy) * -2px)); }
-  100% { opacity: 1; transform: none; }
-}
+@keyframes wh-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes wh-quiet-in { from { opacity: 0; } }
+@keyframes wh-pixel-down { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(4px); } }
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
-@media (max-width: 1100px) {
-  .wh-hud__axis { display: none; }
-}
-@media (max-width: 899px) {
-  .wh { --wh-top: 68px; --wh-pb: 92px; --wh-inset: 12px; --wh-r: min(58vw, 36svh, 300px); }
-  .wh__logo { width: min(84vw, 420px, calc(30svh * 1.808)); }
-  .wh-hud__ruler { --rh: min(30svh, 240px); }
-  .wh-hud__ruler[data-side="l"] { left: calc(var(--wh-inset) + 2px); }
-  .wh-hud__ruler[data-side="r"] { right: calc(var(--wh-inset) + 2px); }
-  .wh-hud__nums { display: none; }
-  .wh-hud__pin { display: none; }
-  .wh-hud__ticks { width: 10px; }
-  .wh-hud__vtext, .wh-hud__reg { display: none; }
-  .wh-hud__data[data-pos="tl"] { top: calc(var(--wh-top) + 12px); left: calc(var(--wh-inset) + 12px); gap: 5px; }
-  .wh-hud__data[data-pos="tr"] { top: calc(var(--wh-top) + 12px); right: calc(var(--wh-inset) + 12px); gap: 5px; }
-  .wh-hud__data[data-pos="bl"] { bottom: calc(var(--wh-inset) + 14px); left: calc(var(--wh-inset) + 12px); gap: 5px; }
-  .wh-hud__data .wh-type:nth-child(3) { display: none; }
-  .wh-hud__tape { width: 150px; bottom: calc(var(--wh-inset) + 58px); }
-  .wh-hud__tape-nums { display: none; }
-  .wh-hud__scroll { bottom: 2px; }
-  .wh-hud__frame i { width: 22px; height: 22px; }
-  .wh-ret__tag { display: none; }
-  .wh__meta { right: calc(var(--wh-inset) + 8px); bottom: calc(var(--wh-inset) + 8px); }
-  .wh-chip__feed { display: none; }
-}
-@media (max-width: 640px) {
-  .wh-lcd { --lcd-fs: 16px; gap: 8px; padding-inline: 9px; }
-  .wh-lcd__meta, .wh-lcd__rule { display: none; }
-  .wh__edition { gap: 12px; letter-spacing: 0.5em; }
-  .wh__edition .wh-decode { margin-right: -0.5em; }
-  .wh__rule { width: 22px; }
-  .wh__when { font-size: 10px; letter-spacing: 0.1em; }
-  .wh__cta .w-btn[data-size] { min-height: 58px; padding: 19px 36px; font-size: 0.8125rem; }
-  .wh-hud__data { font-size: 10px; }
-}
-@media (max-height: 700px) and (min-width: 900px) {
-  .wh-hud__tape { display: none; }
-}
+/* Parked while the hero is off screen (HeroExit sets data-off). */
+.wh[data-off] *, .wh[data-off] *::before, .wh[data-off] *::after { animation-play-state: paused; }
 
-/* WebGL logo: keep the master's aspect (the legacy global rule is 586/310). */
-.wh__logo-box .glitch-logo > img { aspect-ratio: 1233 / 682; }
-
-@media (prefers-reduced-motion: reduce) {
-  .wh__media, .wh__copy { will-change: auto; }
+@media (max-width: 600px) {
+  .wh { padding: var(--wh-nav) 30px 72px; }
+  .wh__logo { margin-bottom: 30px; }
+  .wh__frame { inset: calc(var(--wh-nav) + 10px) 16px 16px; }
 }

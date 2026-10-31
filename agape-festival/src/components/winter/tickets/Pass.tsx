@@ -124,10 +124,10 @@ export function Pass({ logo, serial, edition, year, days, venue, provider, stage
           <svg className="tk-pass__edge" viewBox="0 0 200 300" preserveAspectRatio="none" aria-hidden="true" focusable="false">
             <defs>
               <linearGradient id="tk-edge-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#e3f0ff" />
-                <stop offset="0.45" stopColor="#9cc8ff" />
-                <stop offset="0.7" stopColor="#5a6f89" />
-                <stop offset="1" stopColor="#3d6bff" />
+                <stop offset="0" stopColor="#eeeeee" />
+                <stop offset="0.45" stopColor="#a42b2b" />
+                <stop offset="0.7" stopColor="#6c6c6c" />
+                <stop offset="1" stopColor="#8b0000" />
               </linearGradient>
             </defs>
             <path d={PASS_OUTLINE} />

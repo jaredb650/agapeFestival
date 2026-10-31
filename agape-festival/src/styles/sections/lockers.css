@@ -8,7 +8,7 @@
    ========================================================================== */
 
 .wlk {
-  --wlk-glass: rgba(156, 200, 255, 0.16);
+  --wlk-glass: rgba(164, 43, 43, 0.16);
   position: relative;
   z-index: 1;
   padding: var(--w-s-6) var(--w-gutter);
@@ -24,9 +24,9 @@
   margin-inline: auto;
   padding: 22px 28px 22px 24px;
   background:
-    repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.28) 0 1px, transparent 1px 3px),
-    linear-gradient(180deg, rgba(36, 42, 53, 0.96) 0%, rgba(20, 24, 32, 0.97) 45%, rgba(10, 13, 19, 0.98) 100%);
-  box-shadow: inset 0 0 0 1px rgba(156, 200, 255, 0.14), inset 0 1px 0 rgba(233, 235, 236, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.85);
+    none,
+    linear-gradient(180deg, rgba(42, 42, 42, 0.96) 0%, rgba(24, 24, 24, 0.97) 45%, rgba(13, 13, 13, 0.98) 100%);
+  box-shadow: inset 0 0 0 1px rgba(164, 43, 43, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.85);
   clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
 }
 /* Silver top rail + ice pins (the breeder-unit bar) */
@@ -36,7 +36,7 @@
   right: 0;
   top: 0;
   height: 3px;
-  background: linear-gradient(90deg, #959ca8, #e3e6ea 30%, #b9bfc8 70%, #959ca8);
+  background: linear-gradient(90deg, #9b9b9b, #e6e6e6 30%, #bebebe 70%, #9b9b9b);
   pointer-events: none;
 }
 .wlk-unit__rail::before,
@@ -52,8 +52,8 @@
   gap: 3px;
   flex: none;
   padding: 5px;
-  background: #07090d;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(233, 235, 236, 0.1);
+  background: #090909;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   perspective: 240px;
 }
 .wlk-door { position: relative; display: block; }
@@ -61,8 +61,8 @@
   position: absolute;
   inset: 0;
   display: block;
-  background: linear-gradient(180deg, #3a414d 0%, #262c36 48%, #1b2029 52%, #232933 100%);
-  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.22), inset 0 0 0 1px rgba(4, 6, 10, 0.7);
+  background: linear-gradient(180deg, #404040 0%, #2b2b2b 48%, #202020 52%, #282828 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(0, 0, 0, 0.7);
   transform-origin: 0 50%;
   transition: transform 0.45s var(--w-ease);
   transition-delay: calc(var(--i) * 18ms);
@@ -74,10 +74,10 @@
   width: 3px;
   height: 3px;
   background: var(--w-ice);
-  box-shadow: 0 0 4px rgba(110, 170, 255, 0.9);
+  box-shadow: 0 0 4px rgba(164, 43, 43, 0.9);
   opacity: 0.25;
 }
-.wlk-door__handle { position: absolute; left: 4px; top: 50%; width: 2px; height: 8px; margin-top: -4px; background: rgba(233, 235, 236, 0.45); }
+.wlk-door__handle { position: absolute; left: 4px; top: 50%; width: 2px; height: 8px; margin-top: -4px; background: rgba(255, 255, 255, 0.45); }
 @media (hover: hover) {
   .wlk-unit:hover .wlk-door__face { transform: rotateY(-38deg); }
   .wlk-unit:hover .wlk-door__led { opacity: 1; }
@@ -86,7 +86,7 @@
 /* ---- ID + title ---- */
 .wlk-id { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin-right: auto; }
 .wlk-id__kicker { display: inline-flex; align-items: center; gap: 0.6em; font: 700 var(--w-fs-nano) / 1 var(--w-font-hud); letter-spacing: 0.28em; text-transform: uppercase; color: var(--w-mist); white-space: nowrap; }
-.wlk-id__tag { padding: 3px 6px; color: #0b0e14; background: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%); letter-spacing: 0.2em; }
+.wlk-id__tag { padding: 3px 6px; color: #0e0e0e; background: linear-gradient(180deg, #e6e6e6 0%, #bebebe 48%, #9b9b9b 52%, #b0b0b0 100%); letter-spacing: 0.2em; }
 .wlk-title { margin: 0; font: 800 clamp(1.375rem, 1rem + 1.2vw, 2rem) / 1 var(--w-font-display); letter-spacing: 0.06em; text-transform: uppercase; text-shadow: 0 0 1px currentColor; color: var(--w-frost); }
 
 /* ---- LCD ---- */
@@ -98,17 +98,17 @@
   margin: 0;
   padding: 11px 14px;
   overflow: hidden;
-  background: linear-gradient(180deg, #05080e 0%, #0a1220 100%);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--wlk-glass), 0 1px 0 rgba(233, 235, 236, 0.08);
+  background: linear-gradient(180deg, #080808 0%, #111111 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px var(--wlk-glass), 0 1px 0 rgba(255, 255, 255, 0.08);
   font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
 }
-.wlk-lcd::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.3) 0 1px, transparent 1px 3px); pointer-events: none; }
-.wlk-lcd__k { color: rgba(156, 200, 255, 0.6); }
-.wlk-lcd__k::after { content: " ::"; color: rgba(156, 200, 255, 0.4); }
-.wlk-lcd__v { color: var(--w-ice); text-shadow: 0 0 6px rgba(156, 200, 255, 0.5); }
+.wlk-lcd::after { content: ""; position: absolute; inset: 0; background: none; pointer-events: none; }
+.wlk-lcd__k { color: rgba(164, 43, 43, 0.6); }
+.wlk-lcd__k::after { content: " ::"; color: rgba(164, 43, 43, 0.4); }
+.wlk-lcd__v { color: var(--w-red-hi); text-shadow: 0 0 6px rgba(164, 43, 43, 0.5); }
 
 .wlk-cta { flex: none; }
 

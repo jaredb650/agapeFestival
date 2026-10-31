@@ -7,9 +7,9 @@
 .wbz { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .wbz svg { position: absolute; inset: 0; overflow: visible; fill: none; }
 /* Panel glass: a static fill in the bezel's own shape (chamfers, notch, curve). */
-.wbz__fill { fill: var(--wbz-fill, rgba(5, 8, 13, 0.82)); stroke: none; }
-.wbz__outer { stroke: rgba(233, 235, 236, 0.26); stroke-width: 1; }
-.wbz__inner { stroke: rgba(156, 200, 255, 0.14); stroke-width: 1; }
+.wbz__fill { fill: var(--wbz-fill, rgba(8, 8, 8, 0.82)); stroke: none; }
+.wbz__outer { stroke: rgba(255, 255, 255, 0.26); stroke-width: 1; }
+.wbz__inner { stroke: rgba(164, 43, 43, 0.14); stroke-width: 1; }
 .wbz__pins { stroke: var(--w-ice); stroke-width: 2; opacity: 0.7; }
 .wbz__accent { stroke: var(--w-ice); stroke-width: 2; opacity: 0.55; }
 .wbz__label {

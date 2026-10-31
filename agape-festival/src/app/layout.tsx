@@ -4,7 +4,7 @@ import "./globals.css";
 
 // viewportFit "cover" lets env(safe-area-inset-*) report the iPhone notch/home-bar insets (the floating CTA uses them).
 export const viewport: Viewport = {
-  themeColor: "#04060a", width: "device-width", initialScale: 1, colorScheme: "dark", viewportFit: "cover",
+  themeColor: "#000000", width: "device-width", initialScale: 1, colorScheme: "dark", viewportFit: "cover",
 };
 
 // Fonts live with the winter kit (components/winter/fonts.ts) and are applied by the pages that use them.

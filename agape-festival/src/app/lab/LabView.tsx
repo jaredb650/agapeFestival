@@ -80,7 +80,7 @@ export function LabView({ flyer, poster, layers, flashGeaHeadshot }: LabMedia) {
         <img src={poster} alt="" className="lab-bg__img" />
         <Scrim variant="vignette" strength={0.92} />
       </div>
-      <Grain animated />
+      <Grain />
 
       <header className="lab-topbar w-container">
         <HudLabel tone="frost">ÄGAPĒ · Style lab</HudLabel>

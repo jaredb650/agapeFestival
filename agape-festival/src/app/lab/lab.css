@@ -30,7 +30,7 @@
 .lab-swatch__chip { display: block; aspect-ratio: 4 / 3; margin-bottom: var(--w-s-2); box-shadow: inset 0 0 0 1px var(--w-line-strong); }
 .lab-swatch__name { font-family: var(--w-font-hud); font-size: var(--w-fs-micro); letter-spacing: 0.12em; color: var(--w-frost); font-weight: 400; }
 .lab-accent { display: grid; grid-template-columns: 64px 1fr; gap: var(--w-s-5); align-items: stretch; margin-top: var(--w-s-7); padding-top: var(--w-s-6); border-top: 1px solid var(--w-line); }
-.lab-accent__bar { background: var(--w-accent-grad); min-height: 88px; }
+.lab-accent__bar { background: var(--w-red); min-height: 88px; }
 .lab-accent__keys { display: flex; flex-direction: column; justify-content: center; gap: var(--w-s-2); }
 
 /* Type */

@@ -5,14 +5,15 @@ import dynamic from "next/dynamic";
 import { afterLoadIdle } from "./idle";
 import { pickHeroVideo } from "../load/videoSource";
 import { withGsap } from "./loadGsap";
-import { GLITCH_EVENT, GlitchLayer } from "@/components/winter/ui";
+import { GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
 import { onSecondWhileVisible } from "@/components/winter/perf";
 import { onBootDone } from "@/components/winter/preloader/boot";
 import type { HeroVideo as HeroVideoConfig } from "./media";
 
-// three.js only ships to desktop mice: phones get the CSS GlitchLayer (tap burst)
-// and never download WebGL. GlitchLogo itself renders on demand (idle until touched).
+// three.js ships only to desktop mice, after the intro and an idle moment: phones get the static logo with a
+// tap glitch (CSS GlitchLayer) and never download WebGL. On a scrolling page the deployed site's touch
+// distortion (touch-action: none on the logo) would trap swipes that start on it.
 const GlitchLogo = dynamic(() => import("@/components/GlitchLogo"), { ssr: false });
 
 export interface HeroLogoAsset {
@@ -23,191 +24,86 @@ export interface HeroLogoAsset {
 }
 
 /**
- * The big centred ÄGAPĒ Festival logo. The static <img> paints on the first
- * frame (the CSS power-on jitters it, never hides it, so it stays an early
- * LCP candidate); one glitch burst fires as the HUD assembles. Desktop mice
- * swap in the WebGL distortion once the intro is done, using the same
- * (already cached) WebP as its texture.
+ * The ÄGAPĒ Festival logo, as deployed: the static image paints first (and
+ * glitches in with the CSS `wh-logo-in`), then desktop mice get the deployed
+ * three.js mouse-trail distortion (GlitchLogo, render-on-demand) using the same
+ * cached file as its texture. Reduced motion: static image only.
  */
 export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }) {
   const [webgl, setWebgl] = useState(false);
-  const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    const fine =
-      motionOk && window.matchMedia("(hover: hover) and (pointer: fine)").matches && navigator.maxTouchPoints === 0;
-    let burst = 0;
+    const fine = motionOk && window.matchMedia("(hover: hover) and (pointer: fine)").matches && navigator.maxTouchPoints === 0;
+    if (!fine) return;
     let swap = 0;
-    // Timed from the hero intro: when the boot preloader hands over (or from mount when there is none).
+    let cancelIdle = () => {};
+    // After the logo has glitched in (timed from the preloader's hand-off, or from mount without one).
     const off = onBootDone((at) => {
-      const wait = (ms: number) => (at === null ? ms : Math.max(0, at + ms - performance.now()));
-      if (motionOk) burst = window.setTimeout(() => box.current?.querySelector(".w-glitch")?.dispatchEvent(new Event(GLITCH_EVENT)), wait(560));
-      if (fine) swap = window.setTimeout(() => setWebgl(true), wait(2400));
+      const wait = at === null ? 2000 : Math.max(0, at + 2000 - performance.now());
+      swap = window.setTimeout(() => {
+        cancelIdle = afterLoadIdle(() => setWebgl(true), 0);
+      }, wait);
     });
     return () => {
       off();
-      clearTimeout(burst);
       clearTimeout(swap);
+      cancelIdle();
     };
   }, []);
 
+  if (webgl) return <GlitchLogo imageSrc={logo.src} />;
   return (
-    <div ref={box} className="wh__logo-box">
-      {webgl ? (
-        <GlitchLogo imageSrc={logo.src} />
-      ) : (
-        <GlitchLayer intensity="medium" idleEvery={9000} className="wh__logo-static">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={logo.src}
-            srcSet={logo.srcSet}
-            sizes={sizes}
-            width={logo.width}
-            height={logo.height}
-            alt=""
-            draggable={false}
-            fetchPriority="high"
-          />
-        </GlitchLayer>
-      )}
-    </div>
+    <GlitchLayer intensity="subtle" className="wh__logo-static">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={logo.src} srcSet={logo.srcSet} sizes={sizes} width={logo.width} height={logo.height} alt="" draggable={false} fetchPriority="high" />
+    </GlitchLayer>
   );
 }
 
 // ---- Countdown -----------------------------------------------------------
 
-const pad = (n: number, w: number) => String(n).padStart(w, "0");
-const DECODE_MS = 700;
-const LCD_ON_MS = 1000;
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const UNITS = ["Days", "Hours", "Minutes", "Seconds"] as const;
 
 /**
- * DDD:HH:MM:SS LCD readout. The digits are written straight into the DOM once a
- * second (no React state, no re-render) on the page's shared 1 Hz tick, aligned
- * to the wall-clock second, and only while the readout is on screen and the tab
- * is visible. On start the digits decode in left to right from noise. Server
- * HTML (static export) has no "now", so it ships dashes over the unlit 8s.
+ * The deployed 4-box countdown (DAYS · HOURS · MINUTES · SECONDS). The digits
+ * are written straight into the DOM on the page's shared, wall-clock-aligned
+ * 1 Hz tick, only while the countdown is on screen and the tab is visible (no
+ * React state, no re-render). Static HTML ships dashes (there is no "now").
  */
-export function Countdown({
-  targetIso,
-  label,
-  lead,
-  meta,
-}: {
-  targetIso: string;
-  /** Accessible name of the timer. */
-  label: string;
-  /** Header, left (e.g. "T–MINUS"). */
-  lead: string;
-  /** Header, right (e.g. "DAY 01 ▸ 02.19.27"). */
-  meta: string;
-}) {
+export function Countdown({ targetIso, label }: { targetIso: string; label: string }) {
   const root = useRef<HTMLDivElement>(null);
-  const sr = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = root.current;
     if (!el) return;
     const target = Date.parse(targetIso);
-    const cells = Array.from(el.querySelectorAll<HTMLElement>("[data-d]"));
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let decodeTimer = 0;
-    let decodeEnd = 0;
-
-    const digitsNow = (now = Date.now()) => {
-      const left = Math.max(0, Math.floor((target - now) / 1000));
-      const d = Math.min(999, Math.floor(left / 86400));
-      el.toggleAttribute("data-short", d < 100);
-      el.toggleAttribute("data-done", left === 0);
-      return { left, d, str: pad(d, 3) + pad(Math.floor(left / 3600) % 24, 2) + pad(Math.floor(left / 60) % 60, 2) + pad(left % 60, 2) };
-    };
-    const write = (s: string) => {
-      for (let i = 0; i < cells.length; i++) if (cells[i].textContent !== s[i]) cells[i].textContent = s[i];
-    };
-
-    // The one-off decode: noisy digits locking in left to right, ~20 fps, then the shared tick takes over.
-    const decodeStep = () => {
-      decodeTimer = 0;
-      const { str } = digitsNow();
-      const now = performance.now();
-      if (now >= decodeEnd) return write(str);
-      const locked = Math.max(0, Math.floor((1 - (decodeEnd - now) / DECODE_MS) * cells.length));
-      let noisy = "";
-      for (let i = 0; i < str.length; i++) noisy += i < locked ? str[i] : String((Math.random() * 10) | 0);
-      write(noisy);
-      decodeTimer = window.setTimeout(decodeStep, 48);
-    };
-
-    // First reading: decode in (once), and give screen readers a one-off summary.
-    const first = digitsNow();
-    if (sr.current) sr.current.textContent = `${first.d} days, ${Math.floor(first.left / 3600) % 24} hours to go.`;
-    // The decode waits for the LCD's CSS power-on (~1s into the hero intro: after navigation start, or after the
-    // boot preloader hands over) so it is seen.
-    const offBoot = reduced
-      ? () => {}
-      : onBootDone((at) => {
-          decodeEnd = Math.max(performance.now(), (at ?? 0) + LCD_ON_MS) + DECODE_MS;
-          if (at !== null && !decodeTimer) decodeStep();
-        });
-
-    // Digits change once a second on the page's shared, wall-clock-aligned tick, only while the readout is on
-    // screen and the tab is visible (perf/ticker).
-    const off = onSecondWhileVisible(el, (now) => {
-      if (!el.hasAttribute("data-live")) el.setAttribute("data-live", "");
-      if (performance.now() < decodeEnd) {
-        if (!decodeTimer) decodeStep();
-        return;
-      }
-      write(digitsNow(now).str);
+    const cells = Array.from(el.querySelectorAll<HTMLElement>("[data-n]"));
+    return onSecondWhileVisible(el, (now) => {
+      const s = Math.max(0, Math.floor((target - now) / 1000));
+      const v = [pad2(Math.floor(s / 86400)), pad2(Math.floor(s / 3600) % 24), pad2(Math.floor(s / 60) % 60), pad2(s % 60)];
+      for (let i = 0; i < cells.length; i++) if (cells[i].textContent !== v[i]) cells[i].textContent = v[i];
     });
-    return () => {
-      off();
-      offBoot();
-      clearTimeout(decodeTimer);
-    };
   }, [targetIso]);
 
-  const cell = (i: number) => (
-    <span className="wh-lcd__d" data-d={i} key={i}>
-      -
-    </span>
-  );
-  const groups: [string, number[]][] = [
-    ["Days", [0, 1, 2]],
-    ["Hrs", [3, 4]],
-    ["Min", [5, 6]],
-    ["Sec", [7, 8]],
-  ];
-
   return (
-    <div ref={root} className="wh-lcd" role="timer" aria-label={label} data-nosnippet>
-      <span className="wh-lcd__bar" aria-hidden="true">
-        <span className="wh-lcd__orb" />
-        <span className="wh-lcd__lead">{lead}</span>
-        <span className="wh-lcd__rule" />
-        <span className="wh-lcd__meta">{meta}</span>
-        <span className="wh-lcd__orb" data-blink />
-      </span>
-      <span className="wh-lcd__screen" aria-hidden="true">
-        <span className="wh-lcd__digits">
-          {groups.map(([unit, idx], g) => (
-            <span key={unit} className="wh-lcd__grp" data-unit={unit.toLowerCase()}>
-              {g > 0 && <span className="wh-lcd__colon">:</span>}
-              <span className="wh-lcd__cells">{idx.map(cell)}</span>
-              <span className="wh-lcd__unit">{unit}</span>
-            </span>
-          ))}
-        </span>
-      </span>
-      <span ref={sr} className="w-sr-only" />
+    <div ref={root} className="wh-count" role="timer" aria-label={label} data-nosnippet>
+      {UNITS.map((unit) => (
+        <div className="wh-count__cell" key={unit}>
+          <span className="wh-count__n" data-n="">
+            ––
+          </span>
+          <span className="wh-count__unit">{unit}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
 // ---- Hero video ---------------------------------------------------------
 // The video and its pause control live in different parts of the hero (the
-// control can't sit inside the feathered, fading media box), so they share
-// this tiny store.
+// control can't sit inside the fading media box), so they share this tiny store.
 type HeroVideoState = "off" | "waiting" | "playing" | "paused";
 let hvState: HeroVideoState = "off";
 let hvUserPaused = false;
@@ -224,7 +120,7 @@ const subscribeHv = (cb: () => void) => {
 };
 const useHvState = () => useSyncExternalStore(subscribeHv, () => hvState, () => "off" as HeroVideoState);
 
-/** Poster-first, decorative hero video. */
+/** Poster-first, decorative hero video (AV1 / HEVC / H.264 picked by load/videoSource). */
 export function HeroVideo({ video }: { video: HeroVideoConfig }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [src, setSrc] = useState<string | null>(null);
@@ -243,7 +139,7 @@ export function HeroVideo({ video }: { video: HeroVideoConfig }) {
       cancel();
       reduced.removeEventListener("change", onMotion);
     };
-  }, [video.src, video.srcMobile]);
+  }, [video]);
 
   // Play while the hero is on screen (until its media has faded out), else pause.
   useEffect(() => {
@@ -252,11 +148,9 @@ export function HeroVideo({ video }: { video: HeroVideoConfig }) {
     if (!src || !vid || !hero) return;
     hvEl = vid;
     setHvState("waiting");
-    let inView = true;
     const io = new IntersectionObserver(
       ([e]) => {
-        inView = e.isIntersecting;
-        if (!inView) vid.pause();
+        if (!e.isIntersecting) vid.pause();
         else if (!hvUserPaused) playWithRescue(vid);
       },
       { rootMargin: "-50% 0px 0px 0px" },
@@ -300,7 +194,7 @@ export function HeroVideo({ video }: { video: HeroVideoConfig }) {
   );
 }
 
-/** Pause/play for the hero video (WCAG 2.2.2: motion longer than 5 s can be stopped). A HUD transport chip. */
+/** The deployed pause/play button, bottom right (WCAG 2.2.2: motion longer than 5 s can be stopped). */
 export function HeroVideoToggle() {
   const state = useHvState();
   if (state === "off") return null;
@@ -308,8 +202,7 @@ export function HeroVideoToggle() {
   return (
     <button
       type="button"
-      className="wh-chip"
-      data-playing={playing || undefined}
+      className="wh__motion"
       aria-label={playing ? "Pause background video" : "Play background video"}
       onClick={() => {
         const vid = hvEl;
@@ -323,24 +216,50 @@ export function HeroVideoToggle() {
         }
       }}
     >
-      <span className="wh-chip__led" aria-hidden="true" />
-      <span className="wh-chip__feed" aria-hidden="true">
-        Feed 01
-      </span>
-      <svg viewBox="0 0 10 10" aria-hidden="true">
-        {playing ? <path d="M1.5 1h2.4v8H1.5zM6.1 1h2.4v8H6.1z" fill="currentColor" /> : <path d="M2 1l7 4-7 4z" fill="currentColor" />}
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        {playing ? (
+          <>
+            <rect x="4" y="2" width="2" height="12" />
+            <rect x="10" y="2" width="2" height="12" />
+          </>
+        ) : (
+          <path d="M4 2 14 8 4 14Z" />
+        )}
       </svg>
-      <span className="wh-chip__label" aria-hidden="true">
-        {playing ? "Pause" : "Play"}
-      </span>
     </button>
   );
 }
 
 /**
- * Scroll exit: the footage sinks and dissolves into the tower behind it, the
- * copy lifts away, the HUD pulls back and fades. Also parks the HUD's looping
- * animations (`data-off`) while the hero is off screen.
+ * The deployed content fit: on short screens the lockup scales down (never
+ * up) to fit the hero, so it always reads as one screen. Writes one custom
+ * property from a ResizeObserver; the CSS applies it with the `scale`
+ * property, which composes with the scroll exit's transform.
+ */
+export function HeroFit() {
+  useEffect(() => {
+    const hero = document.getElementById("hero");
+    const content = hero?.querySelector<HTMLElement>("[data-hero-copy]");
+    if (!hero || !content) return;
+    const fit = () => {
+      const cs = getComputedStyle(hero);
+      const avail = Math.max(1, hero.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom));
+      content.style.setProperty("--content-scale", String(Math.min(1, avail / content.offsetHeight)));
+    };
+    const ro = new ResizeObserver(fit);
+    ro.observe(hero);
+    ro.observe(content);
+    fit();
+    return () => ro.disconnect();
+  }, []);
+  return null;
+}
+
+/**
+ * Scroll exit, adapted from the deployed single screen to the scrolling page:
+ * the footage sinks and dissolves into the tower behind it, the lockup lifts
+ * away, the corner ticks and controls fade. Also parks the hero's loops
+ * (`data-off`) while it is off screen.
  */
 export function HeroExit() {
   useEffect(() => {
@@ -351,51 +270,26 @@ export function HeroExit() {
     const undo = withGsap(({ gsap }) => {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        // Past a tween's end its layer sits at opacity 0: flag it so CSS parks the loops inside (hero.css).
-        const parkWhenFaded = (attr: string) => ({
-          onLeave: () => hero.setAttribute(attr, ""),
-          onEnterBack: () => hero.removeAttribute(attr),
-          onRefresh: (self: { progress: number }) => hero.toggleAttribute(attr, self.progress >= 1),
-        });
         const media = hero.querySelector("[data-hero-media]");
         const copy = hero.querySelector("[data-hero-copy]");
-        const hud = hero.querySelector("[data-hero-hud]");
         const meta = hero.querySelectorAll("[data-hero-meta]");
-        // Parallax over the whole exit; the footage has fully dissolved by ~48% (and its bottom edge is feathered) so
-        // the hero's bottom edge never shows as a seam over the tower.
-        gsap.to(media, {
-          yPercent: 16,
-          ease: "none",
-          scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true },
-        });
+        // The footage has fully dissolved by ~48% (and its bottom edge is feathered), so the hero's bottom edge
+        // never shows as a seam over the tower.
+        gsap.to(media, { yPercent: 16, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
+        gsap.fromTo(media, { opacity: 1 }, { opacity: 0, ease: "none", scrollTrigger: { trigger: hero, start: "5% top", end: "48% top", scrub: true } });
+        // fromTo, never to(): the intro's CSS fades start at opacity 0, and a to() would record that as its start.
+        // (The CSS keyframes only set `from`, so once they finish the inline value GSAP writes shows through.)
         gsap.fromTo(
-          media,
-          { opacity: 1 },
-          { opacity: 0, ease: "none", scrollTrigger: { trigger: hero, start: "5% top", end: "48% top", scrub: true } },
-        );
-        gsap.to(copy, {
-          y: () => -0.16 * window.innerHeight,
-          opacity: 0,
-          ease: "none",
-          scrollTrigger: { trigger: hero, start: "top top", end: "45% top", scrub: true, invalidateOnRefresh: true, ...parkWhenFaded("data-faded") },
-        });
-        if (hud) {
-          gsap.to(hud, {
-            scale: 1.08,
+          copy,
+          { y: 0, opacity: 1 },
+          {
+            y: () => -0.14 * window.innerHeight,
             opacity: 0,
             ease: "none",
-            scrollTrigger: { trigger: hero, start: "top top", end: "34% top", scrub: true, ...parkWhenFaded("data-hud-off") },
-          });
-        }
-        gsap.to(meta, {
-          opacity: 0,
-          ease: "none",
-          scrollTrigger: { trigger: hero, start: "top top", end: "30% top", scrub: true },
-        });
-        return () => {
-          hero.removeAttribute("data-hud-off");
-          hero.removeAttribute("data-faded");
-        };
+            scrollTrigger: { trigger: hero, start: "top top", end: "45% top", scrub: true, invalidateOnRefresh: true },
+          },
+        );
+        gsap.fromTo(meta, { opacity: 1 }, { opacity: 0, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "25% top", scrub: true } });
       });
       return () => mm.revert();
     });

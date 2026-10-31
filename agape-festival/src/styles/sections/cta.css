@@ -1,8 +1,9 @@
 /* ==========================================================================
-   FLOATING GET TICKETS (round 2): the hologram CTA docked bottom-centre in
-   HUD chrome. Shown/hidden by FloatingCta.tsx ([data-shown]); slides on
-   transform, fades on opacity, the halo pulse is the Button's own beat plus
-   a soft floor glow on the same period. Classes wcta-*.
+   FLOATING GET TICKETS (red hybrid): the deployed red button docked
+   bottom-centre. Shown/hidden by FloatingCta.tsx ([data-shown]); slides on
+   transform, fades on opacity. Its only glow is the Button's own deployed
+   4s breath. A static dark pool under it keeps it legible over any section.
+   No rails, readouts, pips or blooms. Classes wcta-*.
    ========================================================================== */
 .wcta {
   position: fixed;
@@ -27,119 +28,29 @@
 }
 html.wmenu-open .wcta { opacity: 0; visibility: hidden; }
 
-.wcta__btn { --w-glass: rgba(6, 12, 26, 0.72); }
-
-.wcta__rig { position: absolute; inset: 0; pointer-events: none; }
-/* Legibility pool under the CTA (static), with an ice bloom that flares on the pulse beat. */
-.wcta__floor {
+/* Legibility pool under the CTA (static, neutral). */
+.wcta__pool {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: calc(100% + 240px);
-  height: 140px;
+  width: calc(100% + 200px);
+  height: 130px;
   translate: -50% -50%;
-  background: radial-gradient(closest-side, rgba(4, 6, 10, 0.78), rgba(4, 6, 10, 0.42) 58%, transparent);
-}
-.wcta__floor::after {
-  content: "";
-  position: absolute;
-  inset: 18% 16%;
-  background: radial-gradient(closest-side, rgba(61, 107, 255, 0.42), rgba(61, 107, 255, 0.12) 60%, transparent);
-  opacity: 0.25;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.35) 58%, transparent);
 }
 
-/* Rails: hairlines running out from both sides, ice tick at the inner end, readout above. */
-.wcta__rail {
-  position: absolute;
-  top: 50%;
-  width: 76px;
-  height: 7px;
-  translate: 0 -50%;
-  background:
-    linear-gradient(var(--wcta-rail), var(--wcta-rail)) center / 100% 1px no-repeat,
-    repeating-linear-gradient(90deg, rgba(233, 235, 236, 0.3) 0 1px, transparent 1px 12px) center / 100% 4px no-repeat;
-  transform: scaleX(0);
-  transition: transform 0.2s ease;
-}
-.wcta__rail[data-side="l"] {
-  --wcta-rail: rgba(156, 200, 255, 0.7);
-  right: calc(100% + 16px);
-  transform-origin: 100% 50%;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 60%);
-  mask-image: linear-gradient(90deg, transparent, #000 60%);
-}
-.wcta__rail[data-side="r"] {
-  --wcta-rail: rgba(156, 200, 255, 0.7);
-  left: calc(100% + 16px);
-  transform-origin: 0 50%;
-  -webkit-mask-image: linear-gradient(270deg, transparent, #000 60%);
-  mask-image: linear-gradient(270deg, transparent, #000 60%);
-}
-.wcta__rail::before { content: ""; position: absolute; top: 0; width: 1px; height: 7px; background: var(--w-ice); box-shadow: 0 0 5px rgba(156, 200, 255, 0.8); }
-.wcta__rail[data-side="l"]::before { right: 0; }
-.wcta__rail[data-side="r"]::before { left: 0; }
-.wcta__rail b {
-  position: absolute;
-  bottom: calc(100% + 5px);
-  font: 400 var(--w-fs-micro) / 1 var(--w-font-pixel);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--w-mist);
-  text-shadow: 0 0 6px rgba(4, 6, 10, 0.95);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.wcta__rail[data-side="l"] b { right: 6px; }
-.wcta__rail[data-side="r"] b { left: 6px; color: var(--w-ice); }
-.wcta__pip {
-  position: absolute;
-  left: 50%;
-  top: calc(100% + 8px);
-  width: 9px;
-  height: 5px;
-  translate: -50% 0;
-  background: var(--w-ice);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  opacity: 0.75;
-}
-
-.wcta[data-shown] .wcta__rail { transform: none; transition: transform 0.55s var(--w-ease) 0.16s; }
-.wcta[data-shown] .wcta__rail b { opacity: 1; transition: opacity 0.3s ease 0.45s; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .wcta__floor::after { animation: wcta-bloom var(--w-pulse, 4.8s) ease-out infinite; }
-  .wcta[data-shown] .w-btn__lock i { animation: wcta-acquire 0.7s var(--w-ease) 0.12s backwards; }
-  .wcta[data-shown] .wcta__rail b { animation: wcta-type 0.4s steps(10, end) 0.45s backwards; }
-  /* Parked while docked away (pseudo-elements too: a hidden bloom still needed main-thread frames). */
-  .wcta:not([data-shown]) *, .wcta:not([data-shown]) *::before, .wcta:not([data-shown]) *::after { animation-play-state: paused; }
-}
-@keyframes wcta-bloom { 0%, 100% { opacity: 0.25; } 6% { opacity: 1; } 34% { opacity: 0.25; } }
-@keyframes wcta-acquire {
-  0% { opacity: 0; transform: translate(calc(var(--sx) * -22px), calc(var(--sy) * -22px)); }
-  45% { opacity: 1; transform: translate(calc(var(--sx) * 5px), calc(var(--sy) * 5px)); }
-  60% { opacity: 0.3; }
-  72% { opacity: 1; transform: translate(calc(var(--sx) * -2px), calc(var(--sy) * -2px)); }
-  100% { opacity: 1; transform: none; }
-}
-@keyframes wcta-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+/* Parked while docked away. */
+.wcta:not([data-shown]) * { animation-play-state: paused; }
 
 /* Phones: compact, so it never sits on more than a sliver of content. */
 @media (max-width: 640px) {
   .wcta { bottom: max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px)); }
-  .wcta .wcta__btn.w-btn { min-height: 48px; padding: 14px 26px; font-size: 0.75rem; }
-  .wcta__rail { width: 30px; }
-  .wcta__rail[data-side="l"] { right: calc(100% + 12px); }
-  .wcta__rail[data-side="r"] { left: calc(100% + 12px); }
-  .wcta__floor { width: calc(100% + 120px); height: 110px; }
-  .wcta__pip { top: calc(100% + 6px); }
-}
-@media (max-width: 420px) {
-  .wcta__rail b { display: none; }
+  .wcta .wcta__btn.w-btn { min-height: 48px; padding: 14px 28px; font-size: 0.75rem; }
+  .wcta__pool { width: calc(100% + 110px); height: 104px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .wcta, .wcta[data-shown] { transform: none; transition: opacity 0.2s ease, visibility 0s linear 0.2s; }
   .wcta[data-shown] { transition: opacity 0.2s ease, visibility 0s; }
-  .wcta__rail, .wcta[data-shown] .wcta__rail { transform: none; transition: none; }
 }

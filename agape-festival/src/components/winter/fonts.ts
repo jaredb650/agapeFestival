@@ -36,11 +36,11 @@ export const bodyFont = localFont({
   variable: "--font-body",
 });
 
-// Rare accent (artist-select status lines): never worth a preload.
+// Chonky Pixels: the hero's WINTER EDITION + date (as deployed), so it is above the fold now. 4 KB: preloaded.
 export const pixelFont = localFont({
   src: "../../../public/assets/fonts/ChonkyPixels.woff2",
   display: "swap",
-  preload: false,
+  preload: true,
   variable: "--font-pixel",
 });
 

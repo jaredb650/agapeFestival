@@ -1,40 +1,51 @@
 /* ==========================================================================
    ÄGAPĒ WINTER — design tokens + component styles
-   "The flyer, as a website."
+   RED HYBRID (Oct 31): the deployed site's black + deep red, carried through
+   the blue build's components. Token names are kept so section CSS re-themes
+   through them; the rules every section follows are in
+   context/winter-redesign/hybrid-theme.md.
 
    Scope: tokens live on `.winter` (put it on the page root). Every class is
-   prefixed `w-` and every keyframe `w-`, so nothing here touches the current
-   live page (`.winter-*` classes in globals.css).
+   prefixed `w-` and every keyframe `w-`.
 
-   Rule of the accent: ice/volt blue appears ONLY on interactive or selected
-   things (CTA fill, focus, hover, the selected tile, the active window).
-   Everything else stays in the flyer's greys.
-   Full usage notes: context/winter-redesign/design-system.md
+   Rule of the accent: red appears on interactive / selected things and on a
+   few hairlines (the deployed divider). Solid colours only: no gradients on
+   accents, buttons or bars. Everything else is black, neutral panels and
+   white/grey type.
    ========================================================================== */
 
 .winter {
-  /* ---- Colour (sampled from story-9x16_1080x1920.jpg) ---- */
-  --w-ink: #04060a;        /* flyer blacks, page background */
-  --w-deep: #1b212c;       /* fog shadows, panel fill */
-  --w-steel: #313743;      /* tower mid-tones, raised chrome */
-  --w-fog: #737c8b;        /* fogged sky; decorative + large text only on --w-deep */
-  --w-mist: #a7afba;       /* secondary text (AA on ink, deep and steel) */
-  --w-frost: #e9ebec;      /* the flyer's off-white type; primary text */
-  --w-steel-blue: #5a6f89; /* the lit blue of the tower; decoration only */
+  /* ---- Neutrals (the deployed site: black page, neutral panels) ---- */
+  --w-ink: #000;           /* page background */
+  --w-ink-2: #050505;      /* raised page / scrims */
+  --w-deep: #0b0b0b;       /* panel fill */
+  --w-panel: #121212;      /* raised panel, hover fill */
+  --w-steel: #1f1f1f;      /* raised chrome, pressed fill */
+  --w-fog: #777;           /* decorative + large text only */
+  --w-mist: #a6a6a6;       /* secondary text (deployed unit labels) */
+  --w-soft: #d5d5d5;       /* secondary emphasis (deployed date line) */
+  --w-frost: #fff;         /* primary text */
+  --w-steel-blue: #5c5c5c; /* legacy name, now a neutral: decoration only */
 
-  /* Accent (Y2K refs). Interactive / selected only. */
-  --w-ice: #9cc8ff;
-  --w-volt: #3d6bff;
-  --w-volt-deep: #1e3bb8;
-  --w-glow: rgba(61, 107, 255, 0.45);
-  --w-accent-grad: linear-gradient(180deg, var(--w-ice) 0%, var(--w-volt) 100%);
-  --w-accent-line: linear-gradient(90deg, var(--w-ice) 0%, var(--w-volt) 100%);
+  /* ---- Red (deployed) ---- */
+  --w-red: #8b0000;        /* fills: buttons, selected states */
+  --w-red-hover: #a00000;  /* fill hover */
+  --w-red-line: #a42b2b;   /* hairlines, dividers, marks */
+  --w-red-hi: #e52424;     /* small bright marks + accent text, sparingly */
+  --w-red-glow: rgba(164, 43, 43, 0.4); /* #a42b2b66: the divider glow, the only glow allowed by default */
+
+  /* Legacy accent names, re-pointed so older section CSS turns red by itself.
+     New code should use the --w-red* names above. */
+  --w-volt: var(--w-red);
+  --w-volt-deep: #5a0000;
+  --w-ice: var(--w-red-line);
+  --w-glow: var(--w-red-glow);
 
   /* Lines */
-  --w-line: rgba(233, 235, 236, 0.08);
-  --w-line-strong: rgba(233, 235, 236, 0.18);
-  --w-bracket: rgba(233, 235, 236, 0.34);
-  --w-bracket-accent: rgba(156, 200, 255, 0.85);
+  --w-line: rgba(255, 255, 255, 0.08);
+  --w-line-strong: rgba(255, 255, 255, 0.18);
+  --w-bracket: #ffffff35;          /* the deployed .winter-frame corner ticks */
+  --w-bracket-accent: #ff2a2a99;   /* the deployed button's corner ticks */
 
   /* ---- Type families (variables come from components/winter/fonts.ts) ---- */
   /* var() fallbacks matter: an undefined variable without one invalidates the whole stack. */
@@ -95,7 +106,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
-.winter ::selection { background: var(--w-volt); color: var(--w-frost); }
+.winter ::selection { background: var(--w-red); color: var(--w-frost); }
 
 /* ==========================================================================
    Layout helpers
@@ -127,7 +138,7 @@
   letter-spacing: var(--w-track);
   margin: 0 calc(var(--w-track) * -1) 0 0;
   color: var(--w-frost);
-  text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.45);
   text-wrap: balance;
   font-kerning: normal;
 }
@@ -136,7 +147,7 @@
 .w-h2 { font-size: var(--w-fs-h2); }
 .w-h3 { --w-track: 0.06em; font-size: var(--w-fs-h3); font-weight: 700; line-height: 1.12; }
 /* Big hero type gets the flyer's softness a touch stronger. */
-.w-soft { text-shadow: 0 0 1.5px rgba(233, 235, 236, 0.55), 0 0 18px rgba(4, 6, 10, 0.6); }
+.w-soft { text-shadow: 0 0 1.5px rgba(255, 255, 255, 0.55), 0 0 18px rgba(0, 0, 0, 0.6); }
 
 .w-lead { font-size: var(--w-fs-lead); line-height: 1.55; color: var(--w-mist); font-weight: 300; max-width: 38em; margin: 0; }
 .w-body { font-size: var(--w-fs-body); line-height: 1.65; color: var(--w-mist); margin: 0; max-width: 62ch; }
@@ -156,7 +167,7 @@
   line-height: 1.3;
   letter-spacing: 0.06em;
   text-align: center;
-  text-shadow: 0 0 1px rgba(233, 235, 236, 0.45);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.45);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -181,7 +192,7 @@
 }
 .w-hud[data-tone="frost"] { color: var(--w-frost); }
 .w-hud[data-tone="fog"] { color: var(--w-fog); }
-.w-hud[data-tone="ice"] { color: var(--w-ice); }
+.w-hud[data-tone="ice"] { color: var(--w-red-hi); }
 .w-hud[data-font="pixel"] { font-family: var(--w-font-pixel); letter-spacing: 0.08em; font-size: 0.8125rem; }
 .w-hud[data-size="nano"] { font-size: var(--w-fs-nano); letter-spacing: 0.26em; }
 .w-hud__idx { color: var(--w-fog); font-variant-numeric: tabular-nums; letter-spacing: 0.12em; }
@@ -217,31 +228,22 @@
 .w-frame[data-interactive]:hover::after { animation: w-flicker 0.25s linear; filter: brightness(2.2); }
 
 /* ==========================================================================
-   Buttons — hologram panes with a lock-on reticle (round 2, Oct 30).
-   A plain rectangle of ice glass behind a 1px luminous edge, fine
-   scanlines, wide-spaced Orbitron caps, and targeting brackets on ALL FOUR
-   corners (symmetrical). Hover / focus / press: the brackets snap inward
-   with a small overshoot and flicker, like a reticle acquiring a target;
-   a holographic sheen crosses the glass and the caps split red/cyan for a
-   beat. The primary keeps the ▶ transport glyph and pulses every ~5s: its
-   halo flares, a ring pings outward and the brackets tighten (the "click
-   me" beat). Everything that moves is transform or opacity; the label
-   shadow and bracket flicker are a few stepped repaints of small boxes.
-   No fill slab, bevel, drop shadow or backdrop-filter.
+   Buttons — the deployed site's ticket button (red hybrid, Oct 31).
+   Flat solid #8b0000, white Orbitron caps tracked .3em, four small corner
+   ticks (one ::before, no DOM). Hover: #a00000 + a small scale. No gradients,
+   bevels, glass, sheen, RGB split or 3D shading.
+   Primary may breathe: a pre-drawn glow whose OPACITY fades in and out
+   (compositor only), exactly the deployed 4s beat. One per view.
+   Secondary: transparent with a white hairline; fills red on hover.
    ========================================================================== */
 .w-btn {
-  /* The 1px ring (even-odd: the box minus the box inset 1px). */
-  --w-ring: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 1px 1px, 1px calc(100% - 1px), calc(100% - 1px) calc(100% - 1px), calc(100% - 1px) 1px, 1px 1px);
-  /* Lock-on: rest offset of the brackets outside the box, and how far they snap in. */
-  --w-frame-o: -8px;
-  --w-frame-s: 14px;
-  --w-lock: 5px;
-  --w-pulse: 4.8s;
+  --w-tick: var(--w-bracket-accent);
+  --w-tick-s: 16px;
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 18px;
   max-width: 100%;
   border: 0;
   margin: 0;
@@ -249,198 +251,81 @@
   color: var(--w-frost);
   font-family: var(--w-font-hud);
   font-weight: 700;
-  font-size: 0.8125rem;
-  letter-spacing: 0.32em;
+  font-size: 0.8125rem; /* 13px, as deployed */
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  isolation: isolate;
   -webkit-tap-highlight-color: transparent;
-  transition: transform var(--w-dur) var(--w-ease), color var(--w-dur-fast) ease;
+  touch-action: manipulation;
+  transition: background-color 0.3s ease, color var(--w-dur-fast) ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 /* Trailing letter-spacing pushes text off-centre; pull it back. */
-.w-btn__label { margin-right: -0.32em; position: relative; z-index: 2; }
-.w-btn:focus-visible { outline: 2px solid var(--w-ice); outline-offset: 14px; }
+.w-btn__label { margin-right: -0.3em; position: relative; z-index: 1; }
+.w-btn:focus-visible { outline: 2px solid var(--w-frost); outline-offset: 6px; }
 .w-btn[aria-disabled="true"], .w-btn:disabled { opacity: 0.45; pointer-events: none; }
 
-/* Ping scale per size ≈ the same ~12px outset on every edge. */
-.w-btn[data-size="sm"] { --w-frame-o: -6px; --w-frame-s: 10px; --w-lock: 4px; --w-ping: 1.14, 1.55; min-height: 44px; padding: 12px 20px; font-size: 0.6875rem; gap: 8px; }
-.w-btn[data-size="md"] { --w-frame-o: -7px; --w-frame-s: 12px; --w-lock: 4px; --w-ping: 1.1, 1.46; min-height: 52px; padding: 16px 28px; }
-.w-btn[data-size="lg"] { --w-frame-o: -8px; --w-frame-s: 16px; --w-lock: 5px; --w-ping: 1.09, 1.4; min-height: 60px; padding: 20px 40px; }
+.w-btn[data-size="sm"] { --w-tick-s: 10px; min-height: 44px; padding: 12px 22px; font-size: 0.6875rem; gap: 10px; }
+.w-btn[data-size="md"] { --w-tick-s: 12px; min-height: 52px; padding: 16px 34px; font-size: 0.75rem; gap: 14px; }
+.w-btn[data-size="lg"] { --w-tick-s: 16px; min-height: 60px; padding: 20px 48px; }
 
-/* ---- Glass pane + scanlines + sheen ---- */
-.w-btn__glass {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background-color: var(--w-glass, rgba(5, 10, 20, 0.5));
-  background-image: linear-gradient(180deg, var(--w-glass-hi, rgba(156, 200, 255, 0.2)) 0%, rgba(156, 200, 255, 0.05) 46%, var(--w-glass-lo, rgba(61, 107, 255, 0.12)) 100%);
-  transition: background-color var(--w-dur) ease;
-}
-.w-btn__glass::before {
+/* Corner ticks (the deployed button's): eight 1px arms on one pseudo-element. */
+.w-btn--primary::before,
+.w-btn--secondary::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(180deg, rgba(156, 200, 255, 0.11) 0 1px, transparent 1px 3px);
-  opacity: var(--w-scan, 0.9);
-}
-.w-btn__glass::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -70%;
-  width: 60%;
-  background: linear-gradient(100deg, transparent 0%, rgba(255, 70, 110, 0.12) 28%, rgba(233, 235, 236, 0.34) 47%, rgba(156, 200, 255, 0.3) 55%, rgba(80, 210, 255, 0.12) 72%, transparent 100%);
-  transform: translateX(0) skewX(-20deg);
-  opacity: 0;
-}
-
-/* ---- 1px luminous edge (ice → volt, top to bottom) ---- */
-.w-btn__edge {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+  inset: -1px;
   pointer-events: none;
-  background: linear-gradient(180deg, var(--w-edge-hi) 0%, var(--w-edge) 52%, var(--w-edge-lo) 100%);
-  opacity: 0.85;
-  clip-path: var(--w-ring);
-  transition: opacity var(--w-dur) ease;
+  background:
+    linear-gradient(var(--w-tick), var(--w-tick)) left top / var(--w-tick-s) 1px,
+    linear-gradient(var(--w-tick), var(--w-tick)) left top / 1px var(--w-tick-s),
+    linear-gradient(var(--w-tick), var(--w-tick)) right top / var(--w-tick-s) 1px,
+    linear-gradient(var(--w-tick), var(--w-tick)) right top / 1px var(--w-tick-s),
+    linear-gradient(var(--w-tick), var(--w-tick)) left bottom / var(--w-tick-s) 1px,
+    linear-gradient(var(--w-tick), var(--w-tick)) left bottom / 1px var(--w-tick-s),
+    linear-gradient(var(--w-tick), var(--w-tick)) right bottom / var(--w-tick-s) 1px,
+    linear-gradient(var(--w-tick), var(--w-tick)) right bottom / 1px var(--w-tick-s);
+  background-repeat: no-repeat;
 }
 
-/* ---- Lock-on brackets: four L ticks, one per corner, standing off the box ---- */
-.w-btn__lock { position: absolute; inset: var(--w-frame-o); z-index: 3; pointer-events: none; }
-.w-btn__lock i {
-  position: absolute;
-  width: var(--w-frame-s);
-  height: var(--w-frame-s);
-  border: 0 solid var(--w-frame-c);
-  /* Release: ease back out. Lock (below): snap in with an overshoot. */
-  transition: transform 0.32s var(--w-ease);
-}
-.w-btn__lock i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; --sx: 1; --sy: 1; }
-.w-btn__lock i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; --sx: -1; --sy: 1; }
-.w-btn__lock i:nth-child(3) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; --sx: -1; --sy: -1; }
-.w-btn__lock i:nth-child(4) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; --sx: 1; --sy: -1; }
-@keyframes w-tick-flicker { 0%, 100% { opacity: 1; } 20% { opacity: 0.25; } 40% { opacity: 1; } 60% { opacity: 0.35; } }
-/* Locked state, shared by hover (fine pointers), keyboard focus and press. */
-.w-btn:focus-visible .w-btn__lock i,
-.w-btn:active .w-btn__lock i {
-  transform: translate(calc(var(--sx) * var(--w-lock)), calc(var(--sy) * var(--w-lock)));
-  transition: transform 0.24s cubic-bezier(0.3, 1.9, 0.45, 1);
-  animation: w-tick-flicker 0.28s steps(1, end);
-}
-
-/* ---- Primary: ice hologram ---- */
+/* ---- Primary: the deployed Get tickets ---- */
 .w-btn--primary {
-  --w-frame-c: var(--w-bracket-accent);
-  --w-edge-hi: rgba(214, 232, 255, 0.98);
-  --w-edge: rgba(156, 200, 255, 0.78);
-  --w-edge-lo: rgba(61, 107, 255, 0.85);
+  background-color: var(--w-red);
+  box-shadow: 0 0 8px rgba(200, 0, 0, 0.3);
 }
-.w-btn--primary .w-btn__label { text-shadow: 0 0 1px rgba(233, 235, 236, 0.7), 0 0 12px rgba(156, 200, 255, 0.5), 0 0 3px rgba(4, 6, 10, 0.9); }
-/* Red/cyan copies of the caps behind the label; hover splits them for one beat. */
-.w-btn--primary .w-btn__label[data-text]::before,
-.w-btn--primary .w-btn__label[data-text]::after {
-  content: attr(data-text);
-  content: attr(data-text) / ""; /* decorative: kept out of the accessible name */
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: -1;
-  text-shadow: none;
-  opacity: 0;
-  pointer-events: none;
-}
-.w-btn--primary .w-btn__label[data-text]::before { color: rgb(255, 52, 80); }
-.w-btn--primary .w-btn__label[data-text]::after { color: rgb(120, 200, 255); }
-.w-btn__play { position: relative; z-index: 2; flex: none; width: 7px; height: 9px; color: var(--w-ice); filter: drop-shadow(0 0 3px rgba(156, 200, 255, 0.8)); transition: transform var(--w-dur) var(--w-ease); }
-.w-btn[data-size="sm"] .w-btn__play { width: 6px; height: 8px; }
-
-/* Halo: a static box-shadow glow (outer + inner) whose opacity flares on the pulse beat. */
+/* The breathing glow: a peak shadow drawn once, its opacity eased 0 → 1 → 0 over 4s. */
 .w-btn__glow {
   position: absolute;
   inset: 0;
-  z-index: 1;
   pointer-events: none;
-  box-shadow: 0 0 6px 1px rgba(61, 107, 255, 0.85), 0 0 22px 2px rgba(61, 107, 255, 0.45), inset 0 0 14px rgba(61, 107, 255, 0.35);
-  opacity: 0.3;
-  animation: w-pulse-glow var(--w-pulse) ease-out infinite;
-}
-@keyframes w-pulse-glow { 0%, 100% { opacity: 0.3; } 6% { opacity: 1; } 34% { opacity: 0.3; } }
-/* Ping: the box's outline, rasterised once, scaled outward and faded (compositor only). */
-.w-btn__ping {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  box-shadow: 0 0 0 1px rgba(156, 200, 255, 0.75), 0 0 12px rgba(61, 107, 255, 0.55);
+  box-shadow: 0 0 25px rgba(200, 0, 0, 0.5), 0 0 60px rgba(139, 0, 0, 0.2);
   opacity: 0;
-  animation: w-pulse-ping var(--w-pulse) cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
 }
-@keyframes w-pulse-ping {
-  0% { opacity: 0; transform: none; }
-  3% { opacity: 0.9; transform: none; }
-  30%, 100% { opacity: 0; transform: scale(var(--w-ping, 1.1, 1.45)); }
+@media (prefers-reduced-motion: no-preference) {
+  .w-btn__glow { animation: w-btn-breathe 40s ease-in-out infinite; }
 }
-/* The brackets tighten on the same beat (on the wrapper, so the per-corner lock still works). */
-.w-btn--primary .w-btn__lock { animation: w-pulse-lock var(--w-pulse) ease-out infinite; }
-@keyframes w-pulse-lock { 0%, 14%, 100% { transform: none; } 5% { transform: scale(0.975, 0.9); } }
+/* The 4s breath folded 10x per iteration: each iteration boundary costs a main-thread frame (React listens for
+   animationiteration), and the floating CTA keeps a primary on screen. Same beat. */
+@keyframes w-btn-breathe {
+  0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100% { opacity: 0; }
+  5%, 15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95% { opacity: 1; }
+}
 
-/* ---- Secondary: the same pane, quieter (frost edge, faint scan, no halo) ---- */
+/* ---- Secondary: transparent, white hairline ---- */
 .w-btn--secondary {
-  --w-frame-c: rgba(233, 235, 236, 0.42);
-  --w-glass: rgba(5, 9, 16, 0.55);
-  --w-glass-hi: rgba(233, 235, 236, 0.07);
-  --w-glass-lo: rgba(233, 235, 236, 0.02);
-  --w-scan: 0.35;
-  --w-edge-hi: rgba(233, 235, 236, 0.5);
-  --w-edge: rgba(233, 235, 236, 0.26);
-  --w-edge-lo: rgba(233, 235, 236, 0.2);
+  --w-tick: rgba(255, 255, 255, 0.4);
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
-.w-btn--secondary[data-size] { --w-frame-o: -5px; --w-lock: 3px; }
+.w-btn--secondary[data-size] { --w-tick-s: 8px; }
 
 /* ---- Interaction ---- */
 @media (hover: hover) {
-  .w-btn--primary:hover, .w-btn--secondary:hover { transform: scale(1.03); }
-  .w-btn--primary:hover { --w-glass: rgba(20, 44, 96, 0.5); }
-  .w-btn--secondary:hover {
-    --w-frame-c: var(--w-bracket-accent);
-    --w-edge-hi: rgba(214, 232, 255, 0.9);
-    --w-edge: rgba(156, 200, 255, 0.6);
-    --w-edge-lo: rgba(61, 107, 255, 0.6);
-    --w-glass: rgba(10, 22, 44, 0.55);
-  }
-  .w-btn:hover .w-btn__lock i {
-    transform: translate(calc(var(--sx) * var(--w-lock)), calc(var(--sy) * var(--w-lock)));
-    transition: transform 0.24s cubic-bezier(0.3, 1.9, 0.45, 1);
-    animation: w-tick-flicker 0.28s steps(1, end);
-  }
-  .w-btn--primary:hover .w-btn__lock { animation: none; }
-  .w-btn--primary:hover .w-btn__edge, .w-btn--secondary:hover .w-btn__edge { opacity: 1; }
-  .w-btn:hover .w-btn__glass::after { animation: w-btn-sheen 0.9s var(--w-ease) both; }
-  .w-btn--primary:hover .w-btn__label::before { animation: w-split-r 0.36s steps(1, end); }
-  .w-btn--primary:hover .w-btn__label::after { animation: w-split-c 0.36s steps(1, end); }
-  .w-btn--primary:hover .w-btn__play { transform: translateX(3px); }
+  .w-btn--primary:hover { background-color: var(--w-red-hover); transform: scale(1.05); }
+  .w-btn--secondary:hover { background-color: var(--w-red); box-shadow: inset 0 0 0 1px var(--w-red); --w-tick: var(--w-bracket-accent); }
 }
 .w-btn--primary:active, .w-btn--secondary:active { transform: scale(0.98); transition-duration: 0.08s; }
-.w-btn--primary:focus-visible .w-btn__edge, .w-btn--secondary:focus-visible .w-btn__edge { opacity: 1; }
-@keyframes w-btn-sheen { 0% { opacity: 1; transform: translateX(0) skewX(-20deg); } 100% { opacity: 1; transform: translateX(400%) skewX(-20deg); } }
-@keyframes w-split-r {
-  0% { opacity: 0.75; transform: translateX(-2px); }
-  33% { opacity: 0.6; transform: translateX(1.5px); }
-  66% { opacity: 0.45; transform: translateX(-0.5px); }
-  100% { opacity: 0; transform: none; }
-}
-@keyframes w-split-c {
-  0% { opacity: 0.9; transform: translateX(2px); }
-  33% { opacity: 0.75; transform: translateX(-1.5px); }
-  66% { opacity: 0.6; transform: translateX(0.5px); }
-  100% { opacity: 0; transform: none; }
-}
 
 .w-btn--ghost {
   color: var(--w-mist);
@@ -471,7 +356,7 @@
   color: var(--w-frost);
 }
 .w-btn__arrow { width: 22px; height: 10px; flex: none; transition: transform var(--w-dur) var(--w-ease), color var(--w-dur-fast) ease; position: relative; z-index: 2; }
-.w-btn--link:hover { color: var(--w-ice); }
+.w-btn--link:hover { color: var(--w-red-hi); }
 .w-btn--link:hover .w-btn__arrow { transform: translateX(6px); }
 
 /* ==========================================================================
@@ -483,11 +368,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(49, 55, 67, 0.5) 0%, rgba(27, 33, 44, 0.78) 38%, rgba(16, 20, 27, 0.86) 100%);
-  border: 1px solid rgba(156, 200, 255, 0.14);
+  background: linear-gradient(180deg, rgba(55, 55, 55, 0.5) 0%, rgba(33, 33, 33, 0.78) 38%, rgba(20, 20, 20, 0.86) 100%);
+  border: 1px solid rgba(164, 43, 43, 0.14);
   box-shadow:
-    inset 0 1px 0 rgba(233, 235, 236, 0.1),
-    inset 0 0 0 1px rgba(4, 6, 10, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
     0 40px 80px -30px rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: blur(18px) saturate(1.15);
   backdrop-filter: blur(18px) saturate(1.15);
@@ -500,7 +385,7 @@
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  background: linear-gradient(115deg, transparent 30%, rgba(233, 235, 236, 0.035) 44%, transparent 58%);
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.035) 44%, transparent 58%);
 }
 .w-window__bar {
   display: flex;
@@ -510,8 +395,8 @@
   padding: 0 var(--w-s-2) 0 var(--w-s-3);
   flex: none;
   position: relative;
-  background: linear-gradient(180deg, #3d4451 0%, #2a303b 50%, #1f2530 51%, #1b212c 100%);
-  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.16), 0 1px 0 rgba(4, 6, 10, 0.9);
+  background: linear-gradient(180deg, #434343 0%, #303030 50%, #252525 51%, #212121 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 0 rgba(0, 0, 0, 0.9);
   color: var(--w-mist);
   font-family: var(--w-font-hud);
   font-size: var(--w-fs-nano);
@@ -520,14 +405,14 @@
   user-select: none;
 }
 .w-window[data-skin="chrome"] .w-window__bar {
-  background: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(4, 6, 10, 0.35), 0 1px 0 rgba(4, 6, 10, 0.9);
-  color: #0b0e14;
+  background: linear-gradient(180deg, #e6e6e6 0%, #bebebe 48%, #9b9b9b 52%, #b0b0b0 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.35), 0 1px 0 rgba(0, 0, 0, 0.9);
+  color: #0e0e0e;
   font-weight: 700;
 }
 .w-window__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .w-window__meta { color: inherit; opacity: 0.75; white-space: nowrap; }
-.w-window__led { width: 6px; height: 6px; flex: none; background: var(--w-steel); box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.6); }
+.w-window__led { width: 6px; height: 6px; flex: none; background: var(--w-steel); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6); }
 .w-window[data-active] .w-window__led { background: var(--w-ice); box-shadow: 0 0 6px var(--w-volt), inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
 .w-window[data-active] .w-window__bar::after {
   content: "";
@@ -536,19 +421,19 @@
   right: 0;
   bottom: -2px;
   height: 2px;
-  background: var(--w-accent-line);
+  background: var(--w-red-line);
 }
 .w-window__controls { display: flex; gap: 4px; flex: none; }
 .w-window__controls i {
   display: block;
   width: 13px;
   height: 11px;
-  background: linear-gradient(180deg, #4a5160, #2a303b);
-  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.22), 0 0 0 1px rgba(4, 6, 10, 0.8);
+  background: linear-gradient(180deg, #515151, #303030);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.8);
 }
 .w-window[data-skin="chrome"] .w-window__controls i {
-  background: linear-gradient(180deg, #f4f6f8, #a7aeb8);
-  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(4, 6, 10, 0.55);
+  background: linear-gradient(180deg, #f6f6f6, #adadad);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(0, 0, 0, 0.55);
 }
 .w-window__body { position: relative; flex: 1; min-height: 0; padding: var(--w-s-5); }
 .w-window[data-flush] .w-window__body { padding: 0; }
@@ -560,7 +445,7 @@
   min-height: 24px;
   padding: 4px var(--w-s-3);
   border-top: 1px solid var(--w-line);
-  background: rgba(4, 6, 10, 0.45);
+  background: rgba(0, 0, 0, 0.45);
   font-family: var(--w-font-hud);
   font-size: var(--w-fs-nano);
   letter-spacing: 0.26em;
@@ -592,10 +477,12 @@
 .w-scrim[data-variant="vignette"] { background: radial-gradient(ellipse at 50% 45%, transparent 20%, rgba(4, 6, 10, calc(var(--w-scrim-a) * 0.6)) 65%, rgba(4, 6, 10, var(--w-scrim-a)) 100%); }
 
 /* ==========================================================================
-   Grain — the flyer's brightness-only film grain. Grayscale noise tile at low
-   alpha, no blend mode (so it also shows on the blacks, like the flyer, and
-   costs one composited layer). Animated variant shifts the tile with a
-   stepped transform (compositor only), desktop + motion-OK only.
+   Global texture — ONE fixed layer for the whole page (red hybrid): the
+   deployed site's scanlines (a dark line every 4px), a touch lighter because
+   it sits over everything, fading in once. Optional film grain underneath,
+   static and off by default (`<Grain grain={0.03} />`). Never animated, no
+   blend mode: one composited layer, painted once. Sections must NOT add their
+   own scanline layers (hybrid-theme.md).
    ========================================================================== */
 .w-grain {
   position: fixed;
@@ -605,25 +492,23 @@
   overflow: hidden;
   contain: strict;
 }
-.w-grain::before {
+.w-grain[data-scan]::after {
   content: "";
   position: absolute;
-  inset: -120px;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(0, 0, 0, 0.1) 3px 4px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .w-grain[data-scan]::after { animation: w-quiet-in 1.6s ease 0.3s both; }
+}
+@keyframes w-quiet-in { from { opacity: 0; } }
+.w-grain[data-grain]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   background-size: 220px 220px;
-  opacity: var(--w-grain-a, 0.075);
-}
-/* The 5-position jitter repeated 10x per iteration (6s, same 120ms steps): every iteration boundary costs a
-   main-thread frame (React listens for animationiteration) and the grain is always on screen. */
-@keyframes w-grain-shift {
-  0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100% { transform: translate3d(0, 0, 0); }
-  2%, 12%, 22%, 32%, 42%, 52%, 62%, 72%, 82%, 92% { transform: translate3d(-37px, 23px, 0); }
-  4%, 14%, 24%, 34%, 44%, 54%, 64%, 74%, 84%, 94% { transform: translate3d(41px, -61px, 0); }
-  6%, 16%, 26%, 36%, 46%, 56%, 66%, 76%, 86%, 96% { transform: translate3d(-83px, -17px, 0); }
-  8%, 18%, 28%, 38%, 48%, 58%, 68%, 78%, 88%, 98% { transform: translate3d(19px, 71px, 0); }
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .w-grain[data-animated]::before { animation: w-grain-shift 6s steps(1) infinite; will-change: transform; }
+  opacity: var(--w-grain-a, 0.03);
 }
 
 /* ==========================================================================
@@ -664,8 +549,9 @@
   -webkit-mask: var(--w-glitch-src) 0 0 / 100% 100% no-repeat;
   mask: var(--w-glitch-src) 0 0 / 100% 100% no-repeat;
 }
-.w-glitch__fringe--r { background: rgb(255, 52, 80); }
-.w-glitch__fringe--c { background: rgb(120, 200, 255); }
+/* Red hybrid: the split is red + white (was red + cyan). */
+.w-glitch__fringe--r { background: var(--w-red-hi, #e52424); }
+.w-glitch__fringe--c { background: #fff; }
 .w-glitch__slice { z-index: 2; }
 .w-glitch__sweep { z-index: 3; overflow: hidden; }
 .w-glitch__sweep::before {
@@ -676,8 +562,8 @@
   top: 0;
   height: 40%;
   background-image:
-    linear-gradient(to bottom, transparent 0%, rgba(233, 235, 236, 0.2) 47%, rgba(156, 200, 255, 0.24) 53%, transparent 100%),
-    repeating-linear-gradient(0deg, rgba(233, 235, 236, 0.08) 0 1px, transparent 1px 3px);
+    linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.2) 47%, rgba(255, 255, 255, 0.26) 53%, transparent 100%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 3px);
   transform: translateY(-100%);
 }
 .w-glitch[data-burst] .w-glitch__base { animation: w-jit 0.46s steps(1, end) both; }
@@ -721,7 +607,7 @@
 /* ==========================================================================
    Selection state (shared by tiles, tabs, day switch)
    ========================================================================== */
-.w-selected { box-shadow: 0 0 0 1px var(--w-ice), 0 0 0 3px rgba(61, 107, 255, 0.35), 0 0 22px rgba(61, 107, 255, 0.25); }
+.w-selected { box-shadow: 0 0 0 1px var(--w-ice), 0 0 0 3px rgba(200, 0, 0, 0.21), 0 0 22px rgba(200, 0, 0, 0.15); }
 
 /* ==========================================================================
    Off-screen parking (components/winter/perf): pauseWhenOffscreen / the
@@ -738,13 +624,8 @@
    Reduced motion: kill decorative loops and bursts.
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  .w-btn__glow { animation: none; opacity: 0.5; }
-  .w-btn__ping { display: none; }
-  .w-btn--primary .w-btn__lock { animation: none; }
+  .w-btn__glow { animation: none; opacity: 0; }
   .w-btn--primary:hover, .w-btn--secondary:hover, .w-btn--primary:active, .w-btn--secondary:active { transform: none; }
-  .w-btn:hover .w-btn__glass::after, .w-btn--primary:hover .w-btn__label::before, .w-btn--primary:hover .w-btn__label::after { animation: none; }
-  /* The lock still reads (brackets step in), just without the overshoot or flicker. */
-  .w-btn .w-btn__lock i, .w-btn:hover .w-btn__lock i, .w-btn:focus-visible .w-btn__lock i, .w-btn:active .w-btn__lock i { transition: none; animation: none; }
   .w-marquee__track { animation: none; }
   .w-glitch[data-burst] .w-glitch__base { animation: none; }
   .w-glitch[data-burst] .w-glitch__fringe,

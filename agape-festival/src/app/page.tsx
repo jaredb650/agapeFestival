@@ -76,7 +76,6 @@ export default function Home() {
         ticketsLabel={WINTER.tickets.cta}
         mark={FLYER.mark}
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
-        dates={WINTER.dates}
       />
       <main id="main" tabIndex={-1}>
         <Hero />
@@ -90,9 +89,9 @@ export default function Home() {
         {LOCKERS.enabled && <Lockers />}
         <GettingHere />
       </main>
-      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
+      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} />
       <Footer links={NAV_LINKS} />
-      <Grain animated />
+      <Grain />
       <OffscreenPauser />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>

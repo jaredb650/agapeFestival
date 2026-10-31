@@ -12,6 +12,9 @@ If the session crashes, resume from this file + `scratchpad/r2-agents.txt` (agen
 - Section order on preview: Hero, Flyer layover, ArtistSelect (profiler), Lineup, Tickets, Merch, FAQ, Lockers, GettingHere, Footer.
 - Commit, push, verify the preview builds; refresh the local review server (:3456).
 
+## CHANGE (20:25, Jared): pause after the merge
+Once all 8 are merged, pushed and the local review is refreshed, STOP and let Jared review and add visual notes. Then wave 2 = his last edits + integrator glue + the brutal optimization pass (+ preloader, motion and QA as planned). Final polish is deferred to wave 2; wave-1 agents should wrap up.
+
 ## Stage 3: W2-0 integrator (single agent, xhigh, on the merged branch)
 Glue everything into one design:
 - consistent motion tokens/easing, a shared reveal/assemble primitive if sections diverged;

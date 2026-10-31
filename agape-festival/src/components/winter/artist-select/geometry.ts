@@ -13,8 +13,8 @@
 // The wings are the day split of the GRID only; the splash above shows one
 // artist at a time.
 //
-// Mobile: one day at a time, square "PDA keys" in a centred inverted pyramid
-// (positions in square steps, see pyramidCells).
+// Mobile: one day at a time, square "PDA keys" in a centred two-row inverted
+// pyramid (positions in square steps, see pyramidCells).
 
 import type { DayNumber } from "@/data/winter";
 
@@ -141,7 +141,7 @@ export const SQUARE: readonly Pt[] = [
   [0, 84],
 ];
 
-/** Inverted pyramid rows for `n` tiles with `cap` in the top row: 9 → 4·3·2, 8 → 4·3·1. */
+/** Inverted pyramid rows for `n` tiles with `cap` in the top row: cap 5 → 9 = 5·4, 8 = 5·3. */
 export function pyramidRows(n: number, cap: number): number[] {
   const rows: number[] = [];
   let left = n;
@@ -155,8 +155,8 @@ export function pyramidRows(n: number, cap: number): number[] {
   return rows;
 }
 
-/** Smallest top row that fits `n` tiles in three pyramid rows (min 3). */
-export const pyramidCap = (n: number) => Math.max(3, Math.ceil((n + 3) / 3));
+/** Smallest top row that fits `n` tiles in TWO pyramid rows (min 3): 9 → 5 (5·4), so Day 1's 8 sit 5·3. */
+export const pyramidCap = (n: number) => Math.max(3, Math.ceil((n + 1) / 2));
 
 /** Cell positions in square steps (x is fractional on short rows: they're centred). */
 export function pyramidCells(n: number, cap: number): { x: number; y: number }[] {

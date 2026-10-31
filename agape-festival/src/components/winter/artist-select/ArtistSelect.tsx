@@ -3,11 +3,11 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FocusEvent, type KeyboardEvent, type PointerEvent, type Ref } from "react";
 import { GlitchLayer } from "@/components/winter/ui";
 import type { ArtistEntry, DayNumber, WinterDay } from "@/data/winter";
-import { BioSheet } from "./BioSheet";
+import { BioWindow } from "./BioWindow";
 import { boxVars, emblemBox, randomBox, toClipPath, toSvgPoints } from "./geometry";
 import { useMedia, useReducedMotion, useViewport } from "./hooks";
 import { Profile } from "./Profile";
-import { buildRoster, isNamed, type Slot } from "./roster";
+import { buildRoster, isNamed, shortDate, type Slot } from "./roster";
 import { Splash } from "./Splash";
 import { RandomTile, Tile } from "./Tile";
 import "@/styles/artist-select.css";
@@ -51,8 +51,10 @@ const emblem = emblemBox();
  * the day, the bio) covers the whole area above the tile grid; the grid below
  * picks who. Day 1 tiles are white, Day 2 red. Hover / focus previews an act,
  * click / tap / Enter locks it in, and leaving the grid hands the splash back
- * to the locked act. Phones show one day of keys at a time under the same
- * splash, with the bio in a sheet.
+ * to the locked act. Clicking anywhere on the banner (or its PROFILE chip)
+ * opens the profile window: on desktop it unfolds upward from the bottom of
+ * the banner to the title; on phones it opens over the roster. Phones show
+ * one day of keys at a time (two rows) under the same splash.
  *
  * Performance contract: hovering never renders React by itself. Hover styling
  * is CSS :hover; a preview renders only after a 70ms rest, inside a
@@ -74,9 +76,8 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
   const [cursor, setCursor] = useState<string>(firstSlug);
   /** Phones: the day whose keys are on the pad. */
   const [side, setSide] = useState<DayNumber>(() => bySlug.get(firstSlug)?.day ?? 1);
-  /** Desktop: the act whose bio is expanded in place. */
-  const [bioFor, setBioFor] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  /** The profile window (desktop: rises from the banner; phones: over the roster). */
+  const [bioOpen, setBioOpen] = useState(false);
   const [rolling, setRolling] = useState(false);
   const [announce, setAnnounce] = useState("");
 
@@ -89,6 +90,10 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
   const rollTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const rollingRef = useRef(false);
   const rollEl = useRef<HTMLElement | null>(null);
+  const bioOpenRef = useRef(false);
+  const winFrameRef = useRef<HTMLDivElement>(null);
+  /** Where focus goes back to when the window closes (the banner or the chip). */
+  const returnFocus = useRef<HTMLElement | null>(null);
   // Mirrors for synchronous reads inside handlers: the locked act, and the last act locked on each day (phone day switch).
   const lockedRef = useRef<string>(firstSlug);
   const memory = useRef<Record<DayNumber, string>>({ 1: wings[1].slots[0].entry.slug, 2: firstSlug });
@@ -97,6 +102,7 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
   const wide = useMedia(WIDE_QUERY);
   const { near, inView } = useViewport(rootRef);
   const profileId = `${headingId}-profile`;
+  const windowId = `${headingId}-window`;
 
   const clearTimers = () => {
     clearTimeout(hoverTimer.current);
@@ -132,7 +138,8 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
 
   const onHover = useCallback(
     (slug: string) => {
-      if (rollingRef.current) return;
+      // While the profile window is open it shows the locked act: no previews under it.
+      if (rollingRef.current || bioOpenRef.current) return;
       clearTimeout(leaveTimer.current);
       clearTimeout(hoverTimer.current);
       hoverTimer.current = setTimeout(() => showPreview(slug), HOVER_INTENT);
@@ -146,7 +153,7 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
       clearTimeout(leaveTimer.current);
       clearTimeout(hoverTimer.current);
       setCursor(slug);
-      showPreview(slug);
+      if (!bioOpenRef.current) showPreview(slug);
     },
     [showPreview],
   );
@@ -168,21 +175,75 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
 
   const focusSlug = (slug: string) => tiles.get(slug)?.focus({ preventScroll: true });
 
-  // ---- Bio: in place on desktop, a sheet on phones ------------------------------
+  // ---- Profile window: the banner, the PROFILE chip, or Enter on either opens it ----
 
   const shownSlug = preview ?? locked;
-  const onToggleBio = useCallback(() => setBioFor((b) => (b === shownSlug ? null : shownSlug)), [shownSlug]);
-  const openSheet = useCallback(() => setSheetOpen(true), []);
-  const closeSheet = useCallback(() => {
-    setSheetOpen(false);
-    requestAnimationFrame(() => rootRef.current?.querySelector<HTMLElement>(".asel-profile [data-bio-toggle]")?.focus({ preventScroll: true }));
+
+  const closeBio = useCallback(() => {
+    if (!bioOpenRef.current) return;
+    bioOpenRef.current = false;
+    setBioOpen(false);
+    const back = returnFocus.current;
+    returnFocus.current = null;
+    // Only hand focus back if it was inside the window (a click on a tile keeps its own focus).
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (back?.isConnected && (!active || active === document.body || winFrameRef.current?.contains(active))) back.focus({ preventScroll: true });
+    });
   }, []);
+
+  const openBio = useCallback(
+    (from: HTMLElement | null) => {
+      clearTimeout(hoverTimer.current);
+      clearTimeout(leaveTimer.current);
+      // The window profiles what is on screen: a live preview gets locked in first.
+      if (preview) lock(preview);
+      returnFocus.current = from;
+      bioOpenRef.current = true;
+      setBioOpen(true);
+    },
+    [preview, lock],
+  );
+
+  const toggleBio = useCallback(
+    (e: { currentTarget: HTMLElement }) => (bioOpenRef.current ? closeBio() : openBio(e.currentTarget)),
+    [closeBio, openBio],
+  );
+
+  // Pager in the window's status strip: step through the locked act's day.
+  const onStep = useCallback(
+    (dir: -1 | 1) => {
+      const slot = bySlug.get(lockedRef.current);
+      if (!slot) return;
+      const list = wings[slot.day].slots;
+      const at = list.findIndex((s) => s.entry.slug === slot.entry.slug);
+      lock(list[(at + dir + list.length) % list.length].entry.slug);
+    },
+    [bySlug, wings, lock],
+  );
+
+  // Open window: Esc closes it, and so does a press anywhere outside it (the banner / chip toggle it themselves).
+  useEffect(() => {
+    if (!bioOpen) return;
+    const onDown = (e: globalThis.PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t || winFrameRef.current?.contains(t) || t.closest("[data-bio-trigger]")) return;
+      closeBio();
+    };
+    const onKey = (e: globalThis.KeyboardEvent) => e.key === "Escape" && closeBio();
+    document.addEventListener("pointerdown", onDown, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [bioOpen, closeBio]);
 
   // ---- Phones: day switcher ------------------------------------------------------
 
   const showDay = (day: DayNumber) => {
     if (rollingRef.current) return;
-    setSheetOpen(false);
+    closeBio();
     lock(memory.current[day]);
   };
 
@@ -212,7 +273,7 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
       lock(landing.entry.slug);
       if (fieldHasFocus) requestAnimationFrame(() => focusSlug(landing.entry.slug));
     };
-    setSheetOpen(false);
+    closeBio();
     clearTimers();
     if (reduced) return land();
     rollingRef.current = true;
@@ -317,7 +378,8 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
   // ---- Render ---------------------------------------------------------------
 
   const shown = bySlug.get(shownSlug) ?? bySlug.get(firstSlug)!;
-  const shownNamed = isNamed(shown.entry) ? shown.entry : null;
+  const lockedSlot = bySlug.get(locked) ?? shown;
+  const bannerName = isNamed(shown.entry) ? `${shown.entry.name}'s` : "this act's";
   // Phones show one day: the tab stop must be a visible tile.
   const sideStop = bySlug.get(locked)?.day === side ? locked : wings[side].slots[0].entry.slug;
   const tabSlug = wide ? cursor : cursor !== "random" && bySlug.get(cursor)?.day === side ? cursor : sideStop;
@@ -329,11 +391,11 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
       data-near={near || undefined}
       data-rolling={rolling || undefined}
       data-side={side}
-      data-sheet={(sheetOpen && !wide) || undefined}
+      data-bio={bioOpen || undefined}
       style={{ "--asel-tile-img": near ? `url("${media.tileStill}")` : "none", "--cols": pyramid.cols, "--rows": pyramid.rows } as CSSProperties}
     >
       <div className="asel-screen">
-        <Splash entry={shown.entry} order={shown.index} frameDir={media.frameDir} near={near} canPlay={near && inView && !reduced && !(sheetOpen && !wide)} reduced={reduced} />
+        <Splash entry={shown.entry} order={shown.index} frameDir={media.frameDir} near={near} canPlay={near && inView && !reduced && !(bioOpen && !wide)} reduced={reduced} />
       </div>
       <span className="asel-ticks" aria-hidden="true">
         <i />
@@ -349,17 +411,22 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
         <span className="asel-divider" aria-hidden="true" />
       </header>
 
-      {/* Phones: which day's keys are on the pad, plus RANDOM. */}
+      {/* Phones: which day's keys are on the pad, plus RANDOM (the old roster's interlocking slabs). */}
       <div className="asel-switch" role="group" aria-label="Day">
-        <button type="button" className="asel-switch__day" data-day={1} aria-pressed={side === 1} onClick={() => showDay(1)}>
-          {days[0].label}
-        </button>
-        <button type="button" className="asel-switch__rnd" onClick={roll} aria-busy={rolling || undefined} aria-label={`Random Day ${side} artist`}>
-          <b aria-hidden="true">?</b> Random
-        </button>
-        <button type="button" className="asel-switch__day" data-day={2} aria-pressed={side === 2} onClick={() => showDay(2)}>
-          {days[1].label}
-        </button>
+        {([1, "rnd", 2] as const).map((d) =>
+          d === "rnd" ? (
+            <button key={d} type="button" className="asel-switch__rnd" onClick={roll} aria-busy={rolling || undefined} aria-label={`Random Day ${side} artist`}>
+              <b aria-hidden="true">?</b> Random
+            </button>
+          ) : (
+            <button key={d} type="button" className="asel-switch__day" data-day={d} aria-pressed={side === d} onClick={() => showDay(d)}>
+              <span className="asel-switch__label">{days[d - 1].label}</span>
+              <span className="asel-switch__date" aria-hidden="true">
+                {days[d - 1].weekday.slice(0, 3)} {shortDate(days[d - 1].isoDate)}
+              </span>
+            </button>
+          ),
+        )}
       </div>
 
       <div
@@ -403,6 +470,18 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
         <RandomTile box={rnd} tabbable={tabSlug === "random"} rolling={rolling} tileRef={tileRefs.get("random")!} onFocusTile={onFocusRandom} onPress={roll} />
       </div>
 
+      {/* The whole banner opens the profile window (pointer cursor + a hover cue on the PROFILE chip). */}
+      <button
+        type="button"
+        className="asel-banner"
+        data-bio-trigger=""
+        aria-label={bioOpen ? "Close the profile" : `Open ${bannerName} profile`}
+        aria-haspopup="dialog"
+        aria-expanded={bioOpen}
+        aria-controls={windowId}
+        onClick={toggleBio}
+      />
+
       <Profile
         id={profileId}
         entry={shown.entry}
@@ -410,17 +489,29 @@ export function ArtistSelect({ artists, days, media, pending, headingId, title }
         index={shown.index}
         reduced={reduced}
         wide={wide}
-        bioOpen={bioFor === shownSlug}
-        sheetOpen={sheetOpen}
+        open={bioOpen}
+        windowId={windowId}
         lockedLabel={pending.locked}
-        onToggleBio={onToggleBio}
-        onOpenSheet={openSheet}
+        onToggle={toggleBio}
       />
 
-      <BioSheet open={sheetOpen && !wide} day={shown.day} artist={shownNamed?.bio ? shownNamed : null} onClose={closeSheet} />
+      <BioWindow
+        id={windowId}
+        open={bioOpen}
+        entry={lockedSlot.entry}
+        day={lockedSlot.day}
+        index={lockedSlot.index}
+        wing={wings[lockedSlot.day]}
+        wide={wide}
+        reduced={reduced}
+        lockedLabel={pending.locked}
+        frameRef={winFrameRef}
+        onClose={closeBio}
+        onStep={onStep}
+      />
 
       <p id={`${headingId}-hint`} className="w-sr-only">
-        Use the arrow keys to move between artists and Enter to lock one in; the profile after this grid follows it. The question mark tile picks an artist at random.
+        Use the arrow keys to move between artists and Enter to lock one in; the profile after this grid follows it, and its Profile button opens the full bio. The question mark tile picks an artist at random.
       </p>
       <p className="w-sr-only" aria-live="polite">
         {announce}

@@ -3,7 +3,7 @@
 import { memo, type CSSProperties, type Ref } from "react";
 import { Redaction } from "@/components/winter/ui";
 import { boxVars, SQUARE, toClipPath, toSvgPoints, type Box } from "./geometry";
-import { isNamed, longestWord, monogram, type Slot } from "./roster";
+import { isNamed, keyLabel, longestWord, monogram, type Slot } from "./roster";
 
 interface TileProps {
   slot: Slot;
@@ -90,7 +90,7 @@ export const Tile = memo(function Tile({ slot, pressed, tabbable, panelId, locke
           D{day}
         </span>
         <span className="asel-tile__name" aria-hidden="true">
-          {named ? entry.displayName : "TBA"}
+          {named ? keyLabel(entry.displayName) : "TBA"}
         </span>
       </button>
       <Edge poly={toSvgPoints(box.poly)} />

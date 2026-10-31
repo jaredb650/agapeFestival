@@ -91,6 +91,22 @@ export function monogram(name: string) {
   return (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).toUpperCase();
 }
 
+export const pad2 = (n: number) => String(n).padStart(2, "0");
+
+/** "2027-02-19" → "02.19" (the day switcher's sub-line). */
+export function shortDate(iso: string) {
+  const [, m, d] = iso.split("-");
+  return `${m}.${d}`;
+}
+
+/**
+ * Where a long single-word flyer name may break on the small phone keys: a
+ * soft hyphen at the word seam (it only shows if the line actually breaks).
+ * Anything not listed falls back to overflow-wrap in the CSS.
+ */
+const KEY_BREAKS: Record<string, string> = { ONLYNUMBERS: "ONLY­NUMBERS" };
+export const keyLabel = (displayName: string) => KEY_BREAKS[displayName] ?? displayName;
+
 /** Longest word of a name, in characters: the type size fits it. */
 export const longestWord = (s: string) => Math.max(...s.split(/\s+/).map((w) => w.length));
 

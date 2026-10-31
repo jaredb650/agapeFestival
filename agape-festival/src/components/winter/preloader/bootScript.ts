@@ -160,6 +160,31 @@ export function wBoot(c: BootConfig): void {
   };
   evs.forEach((e) => w.addEventListener(e, skip, { passive: true, capture: true }));
 
+  // ---- scroll lock: loading at the hero, the page holds still until the hero's intro has played --------
+  // Scrolling mid-intro drags the half-built lockup up through the hero's scroll exit. Inputs are cancelled
+  // rather than setting overflow: hidden, which would drop the scrollbar and shift the layout.
+  let unlock = () => {};
+  if (!reduced && (w.scrollY || 0) < 8 && !location.hash) {
+    const keys = [" ", "PageUp", "PageDown", "End", "Home", "ArrowUp", "ArrowDown", "Spacebar"];
+    const lockOpts = { passive: false, capture: true } as AddEventListenerOptions;
+    const stop = (e: Event) => {
+      if (e.type !== "keydown" || keys.indexOf((e as KeyboardEvent).key) >= 0) e.preventDefault();
+    };
+    // Any scroll that still happens is the browser restoring a reload's position: not at the hero, so let go.
+    const moved = () => {
+      if (w.scrollY > 8) unlock();
+    };
+    const types = ["wheel", "touchmove", "keydown"];
+    types.forEach((t) => w.addEventListener(t, stop, lockOpts));
+    w.addEventListener("scroll", moved, { passive: true });
+    unlock = () => {
+      unlock = () => {};
+      types.forEach((t) => w.removeEventListener(t, stop, lockOpts));
+      w.removeEventListener("scroll", moved);
+    };
+    w.setTimeout(() => unlock(), c.max + 6000); // hard cap, whatever happens
+  }
+
   // ---- handover ---------------------------------------------------------------
   /** The finite (entrance) animations on `e` and its ancestors; with `own`, only on its text-free wrappers. */
   const entrance = (e: Element | null, own?: boolean) => {
@@ -192,6 +217,14 @@ export function wBoot(c: BootConfig): void {
     } catch {
       /* very old engines: the page's fallback timer starts the intro */
     }
+    // Unlock once every entrance in the hero (logo, typing, divider, countdown, button, frame) has finished.
+    // Untracked timers on purpose: the overlay (and its timers) is gone long before.
+    const hero = d.getElementById("hero");
+    w.setTimeout(() => {
+      const intro = hero && hero.getAnimations ? hero.getAnimations({ subtree: true }).filter((a) => isFinite(Number(a.effect ? a.effect.getComputedTiming().endTime : 0))) : [];
+      Promise.all(intro.map((a) => a.finished.catch(() => 0))).then(() => unlock(), () => unlock());
+    }, 50);
+    w.setTimeout(() => unlock(), 4500);
   };
   const remove = () => {
     release();

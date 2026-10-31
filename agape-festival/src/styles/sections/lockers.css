@@ -123,19 +123,21 @@
   .wlk-cta { grid-column: 1 / -1; width: 100%; }
 }
 
-/* ---- Choreography ---- */
-.wlk[data-armed]:not([data-boot]) *,
-.wlk[data-armed]:not([data-boot]) *::before,
-.wlk[data-armed]:not([data-boot]) *::after { animation-play-state: paused !important; }
-.wlk:not([data-live]) .wlk-door__led { animation-play-state: paused; }
+/* ---- Choreography ----
+   Perf: nothing is attached before the boot (paused animations each hold a GPU layer). The armed
+   state is the intro's first frame as a static style (the unit starts invisible), the intro attaches
+   on [data-boot] and detaches on [data-booted] (end state = base styles). */
+.wlk[data-armed]:not([data-boot]) .wlk-unit { opacity: 0; }
 
-.wlk[data-armed] .wlk-unit { animation: wlk-crt 0.6s var(--w-ease) both; }
-.wlk[data-armed] .wlk-door { animation: wlk-door 0.4s calc(0.25s + var(--i) * 40ms) var(--w-ease) both; }
-.wlk[data-armed] :is(.wlk-id, .wlk-lcd, .wlk-cta) { animation: wlk-rise 0.5s calc(0.35s + var(--d, 0s)) var(--w-ease) both; }
-.wlk[data-armed] .wlk-lcd { --d: 0.1s; }
-.wlk[data-armed] .wlk-cta { --d: 0.2s; }
-/* Idle: a scan sweeps the LEDs left to right, row by row. */
+.wlk[data-boot]:not([data-booted]) .wlk-unit { animation: wlk-crt 0.6s var(--w-ease) both; }
+.wlk[data-boot]:not([data-booted]) .wlk-door { animation: wlk-door 0.4s calc(0.25s + var(--i) * 40ms) var(--w-ease) both; }
+.wlk[data-boot]:not([data-booted]) :is(.wlk-id, .wlk-lcd, .wlk-cta) { animation: wlk-rise 0.5s calc(0.35s + var(--d, 0s)) var(--w-ease) both; }
+.wlk[data-boot] .wlk-lcd { --d: 0.1s; }
+.wlk[data-boot] .wlk-cta { --d: 0.2s; }
+/* Idle: a scan sweeps the LEDs left to right, row by row. Once armed it runs only while on
+   screen; off screen it is removed (not paused) and restarts with its sweep on the way back. */
 .wlk-door__led { animation: wlk-scan 3.6s calc(1s + var(--i) * 120ms) steps(1, end) infinite; }
+.wlk[data-armed]:not([data-boot][data-live]) .wlk-door__led { animation: none; }
 
 @keyframes wlk-crt {
   0% { opacity: 0; transform: scale(0.6, 0.03); }

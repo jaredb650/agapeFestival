@@ -248,11 +248,11 @@
   width: calc(var(--tk-ph) * 1.1);
   height: calc(var(--tk-ph) * 1.1);
   translate: -50% -50%;
-  overflow: visible;
   fill: none;
   stroke: var(--w-frost);
   pointer-events: none;
 }
+.tk-reticle__svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
 .tk-reticle circle, .tk-reticle path { vector-effect: non-scaling-stroke; stroke-width: 1; }
 .tk-reticle__ring { opacity: 0.16; }
 .tk-reticle__ring--in { opacity: 0.1; stroke-dasharray: 1 5; }
@@ -705,10 +705,26 @@
 @media (hover: none), (pointer: coarse) {
   .tk-term[data-state="on"] .tk-pass__holo i { animation: tk-holo 11s ease-in-out 2s infinite alternate; }
 }
+/* !important: the loop rules above are more specific (e.g. the foil's `... .tk-pass__foil i`) and
+   their `animation` shorthand would otherwise reset the play state, leaving them running off screen. */
 .tk-term:not([data-live]) .tk-loop,
 .tk-term:not([data-live]) .tk-loop::after,
 .tk-term:not([data-live]) .tk-pass__seal-ring,
-.tk-term:not([data-live]) .tk-caret { animation-play-state: paused; }
+.tk-term:not([data-live]) .tk-caret { animation-play-state: paused !important; }
+/* The primary CTA's pulse (glow / ping / brackets, from winter.css) only runs while the terminal is on
+   screen; off screen it is removed (it used to run forever), and it restarts unseen. */
+.tk-term:not([data-live]) .tk-cta :is(.w-btn__glow, .w-btn__ping, .w-btn__lock) { animation: none; }
+/* Once the intro has settled (TerminalShell sets data-settled ~3 s after boot), off-screen loops are
+   removed rather than paused, so they give their GPU layers back. On screen they run with their start
+   delays shifted back by whole periods: identical phase at the switch, and an instant start (no
+   static wait) when the terminal scrolls back in. A removed loop restarts out of view. */
+.tk-term[data-settled]:not([data-live]) :is(.tk-loop, .tk-pass__foil i, .tk-pass__seal-ring, .tk-caret),
+.tk-term[data-settled]:not([data-live]) .tk-loop::after { animation: none; }
+.tk-term[data-settled][data-live] .tk-pass-float { animation-delay: -20s; }
+.tk-term[data-settled][data-live] .tk-pass__holo i { animation-delay: -20s; }
+.tk-term[data-settled][data-live] .tk-pass__foil i { animation-delay: -4.4s; }
+.tk-term[data-settled][data-live] .tk-orb--pulse::after { animation-delay: -0.4s; }
+.tk-term[data-settled][data-live] .tk-prompt__a { animation-delay: -0.2s; }
 
 @keyframes tk-float {
   from { transform: perspective(1200px) rotateY(-7deg) rotateX(3deg) translate3d(0, -5px, 0); }

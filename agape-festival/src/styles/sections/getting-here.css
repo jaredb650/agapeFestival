@@ -6,8 +6,8 @@
    live lat/lon rulers and a pointer crosshair.
 
    Choreography is CSS, gated by attributes set in useBoot (no React state):
-   [data-armed] intro animations wait paused in their first frame,
-   [data-boot] they play once, [data-live] idle loops run only on screen.
+   [data-armed] shows the intro's first frame as static styles, [data-boot]
+   attaches the intro, [data-booted] detaches it, [data-live] runs the loops.
    Moving parts are transform/opacity; the SVG only animates stroke-dashoffset
    during the one-off draw-in. Classes: wgh-*. Keyframes: wgh-*.
    ========================================================================== */
@@ -163,9 +163,10 @@
   pointer-events: none;
   background: conic-gradient(from 0deg, rgba(156, 200, 255, 0.16), rgba(156, 200, 255, 0.04) 40deg, transparent 75deg, transparent);
   opacity: 0.55;
-  will-change: transform;
   animation: wgh-spin 7s linear infinite;
 }
+/* Its own layer only while the map is on screen: a permanent will-change kept a ~750px GPU layer alive off screen. */
+.wgh[data-live] .wgh-radar { will-change: transform; }
 .wgh-radar::after { content: ""; position: absolute; left: 50%; top: 0; width: 1px; height: 50%; background: linear-gradient(0deg, rgba(156, 200, 255, 0.5), transparent); }
 
 .wgh-xh { position: absolute; pointer-events: none; }
@@ -193,7 +194,8 @@
 .wgh-ret__ticks { stroke: var(--w-ice); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .wgh-ret__ring { stroke: rgba(233, 235, 236, 0.55); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .wgh-ret__cross { stroke: var(--w-frost); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
-.wgh-ret__dot { fill: var(--w-ice); }
+.wgh-ret__dot { position: absolute; left: 47.5%; top: 47.5%; width: 5%; height: 5%; overflow: visible; }
+.wgh-ret__dot circle { fill: var(--w-ice); }
 .wgh-ret__box { position: absolute; inset: 22%; }
 .wgh-ret__box i { position: absolute; width: 12px; height: 12px; border: 0 solid var(--w-frost); }
 .wgh-ret__box i:nth-child(1) { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; }
@@ -639,81 +641,115 @@
 }
 
 /* ==========================================================================
-   CHOREOGRAPHY (only once useBoot has armed the section)
+   CHOREOGRAPHY (useBoot: [data-armed] on mount, [data-boot] on scroll-in,
+   [data-booted] once the intro has finished, [data-live] while on screen)
+
+   Perf: nothing is attached before the boot. The old version parked ~100
+   paused entrance animations here from page load, and a paused animation
+   keeps its element on its own GPU layer. Instead, the armed state is the
+   intro's first frame as plain styles (everything starts invisible, so it is
+   just opacity 0 on the containers), the intro attaches on [data-boot], and
+   the one-shots detach on [data-booted] (their end state equals the base
+   styles). Loops run only while [data-live]; off screen they are removed, not
+   paused, and they come back phase-shifted by one full period so nothing jumps.
    ========================================================================== */
-.wgh[data-armed]:not([data-boot]) *,
-.wgh[data-armed]:not([data-boot]) *::before,
-.wgh[data-armed]:not([data-boot]) *::after { animation-play-state: paused !important; }
-.wgh:not([data-live]) .wgh-radar,
-.wgh:not([data-live]) .wgh-ret__spin,
-.wgh:not([data-live]) .wgh-ret__ping,
-.wgh:not([data-live]) .wgh-console__led,
-.wgh:not([data-live]) .wgh-ret__dot { animation-play-state: paused; }
+.wgh[data-armed]:not([data-boot]) :is(.wgh-bezel, .wgh-view, .wgh-mini, .wgh-head__kicker, .wgh-title, .wgh-intro, .wgh-target, .wgh-console) { opacity: 0; }
 
 /* Bezel draws, chrome flickers on */
-.wgh[data-armed] .wgh-bezel__outer { animation: wgh-draw 1.1s var(--w-ease-io) both; }
-.wgh[data-armed] :is(.wgh-bezel__inner, .wgh-bezel__pins, .wgh-bezel__rails, .wgh-bezel__corners) { animation: wgh-flick 0.6s 0.45s steps(1, end) both; }
-.wgh[data-armed] .wgh-bezel__label { animation: wgh-fade 0.2s 0.1s both; }
+.wgh[data-boot]:not([data-booted]) .wgh-bezel__outer { animation: wgh-draw 1.1s var(--w-ease-io) both; }
+.wgh[data-boot]:not([data-booted]) :is(.wgh-bezel__inner, .wgh-bezel__pins, .wgh-bezel__rails, .wgh-bezel__corners) { animation: wgh-flick 0.6s 0.45s steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-bezel__label { animation: wgh-fade 0.2s 0.1s both; }
 
 /* Map boots: grid, bay, streets, blocks, venue */
-.wgh[data-armed] .wgh-view { animation: wgh-fade 0.5s 0.05s both; }
-.wgh[data-armed] .wgh-grid { animation: wgh-grid 0.7s 0.15s var(--w-ease) both; transform-origin: 50% 50%; }
-.wgh[data-armed] .wgh-l--water { animation: wgh-fade 0.8s 0.3s both; }
-.wgh[data-armed] .wgh-shore { animation: wgh-draw 1.2s 0.3s var(--w-ease-io) both; }
-.wgh[data-armed] .wgh-aves path { animation: wgh-draw 1.1s calc(0.3s + var(--i) * 70ms) var(--w-ease-io) both; }
-.wgh[data-armed] .wgh-streets path { animation: wgh-draw 0.9s calc(0.45s + var(--i) * 24ms) var(--w-ease-io) both; }
-.wgh[data-armed] .wgh-blocks { animation: wgh-flick 0.7s 1s steps(1, end) both; }
-.wgh[data-armed] .wgh-zone__fill,
-.wgh[data-armed] .wgh-zone__bldg { animation: wgh-flick 0.6s 1.25s steps(1, end) both; }
-.wgh[data-armed] .wgh-zone__edge { animation: wgh-draw 0.9s 1.2s var(--w-ease-io) both; }
-.wgh[data-armed] .wgh-rings circle { animation: wgh-ring 0.9s 2.3s var(--w-ease) both; }
-.wgh[data-armed] .wgh-rings circle[data-i="1"] { animation-delay: 2.42s; }
-.wgh[data-armed] :is(.wgh-plate, .wgh-water-label, .wgh-area) { animation: wgh-flick 0.5s 1.1s steps(1, end) both; }
-.wgh[data-armed] .wgh-ring-label { animation: wgh-flick 0.5s 2.6s steps(1, end) both; }
-.wgh[data-armed] :is(.wgh-ruler, .wgh-compass) { animation: wgh-flick 0.5s 0.7s steps(1, end) both; }
-.wgh[data-armed] .wgh-compass__needle { animation: wgh-needle 1.4s 0.8s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-view { animation: wgh-fade 0.5s 0.05s both; }
+.wgh[data-boot]:not([data-booted]) .wgh-grid { animation: wgh-grid 0.7s 0.15s var(--w-ease) both; transform-origin: 50% 50%; }
+.wgh[data-boot]:not([data-booted]) .wgh-l--water { animation: wgh-fade 0.8s 0.3s both; }
+/* The shoreline left the bay's group for the lines layer, so it repeats the bay's fade. */
+.wgh[data-boot]:not([data-booted]) .wgh-shore { animation: wgh-draw 1.2s 0.3s var(--w-ease-io) both, wgh-fade 0.8s 0.3s both; }
+.wgh[data-boot]:not([data-booted]) .wgh-aves path { animation: wgh-draw 1.1s calc(0.3s + var(--i) * 70ms) var(--w-ease-io) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-streets path { animation: wgh-draw 0.9s calc(0.45s + var(--i) * 24ms) var(--w-ease-io) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-l--blocks { animation: wgh-flick 0.7s 1s steps(1, end) both; }
+/* Promote the lines SVG to its own layer while its strokes draw (boot, then each route switch):
+   a constant identity transform (nothing moves, no fill), so the layer goes away when it ends. */
+.wgh[data-boot]:not([data-booted]) .wgh-l--lines { animation: wgh-hold 3.8s linear; }
+.wgh[data-boot][data-touched][data-mode="subway"] .wgh-l--lines { animation: wgh-hold-subway 1.4s linear; }
+.wgh[data-boot][data-touched][data-mode="drive"] .wgh-l--lines { animation: wgh-hold-drive 1.4s linear; }
+.wgh[data-boot][data-touched][data-mode="ride"] .wgh-l--lines { animation: wgh-hold-ride 1.4s linear; }
+.wgh[data-boot][data-touched][data-mode="bike"] .wgh-l--lines { animation: wgh-hold-bike 1.4s linear; }
+.wgh[data-boot]:not([data-booted]) .wgh-zone__fill,
+.wgh[data-boot]:not([data-booted]) .wgh-zone__bldg { animation: wgh-flick 0.6s 1.25s steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-zone__edge { animation: wgh-draw 0.9s 1.2s var(--w-ease-io) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-rings circle { animation: wgh-ring 0.9s 2.3s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-rings circle[data-i="1"] { animation-delay: 2.42s; }
+.wgh[data-boot]:not([data-booted]) :is(.wgh-plate, .wgh-water-label, .wgh-area) { animation: wgh-flick 0.5s 1.1s steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-ring-label { animation: wgh-flick 0.5s 2.6s steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) :is(.wgh-ruler, .wgh-compass) { animation: wgh-flick 0.5s 0.7s steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-compass__needle { animation: wgh-needle 1.4s 0.8s var(--w-ease) both; }
 
-/* Routes draw (on boot and on every mode switch: the active group remounts) */
+/* Routes draw (on boot and on every mode switch: the active group remounts, so these stay attached) */
 /* First draw waits for the lock; after the visitor switches modes, routes draw at once. */
 .wgh { --wgh-rd: 2.4s; }
 .wgh[data-touched] { --wgh-rd: 0s; }
-.wgh[data-armed] .wgh-route { animation: wgh-fade 0.4s var(--wgh-rd) both; }
-.wgh[data-armed] .wgh-route[data-on] :is(.wgh-route__walk, .wgh-route__hwy, .wgh-route__curb) { animation: wgh-draw 0.8s calc(var(--wgh-rd) + 0.05s) var(--w-ease-io) both; }
-.wgh[data-armed] .wgh-route[data-on] .wgh-route__tba { animation: wgh-flick 0.5s calc(var(--wgh-rd) + 0.7s) steps(1, end) both; }
-.wgh[data-armed] .wgh-call { animation: wgh-fade 0.3s 2.5s both; }
+.wgh[data-boot] .wgh-route { animation: wgh-fade 0.4s var(--wgh-rd) both; }
+.wgh[data-boot] .wgh-route[data-on] :is(.wgh-route__walk, .wgh-route__hwy, .wgh-route__curb) { animation: wgh-draw 0.8s calc(var(--wgh-rd) + 0.05s) var(--w-ease-io) both; }
+.wgh[data-boot] .wgh-route[data-on] .wgh-route__tba { animation: wgh-flick 0.5s calc(var(--wgh-rd) + 0.7s) steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-call { animation: wgh-fade 0.3s 2.5s both; }
 
 /* Reticle: sweep, search, lock */
-.wgh[data-armed] .wgh-ret__sweep { animation: wgh-sweep 1.3s 1s both; }
-.wgh[data-armed] .wgh-xh--h { animation: wgh-sweep-y 1.3s 1s both; }
-.wgh[data-armed] .wgh-xh--v { animation: wgh-sweep-x 1.3s 1s both; }
-.wgh[data-armed] .wgh-ret__box { animation: wgh-lock 0.5s 2.15s var(--w-ease) both; }
-.wgh[data-armed] .wgh-ret__tag { animation: wgh-flick 0.5s 2.3s steps(1, end) both; }
-.wgh[data-armed] .wgh-radar { animation: wgh-fade 0.6s 2.4s both, wgh-spin 7s 2.4s linear infinite; }
+.wgh[data-boot]:not([data-booted]) .wgh-ret__sweep { animation: wgh-sweep 1.3s 1s both; }
+.wgh[data-boot]:not([data-booted]) .wgh-xh--h { animation: wgh-sweep-y 1.3s 1s both; }
+.wgh[data-boot]:not([data-booted]) .wgh-xh--v { animation: wgh-sweep-x 1.3s 1s both; }
+.wgh[data-boot]:not([data-booted]) .wgh-ret__box { animation: wgh-lock 0.5s 2.15s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-ret__tag { animation: wgh-flick 0.5s 2.3s steps(1, end) both; }
+
+/* Loops. The base rules (no JS) run them unconditionally; once armed they are attached only while
+   live. During the intro they keep their choreographed start delays (paused if scrolled away);
+   after it, the same delays minus one full period: identical phase at the switch, and an instant
+   start when the map scrolls back in. */
 .wgh-ret__ping { animation: wgh-ping 3.4s 2.3s var(--w-ease) infinite; }
 .wgh-ret__ping--2 { animation-delay: 2.5s; }
 .wgh-ret__dot { animation: wgh-blink 1.2s 2.3s steps(1, end) infinite; }
 .wgh-console__led { animation: wgh-blink 1.6s steps(1, end) infinite; }
+.wgh[data-armed] :is(.wgh-radar, .wgh-ret__spin, .wgh-ret__ping, .wgh-ret__dot, .wgh-console__led) { animation: none; }
+.wgh[data-boot]:not([data-booted]) .wgh-radar { animation: wgh-fade 0.6s 2.4s both, wgh-spin 7s 2.4s linear infinite; }
+.wgh[data-boot]:not([data-booted]) .wgh-ret__ping { animation: wgh-ping 3.4s 2.3s var(--w-ease) infinite; }
+.wgh[data-boot]:not([data-booted]) .wgh-ret__ping--2 { animation-delay: 2.5s; }
+.wgh[data-boot]:not([data-booted]) .wgh-ret__dot { animation: wgh-blink 1.2s 2.3s steps(1, end) infinite; }
+.wgh[data-booted][data-live] .wgh-radar { animation: wgh-spin 7s -4.6s linear infinite; }
+.wgh[data-booted][data-live] .wgh-ret__ping { animation: wgh-ping 3.4s -1.1s var(--w-ease) infinite; }
+.wgh[data-booted][data-live] .wgh-ret__ping--2 { animation-delay: -0.9s; }
+.wgh[data-booted][data-live] .wgh-ret__dot { animation: wgh-blink 1.2s -0.1s steps(1, end) infinite; }
+.wgh[data-boot][data-live] .wgh-ret__spin { animation: wgh-spin 14s linear infinite; }
+.wgh[data-boot][data-live] .wgh-console__led { animation: wgh-blink 1.6s steps(1, end) infinite; }
+/* !important: the loop rules above have equal or higher specificity, and an `animation` shorthand
+   resets the play state (this is what left the radar spinning off screen). */
+.wgh:not([data-live]) .wgh-radar,
+.wgh:not([data-live]) .wgh-ret__spin,
+.wgh:not([data-live]) .wgh-ret__ping,
+.wgh:not([data-live]) .wgh-console__led,
+.wgh:not([data-live]) .wgh-ret__dot { animation-play-state: paused !important; }
 
 /* Panels assemble */
-.wgh[data-armed] .wgh-head__kicker { animation: wgh-slide 0.6s 0.15s var(--w-ease) both; }
-.wgh[data-armed] .wgh-title { animation: wgh-slide 0.7s 0.22s var(--w-ease) both; }
-.wgh[data-armed] .wgh-intro { animation: wgh-slide 0.7s 0.36s var(--w-ease) both; }
-.wgh[data-armed] .wgh-target { animation: wgh-crt 0.65s 0.6s var(--w-ease) both; transform-origin: 50% 0; }
-.wgh[data-armed] .wgh-console { animation: wgh-crt 0.65s 0.78s var(--w-ease) both; transform-origin: 50% 0; }
-.wgh[data-armed] :is(.wgh-lcd, .wgh-addr, .wgh-gate, .wgh-actions) { animation: wgh-rise 0.5s calc(1.05s + var(--d, 0s)) var(--w-ease) both; }
-.wgh[data-armed] .wgh-addr { --d: 0.08s; }
-.wgh[data-armed] .wgh-gate { --d: 0.16s; }
-.wgh[data-armed] .wgh-actions { --d: 0.24s; }
-.wgh[data-armed] .wgh-tab { animation: wgh-rise 0.45s calc(1.1s + var(--n, 0) * 60ms) var(--w-ease) both; }
-.wgh[data-armed] .wgh-tab:nth-child(2) { --n: 1; }
-.wgh[data-armed] .wgh-tab:nth-child(3) { --n: 2; }
-.wgh[data-armed] .wgh-tab:nth-child(4) { --n: 3; }
-.wgh[data-armed] :is(.wgh-readout__top, .wgh-readout__body) { animation: wgh-readout 0.4s var(--w-ease) both; }
-.wgh[data-armed] .wgh-mini { animation: wgh-flick 0.5s 1.6s steps(1, end) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-head__kicker { animation: wgh-slide 0.6s 0.15s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-title { animation: wgh-slide 0.7s 0.22s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-intro { animation: wgh-slide 0.7s 0.36s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-target { animation: wgh-crt 0.65s 0.6s var(--w-ease) both; transform-origin: 50% 0; }
+.wgh[data-boot]:not([data-booted]) .wgh-console { animation: wgh-crt 0.65s 0.78s var(--w-ease) both; transform-origin: 50% 0; }
+.wgh[data-boot]:not([data-booted]) :is(.wgh-lcd, .wgh-addr, .wgh-gate, .wgh-actions) { animation: wgh-rise 0.5s calc(1.05s + var(--d, 0s)) var(--w-ease) both; }
+.wgh[data-boot] .wgh-addr { --d: 0.08s; }
+.wgh[data-boot] .wgh-gate { --d: 0.16s; }
+.wgh[data-boot] .wgh-actions { --d: 0.24s; }
+.wgh[data-boot]:not([data-booted]) .wgh-tab { animation: wgh-rise 0.45s calc(1.1s + var(--n, 0) * 60ms) var(--w-ease) both; }
+.wgh[data-boot] .wgh-tab:nth-child(2) { --n: 1; }
+.wgh[data-boot] .wgh-tab:nth-child(3) { --n: 2; }
+.wgh[data-boot] .wgh-tab:nth-child(4) { --n: 3; }
+/* The readout remounts on every route switch, so its slide-in stays attached. */
+.wgh[data-boot] :is(.wgh-readout__top, .wgh-readout__body) { animation: wgh-readout 0.4s var(--w-ease) both; }
+.wgh[data-boot]:not([data-booted]) .wgh-mini { animation: wgh-flick 0.5s 1.6s steps(1, end) both; }
 @media (max-width: 959.98px) {
   /* Stacked: the target sits inside the map, so it waits for the map. */
-  .wgh[data-armed] .wgh-target { animation-delay: 1.2s; transform-origin: 50% 100%; }
-  .wgh[data-armed] :is(.wgh-addr, .wgh-gate, .wgh-actions) { animation-delay: calc(1.5s + var(--d, 0s)); }
+  .wgh[data-boot]:not([data-booted]) .wgh-target { animation-delay: 1.2s; transform-origin: 50% 100%; }
+  .wgh[data-boot]:not([data-booted]) :is(.wgh-addr, .wgh-gate, .wgh-actions) { animation-delay: calc(1.5s + var(--d, 0s)); }
 }
 
 @keyframes wgh-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
@@ -790,6 +826,12 @@
 }
 @keyframes wgh-spin { to { transform: rotate(360deg); } }
 @keyframes wgh-blink { 50% { opacity: 0.25; } }
+/* Layer holds (one name per trigger so a route switch restarts it). Identity transform: no visual change. */
+@keyframes wgh-hold { from, to { transform: translateX(0); } }
+@keyframes wgh-hold-subway { from, to { transform: translateX(0); } }
+@keyframes wgh-hold-drive { from, to { transform: translateX(0); } }
+@keyframes wgh-hold-ride { from, to { transform: translateX(0); } }
+@keyframes wgh-hold-bike { from, to { transform: translateX(0); } }
 
 /* ==========================================================================
    REDUCED MOTION: the final frame, no loops

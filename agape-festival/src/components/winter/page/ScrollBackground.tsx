@@ -746,19 +746,6 @@ export function ScrollBackground({ media, startTime, endTime }: Props) {
       </div>
       <div ref={scrimRef} className="wbg__scrim" />
       <div className="wbg__vignette" />
-      {mode !== "poster" && (
-        <div className="wbg__rail">
-          <span className="wbg__track">
-            {media.glitchCuts.map((c) => (
-              <i key={c} style={{ top: `${((c / media.duration) * 100).toFixed(2)}%` }} />
-            ))}
-            <span ref={thumbRef} className="wbg__thumb" />
-          </span>
-          <span ref={codeRef} className="wbg__code">
-            00:03.70
-          </span>
-        </div>
-      )}
     </div>
   );
 }

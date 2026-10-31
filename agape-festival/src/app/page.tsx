@@ -1,26 +1,25 @@
 import { preload } from "react-dom";
-import { winterFontVariables } from "@/components/winter/fonts";
-import { Grain } from "@/components/winter/ui";
-import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
+import { fontVariables } from "@/components/winter/simple/fonts";
 import { FlyerSection } from "@/components/winter/page/FlyerSection";
-import { FloatingCta } from "@/components/winter/page/FloatingCta";
-import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
-import { Hero } from "@/components/winter/page/Hero";
-import { Faq } from "@/components/winter/page/Faq";
-import { GettingHere } from "@/components/winter/page/GettingHere";
-import { Lockers } from "@/components/winter/page/Lockers";
-import { Lineup } from "@/components/winter/page/Lineup";
-import { Merch } from "@/components/winter/page/Merch";
-import { Nav } from "@/components/winter/page/Nav";
 import { ScrollBackground } from "@/components/winter/page/ScrollBackground";
-import { Tickets } from "@/components/winter/page/Tickets";
-import { OffscreenPauser } from "@/components/winter/perf/OffscreenPauser";
-import { Preloader } from "@/components/winter/preloader/Preloader";
+import { Faq } from "@/components/winter/simple/Faq";
+import { Footer } from "@/components/winter/simple/Footer";
+import { GettingHere } from "@/components/winter/simple/GettingHere";
+import { Hero } from "@/components/winter/simple/Hero";
+import { Lineup } from "@/components/winter/simple/Lineup";
+import { Lockers } from "@/components/winter/simple/Lockers";
+import { Merch } from "@/components/winter/simple/Merch";
+import { Nav } from "@/components/winter/simple/Nav";
+import { Reveal } from "@/components/winter/simple/Reveal";
+import { Roster } from "@/components/winter/simple/Roster";
+import { Tickets } from "@/components/winter/simple/Tickets";
+import { sentence } from "@/components/winter/simple/labels";
 import { BG, BG_TIMES, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
-import "@/styles/winter.css";
-import "@/styles/winter-page.css";
+import "@/styles/simple-base.css";
+import "@/styles/simple-flyer.css";
+import "@/styles/simple.css";
 
 const SITE = "https://agape-festival.com";
 
@@ -63,37 +62,32 @@ export default function Home() {
   }
 
   return (
-    <div className={`winter wpage ${winterFontVariables}`}>
-      <a className="wskip" href="#main">
+    <div className={`s ${fontVariables}`}>
+      <a className="s-skip" href="#main">
         Skip to content
       </a>
-      <Preloader />
       <GestureRescue />
       <ScrollBackground media={BG} startTime={BG_TIMES.top} endTime={BG_TIMES.end} />
       <Nav
-        links={NAV_LINKS}
+        links={NAV_LINKS.filter((l) => l.href !== "#hero").map((l) => ({ label: sentence(l.label), href: l.href }))}
         ticketsUrl={WINTER.tickets.url}
         ticketsLabel={WINTER.tickets.cta}
         mark={FLYER.mark}
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
-        dates={WINTER.dates}
       />
       <main id="main" tabIndex={-1}>
         <Hero />
         <FlyerSection />
-        {/* Preview: the explorable profiler first, then the plain lineup for anyone who skips it. */}
-        {SHOW_ARTIST_SELECT && <ArtistSelectSection bgAt={BG_TIMES.afterLineup} />}
-        <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
+        {SHOW_ARTIST_SELECT && <Roster bgAt={BG_TIMES.afterLineup} />}
+        <Lineup linkToRoster={SHOW_ARTIST_SELECT} />
         <Tickets bgAt={SHOW_ARTIST_SELECT ? undefined : BG_TIMES.afterLineup} />
         <Merch />
         <Faq />
         {LOCKERS.enabled && <Lockers />}
         <GettingHere />
       </main>
-      <FloatingCta href={WINTER.tickets.url} label={WINTER.tickets.cta} meta={{ left: WINTER.tickets.provider, right: WINTER.dates.short }} />
-      <Footer links={NAV_LINKS} />
-      <Grain animated />
-      <OffscreenPauser />
+      <Footer />
+      <Reveal />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

@@ -1,19 +1,138 @@
 /* ==========================================================================
-   FOOTER (page/Footer.tsx): the grid system's example section. Everything
-   structural comes from grid.css; this file only sets the few things that
-   belong to this section. Classes wft-*.
+   FOOTER (page/Footer.tsx), classic. Quiet, after the September footer:
+   the mark and the dates; the sections in Orbitron caps; the Instagram
+   handles and the newsletter; the contact email; then the legal line.
+   A fading hairline on top, like every section. Classes ft-*.
+
+     ≥1024     mark + dates   | Navigate | Follow | Contact
+     768–1023  mark + dates, then Navigate | Follow | Contact
+     Phones    stacked; the section links two across
    ========================================================================== */
 
-/* The heading and its one line sit together at the foot of the tall cell. */
-.wft__join { gap: var(--s-4); }
-
-/* The sign-up cell: label on top, the action set at title size at the foot. */
-.wft__signup .g-link__value { max-width: 10em; }
-
-/* The legal row is the quietest line on the page. */
-.wft__base .g-cell { padding-block: var(--s-3); }
-.wft__credit .g-link__value { font-size: var(--t-small); font-weight: 400; color: var(--c-fg-3); transition: color var(--m-dur-1) var(--m-ease); }
-@media (hover: hover) and (pointer: fine) {
-  .wft__credit:hover .g-link__value { color: var(--c-fg); }
+.ft {
+  position: relative;
+  z-index: var(--z-content, 1);
+  padding: var(--s-16) var(--sec-x) var(--s-8);
 }
-.wft__credit .g-link__icon { top: 50%; margin-top: -8px; }
+.ft::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-line) 20%, var(--c-line) 80%, transparent);
+  pointer-events: none;
+}
+@media (min-width: 768px) {
+  .ft { padding-top: var(--s-20); }
+}
+@media (min-width: 1024px) {
+  .ft { padding-top: var(--s-24); }
+}
+
+.ft-top { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-10); }
+@media (min-width: 768px) {
+  .ft-top { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-12) var(--s-8); }
+  .ft-brand { grid-column: 1 / -1; }
+}
+@media (min-width: 1024px) {
+  .ft-top { grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 2fr)); }
+  .ft-brand { grid-column: auto; }
+}
+
+/* ---- The mark (as in the top bar) and the dates ---------------------------- */
+.ft-brand { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-4); }
+.ft-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--c-text);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--m-dur-1) var(--m-ease);
+}
+.ft-mark__img { display: block; width: 20px; height: auto; flex: none; }
+.ft-mark__word { font: 500 var(--t-body) / 1 var(--f-ui); letter-spacing: 0.08em; }
+@media (hover: hover) and (pointer: fine) {
+  .ft-mark:hover { opacity: 0.72; }
+}
+/* Beside the columns the mark sits on their labels' line. */
+@media (min-width: 1024px) {
+  .ft-mark { min-height: 24px; }
+}
+
+/* ---- Columns ------------------------------------------------------------------ */
+.ft-col { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-3); min-width: 0; }
+.ft-list { display: flex; flex-direction: column; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
+@media (max-width: 767.98px) {
+  .ft-col--nav { align-items: stretch; }
+  .ft-list--nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-4); }
+}
+
+/* Section links: Orbitron caps, as in the bar. */
+.ft-nav {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-text-2);
+  text-decoration: none;
+  transition: color var(--m-dur-1) var(--m-ease);
+}
+
+/* Handles, the newsletter, the email: Archivo. */
+.ft-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 40px;
+  max-width: 100%;
+  font-size: var(--t-body);
+  line-height: 1.3;
+  color: var(--c-text-2);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: color var(--m-dur-1) var(--m-ease);
+}
+.ft-link__icon { flex: none; color: var(--c-text-3); transition: color var(--m-dur-1) var(--m-ease); }
+
+.ft-line { margin: 0; max-width: 32ch; font-size: var(--t-small); line-height: 1.6; color: var(--c-text-3); }
+
+@media (hover: hover) and (pointer: fine) {
+  .ft-nav:hover,
+  .ft-link:hover,
+  .ft-link:hover .ft-link__icon { color: var(--c-text-hi); }
+}
+
+/* ---- The legal line ------------------------------------------------------------- */
+.ft-base {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: var(--s-16);
+  padding-top: var(--s-6);
+  border-top: 1px solid var(--c-line);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--c-text-3);
+}
+.ft-base p { margin: 0; }
+.ft-credit { align-self: flex-start; color: inherit; text-decoration: none; transition: color var(--m-dur-1) var(--m-ease); }
+@media (hover: hover) and (pointer: fine) {
+  .ft-credit:hover { color: var(--c-text-hi); }
+}
+@media (min-width: 768px) {
+  .ft-base { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--s-6); }
+  .ft-credit { align-self: auto; }
+}
+
+.ft-mark:focus-visible,
+.ft-nav:focus-visible,
+.ft-link:focus-visible,
+.ft-credit:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }

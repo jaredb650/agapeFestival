@@ -1,70 +1,67 @@
 /* ==========================================================================
-   GETTING HERE (page/GettingHere.tsx, map/RouteBoard.tsx, map/RouteMap.tsx).
-   The grid kit plus this file. Classes gh-*.
+   GETTING HERE (page/GettingHere.tsx, map/RouteBoard.tsx, map/RouteMap.tsx),
+   classic. The September section (map, address, the ways in) in the
+   classic kit. Classes gh-*.
 
-   One Row (.gh-board) holds everything below the header:
+     ≥1024     [ panel: the map            ]   Subway       (hairline rows,
+               [        address | entrance ]   Drive         every route's
+                                               Rideshare     text shown)
+                                               Bus and bike
+                                               Directions: Google | Apple
+     768–1023  the panel (map 16:9), then the rows with the mode in a
+               column of its own, then the directions.
+     Phones    the panel (map square), the rows, the directions full width.
 
-     ≥1024   cols 1–8                cols 9–12
-             map (lines 1–6)         address
-                                     entrance
-                                     Subway   | Drive
-                                     Rideshare | Bus and bike
-                                     the selected route
-                                     Google Maps | Apple Maps
-
-     768–1023: address | entrance, the map (16:9), the four tabs in a line,
-     the route, the two map links.
-     Phones: address, entrance, the map (square), the tabs two by two, the
-     route, the two map links.
-
-   The tabs sit in a subgrid, so their hairlines are the page's own columns.
+   Picking a row draws that route on the map (data-mode on .gh-map) and
+   marks the row: red mode label and a short red key, the route line's own
+   colour and weight.
    ========================================================================== */
 
-/* ---- Placement --------------------------------------------------------------- */
-.gh-address { justify-content: flex-end; }
-.gh-entrance { --cell-h: var(--g-row-1); flex-direction: row; align-items: center; justify-content: space-between; }
-.gh-map-cell { aspect-ratio: 1; background-color: var(--c-ink); }
-.gh-tabs {
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-template-rows: subgrid;
-  grid-column: 1 / -1;
-  grid-row: span 2;
-}
-.gh-tab { --span-sm: 2; --span: 3; }
-
+.gh-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-10); }
 @media (min-width: 768px) {
-  .gh-address { --cell-h: var(--g-row-3); }
-}
-@media (min-width: 768px) and (max-width: 1023.98px) {
-  .gh-address { --span: 8; }
-  .gh-entrance { --span: 4; --cell-h: var(--g-row-3); flex-direction: column; align-items: flex-start; justify-content: flex-end; }
-  .gh-map-cell { aspect-ratio: 16 / 9; }
-  .gh-tabs { grid-row: span 1; }
+  .gh-board { gap: var(--s-12); }
 }
 @media (min-width: 1024px) {
-  .gh-address { grid-column: 9 / span 4; grid-row: 1; }
-  .gh-entrance { grid-column: 9 / span 4; grid-row: 2; }
-  .gh-map-cell { grid-column: 1 / span 8; grid-row: 1 / span 5; aspect-ratio: auto; }
-  .gh-tabs { grid-column: 9 / span 4; grid-row: 3 / span 2; }
-  .gh-tab { --span: 2; }
-  .gh-panels { grid-column: 9 / span 4; grid-row: 5; }
-  /* The two map links close the board across the full width, under the map and the column. */
-  .gh-dir { grid-row: 6; }
-  .gh-dir--a { grid-column: 1 / span 6; }
-  .gh-dir--b { grid-column: 7 / span 6; }
+  .gh-board { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--s-16); align-items: stretch; }
 }
 
-/* ---- Address and entrance ---------------------------------------------------- */
-.gh-key { font-size: var(--t-small); line-height: 1.45; color: var(--c-fg-3); }
-.gh-address__v { display: flex; flex-direction: column; gap: var(--s-1); }
-.gh-entrance__v { font-size: var(--t-body); line-height: 1.3; color: var(--c-fg); }
-/* Not announced yet: the secondary grey (Tickets does the same for doors). */
-.gh-entrance__v[data-tba] { color: var(--c-fg-2); }
+/* ---- The panel: the map over the address ---------------------------------- */
+.gh-panel { display: flex; flex-direction: column; min-width: 0; }
+.gh-mapbox {
+  position: relative;
+  aspect-ratio: 1;
+  border-bottom: 1px solid var(--c-line);
+  background-color: var(--c-plate);
+}
+@media (min-width: 768px) {
+  .gh-mapbox { aspect-ratio: 16 / 9; }
+}
+@media (min-width: 1024px) {
+  /* Beside the routes the map takes whatever height the column gives it. */
+  .gh-mapbox { flex: 1 1 auto; aspect-ratio: auto; min-height: 400px; }
+}
 
-/* ---- The map ------------------------------------------------------------------- */
-/* The world box covers the cell (aspect 1.6, like the SVG's viewBox) and never draws smaller than
-   960px wide (0.4 px per metre), so phones see the venue and the station, not the whole district. */
+.gh-place { display: grid; gap: var(--s-5); margin: 0; padding: var(--s-5); }
+.gh-place__item { display: flex; flex-direction: column; gap: var(--s-2); }
+.gh-place__item dd { margin: 0; }
+.gh-place__v { display: flex; flex-direction: column; gap: var(--s-1); }
+.gh-address {
+  font-family: var(--f-display);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+.gh-place__sub { font-size: var(--t-body); line-height: 1.5; color: var(--c-text-2); }
+@media (min-width: 768px) {
+  .gh-place { grid-template-columns: auto auto; justify-content: start; column-gap: var(--s-16); padding: var(--s-6); }
+}
+
+/* ---- The map ---------------------------------------------------------------- */
+/* The world box covers the box (aspect 1.6, like the SVG's viewBox) and never draws smaller than 960px
+   wide (0.4 px per metre), so phones see the venue and the station, not the whole district. */
 .gh-map { position: absolute; inset: 0; overflow: hidden; container-type: size; }
 .gh-world {
   position: absolute;
@@ -75,39 +72,44 @@
   translate: -50% -50%;
 }
 .gh-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; fill: none; }
-.gh-streets { stroke: var(--c-rule); stroke-width: 1px; }
-.gh-aves { stroke: var(--c-rule); stroke-width: 2px; }
-.gh-shore { stroke: var(--c-rule-control); stroke-width: 1px; }
+.gh-streets { stroke: var(--c-line); stroke-width: 1px; }
+.gh-aves { stroke: var(--c-line-2); stroke-width: 1px; }
+.gh-shore { stroke: var(--c-line-2); stroke-width: 1px; }
 .gh-venue { fill: var(--c-red); }
 
-/* Labels: small grey type on a black plate that interrupts the line under it, as print maps do. */
+/* Labels: Orbitron caps on a plate that interrupts the line under it, as print maps do. */
 .gh-tag {
   position: absolute;
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  padding: 0 var(--s-1);
-  background-color: var(--c-ink);
-  font-size: var(--t-small);
-  line-height: 1.45;
-  color: var(--c-fg-3);
+  padding: 2px var(--s-1);
+  background-color: var(--c-plate);
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
   white-space: nowrap;
   translate: -50% -50%;
   rotate: var(--rot, 0deg);
 }
 .gh-tag[data-align="l"] { translate: var(--s-3) -50%; }
 .gh-tag[data-align="r"] { translate: calc(-100% - var(--s-3)) -50%; }
-.gh-tag--venue { font-size: var(--t-body); font-weight: 500; color: var(--c-fg); }
-.gh-tag--station { color: var(--c-fg); }
+.gh-tag--venue { font-size: 0.8125rem; font-weight: 600; color: var(--c-text); }
+.gh-tag--station { color: var(--c-text); }
 .gh-pin {
   position: absolute;
   width: var(--s-2);
   height: var(--s-2);
   translate: -50% -50%;
-  background-color: var(--c-fg);
+  background-color: var(--c-text);
 }
 
-/* The MTA bullets: round because the real ones are (wayfinding, in their real colours). */
+/* The MTA bullets: round because the real ones are (wayfinding, in their real colours), in the
+   interface face like the real signs. */
 .gh-bullets { display: inline-flex; gap: var(--s-1); }
 .gh-bullet {
   display: inline-grid;
@@ -115,15 +117,17 @@
   width: var(--s-5);
   height: var(--s-5);
   border-radius: 50%;
-  font-size: var(--t-small);
-  font-weight: 500;
+  font-family: var(--f-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: 0;
+  text-transform: none;
 }
 
-/* ---- Routes ------------------------------------------------------------------------
+/* ---- Routes on the map --------------------------------------------------------------
    Each mode owns a line (a 3px red rectangle rotated onto its street) plus pins and labels marked
-   data-route. The selected mode's line grows from its start along its own axis (scale, composited);
+   data-route. The picked mode's line grows from its start along its own axis (scale, composited);
    its pins and labels fade in as it arrives. A deselected line retracts faster than the next draws. */
 .gh-line {
   position: absolute;
@@ -154,77 +158,113 @@
 .gh-map[data-mode="drive"] .gh-tag--3rd { opacity: 0; }
 
 /* Before the map first scrolls into view (RouteBoard arms it): everything route-specific is held at
-   its start, so the selected route draws once on arrival. */
+   its start, so the picked route draws once on arrival. */
 .gh-map[data-armed]:not([data-in]) [data-route] { --on: 0; transition: none; }
 
-/* ---- Tabs ------------------------------------------------------------------------- */
-.gh-tab {
-  --cell-h: var(--g-row-1);
-  --cell-x: center;
-  --cell-y: center;
-  --cell-text: center;
-  padding: 0 var(--s-3);
-  background-color: transparent;
+/* ---- The ways in: hairline rows ---------------------------------------------------------
+   The whole row picks (the button's ::after covers it). Mode label over the title; from 768 to 1023,
+   where the rows run the full width, the label gets a column of its own (the set-times board). */
+.gh-ways { display: flex; flex-direction: column; min-width: 0; }
+.gh-routes { border-bottom: 1px solid var(--c-line); }
+.gh-route {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: var(--s-2);
+  padding-block: var(--s-5);
+  border-top: 1px solid var(--c-line);
+}
+.gh-route__pick {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--s-2);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   font: inherit;
-  font-size: var(--t-body);
-  line-height: 1.3;
-  color: var(--c-fg-3);
+  color: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
+  -webkit-tap-highlight-color: transparent;
 }
-/* Selected: the surface step, white type and a 2px red mark over the tab's top rule (the merch tiles'
-   and the nav's active mark). The surface says which cell owns the mark where two tabs share a rule. */
-.gh-tab[aria-selected="true"] { background-color: var(--c-wash); color: var(--c-fg); }
-.gh-tab::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
+.gh-route__pick::after { content: ""; position: absolute; inset: 0; }
+.gh-route__mode { grid-column: 1; grid-row: 1; transition: color var(--m-dur-1) var(--m-ease); }
+.gh-route__key {
+  grid-column: 2;
+  grid-row: 1;
+  width: var(--s-6);
+  height: 3px;
   background-color: var(--c-mark);
-  transform-origin: left;
-  scale: 0 1;
-  transition: scale var(--m-dur-2) var(--m-ease);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--m-dur-2) var(--m-ease);
 }
-.gh-tab[aria-selected="true"]::before { scale: 1 1; }
-@media (hover: hover) and (pointer: fine) {
-  .gh-tab:hover { background-color: var(--c-wash); color: var(--c-fg); }
-}
-.gh-tab:active { background-color: var(--c-wash); }
-.gh-tab:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
-
-/* ---- The selected route ---------------------------------------------------------------
-   All four panels share one grid area, so the cell is as tall as the longest and nothing below
-   moves when the tab changes. The text starts at the top, right under the tabs it answers. The
-   outgoing panel goes at once; the incoming one rises 4px in. */
-.gh-panels { display: grid; }
-.gh-panel {
-  grid-area: 1 / 1;
-  align-self: start;
+.gh-route__title {
+  grid-column: 1 / -1;
+  grid-row: 2;
   display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  visibility: hidden;
-  opacity: 0;
-  translate: 0 var(--s-1);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  font-family: var(--f-display);
+  font-size: clamp(1rem, 0.93rem + 0.3vw, 1.125rem); /* 16 → 18 */
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+  color: var(--c-text);
+  transition: color var(--m-dur-1) var(--m-ease);
 }
-.gh-panel[data-on] {
-  visibility: visible;
-  opacity: 1;
-  translate: 0 0;
-  transition: opacity var(--m-dur-2) var(--m-ease), translate var(--m-dur-2) var(--m-ease);
-}
-.gh-panel__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-3); }
-.gh-panel:focus-visible { outline: 2px solid var(--c-focus); outline-offset: var(--s-1); }
-@supports selector(:has(*)) {
-  .gh-panel:focus-visible { outline: none; }
-  .gh-panels:has(.gh-panel:focus-visible) { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+.gh-route__body {
+  grid-column: 1 / -1;
+  margin: 0;
+  max-width: 52ch;
+  font-size: var(--t-body);
+  line-height: 1.6;
+  color: var(--c-text-2);
+  text-wrap: pretty;
 }
 
-/* ---- Phones -------------------------------------------------------------------------- */
+/* Picked: the mode in red, the key drawn, the title at full white. */
+.gh-route[data-on] .gh-route__mode { color: var(--c-mark); }
+.gh-route[data-on] .gh-route__key { transform: scaleX(1); }
+.gh-route[data-on] .gh-route__title { color: var(--c-text-hi); }
+.gh-route[data-on] .gh-route__pick { cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  .gh-route:not([data-on]):hover .gh-route__mode { color: var(--c-text-2); }
+  .gh-route:not([data-on]):hover .gh-route__title { color: var(--c-text-hi); }
+}
+.gh-route__pick:focus-visible { outline: none; }
+.gh-route__pick:focus-visible::after { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .gh-route { grid-template-columns: 10rem minmax(0, 1fr) auto; column-gap: var(--s-6); }
+  .gh-route__pick { align-items: baseline; }
+  .gh-route__mode { grid-column: 1; grid-row: 1; }
+  .gh-route__title { grid-column: 2; grid-row: 1; }
+  .gh-route__key { grid-column: 3; grid-row: 1; align-self: center; }
+  .gh-route__body { grid-column: 2; }
+}
+
+/* ---- Directions ----------------------------------------------------------------------------- */
+.gh-dirs { display: flex; flex-direction: column; gap: var(--s-4); margin-top: var(--s-10); }
+.gh-dirs__links { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+.gh-dirs__links .gh-dir { width: 100%; }
+@media (min-width: 768px) {
+  .gh-dirs__links { display: flex; flex-wrap: wrap; }
+  .gh-dirs__links .gh-dir { width: auto; }
+}
+
+/* ---- Phones ------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
   .gh-tag--bay { display: none; }
+  /* The square shows less of the district: tighter caps and a closer gap keep the labels left of the
+     venue (Industry City, Lots B + C) inside the box. */
+  .gh-tag { letter-spacing: 0.06em; }
+  .gh-tag--venue { font-size: var(--t-label); }
+  .gh-tag[data-align="r"] { translate: calc(-100% - var(--s-2)) -50%; }
   /* The station sits near the square's right edge: its label goes under the pin. */
   .gh-tag--station[data-align] { translate: -50% var(--s-2); }
 }
@@ -234,7 +274,5 @@
   .gh-pin[data-route],
   .gh-tag[data-route],
   .gh-tag--3rd,
-  .gh-tab::before { transition: none; }
-  .gh-panel,
-  .gh-panel[data-on] { translate: none; transition: opacity var(--m-dur-1) var(--m-ease); }
+  .gh-route__key { transition: none; }
 }

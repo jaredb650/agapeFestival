@@ -101,7 +101,8 @@ export function FlyerStage({ layers, scrim, space }: Props) {
     return () => io.disconnect();
   }, []);
 
-  // Cuts in the background footage glitch a few layers at once.
+  // Cuts in the background footage glitch a few layers at once (GlitchLayer `restOnly`: only while
+  // the page is at rest, so a burst's repaint never lands in a scroll frame).
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
@@ -216,6 +217,7 @@ export function FlyerStage({ layers, scrim, space }: Props) {
             <GlitchLayer
               intensity={l.id === "logo-mark" ? "strong" : l.width > 1000 ? "medium" : "subtle"}
               idleEvery={l.id === "logo-mark" ? 7000 : undefined}
+              restOnly
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

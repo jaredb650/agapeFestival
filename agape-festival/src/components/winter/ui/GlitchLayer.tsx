@@ -18,6 +18,12 @@ export interface GlitchLayerProps {
   idleEvery?: number;
   /** Burst length, ms. Matches the CSS keyframes (460). */
   burstMs?: number;
+  /**
+   * Skip unprompted bursts (idle and GLITCH_EVENT) while the page is scrolling and for
+   * SCROLL_QUIET_MS after it stops, so a burst's repaint never lands in a scroll frame.
+   * Taps, clicks and focus still fire. Off by default (the hero logo keeps its behaviour).
+   */
+  restOnly?: boolean;
   as?: "div" | "figure" | "span";
   className?: string;
   style?: CSSProperties;
@@ -27,6 +33,8 @@ export interface GlitchLayerProps {
 // hover and must not glitch (it was a burst per layer per scroll). One shared,
 // passive listener records the last scroll.
 let lastScroll = -1e9;
+/** How long after the last scroll event an unprompted burst still counts as "mid-scroll". */
+const SCROLL_QUIET_MS = 250;
 let scrollWatchers = 0;
 const onScroll = () => {
   lastScroll = performance.now();
@@ -55,6 +63,7 @@ export function GlitchLayer({
   interactive = true,
   idleEvery,
   burstMs = 460,
+  restOnly = false,
   as = "div",
   className,
   style,
@@ -84,12 +93,17 @@ export function GlitchLayer({
         el.removeAttribute("data-burst");
       }, burstMs);
     };
+    // Unprompted (a cut in the footage, the idle timer): with restOnly, never while the page scrolls.
+    const fireUnprompted = () => {
+      if (restOnly && performance.now() - lastScroll < SCROLL_QUIET_MS) return;
+      fire();
+    };
 
     const onEnter = (e: PointerEvent) => {
       if (e.pointerType === "mouse" && performance.now() - lastScroll > 220) fire();
     };
-    el.addEventListener(GLITCH_EVENT, fire);
-    const unwatch = interactive ? watchScroll() : () => {};
+    el.addEventListener(GLITCH_EVENT, fireUnprompted);
+    const unwatch = interactive || restOnly ? watchScroll() : () => {};
     if (interactive) {
       el.addEventListener("pointerenter", onEnter);
       el.addEventListener("click", fire);
@@ -103,7 +117,7 @@ export function GlitchLayer({
     if (idleEvery) {
       const loop = () => {
         idleTimer = window.setTimeout(() => {
-          if (document.visibilityState === "visible") fire();
+          if (document.visibilityState === "visible") fireUnprompted();
           loop();
         }, idleEvery * (0.6 + Math.random() * 0.8));
       };
@@ -119,13 +133,13 @@ export function GlitchLayer({
       clearTimeout(idleTimer);
       unobserve();
       unwatch();
-      el.removeEventListener(GLITCH_EVENT, fire);
+      el.removeEventListener(GLITCH_EVENT, fireUnprompted);
       el.removeEventListener("pointerenter", onEnter);
       el.removeEventListener("click", fire);
       el.removeEventListener("focusin", fire);
       el.removeAttribute("data-burst");
     };
-  }, [burstMs, idleEvery, interactive]);
+  }, [burstMs, idleEvery, interactive, restOnly]);
 
   return (
     <Tag

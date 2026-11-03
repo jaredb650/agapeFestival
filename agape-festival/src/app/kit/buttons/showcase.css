@@ -90,7 +90,10 @@
 .kbs-plate .k-name { align-self: center; }
 .kbs-plate .k-seg { --ks-h: var(--plate-h); }
 
-.kbs-routes { display: flex; flex-direction: column; max-width: 520px; }
+.kbs-routes { display: flex; flex-direction: column; gap: var(--s-3); max-width: 720px; }
+.kbs-routes__stage { display: flex; flex-direction: column; }
+.kbs-routes__map { display: grid; place-items: center; aspect-ratio: 16 / 9; background-color: var(--c-plate); }
+.kbs-routes__sub { margin-top: var(--s-8); }
 .kbs-routes .k-small { margin-top: var(--s-4); }
 
 .kbs-uses { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s-8) var(--s-6); }

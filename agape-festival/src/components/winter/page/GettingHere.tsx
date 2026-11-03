@@ -34,7 +34,7 @@ const candidates: (Route | undefined)[] = [
   ride && { mode: "ride", tab: sentence(ride.label), title: sentence(ride.title), body: ride.body },
   {
     mode: "bike",
-    tab: "Bus and bike",
+    tab: "Bus + bike",
     title: `Buses ${g.secondary.buses.join(", ")}`,
     body: `Citi Bike: ${g.secondary.citiBike}.`,
   },
@@ -47,11 +47,11 @@ const MAP_LABEL =
   "36th St Station is on 4th Avenue at 36th Street.";
 
 /**
- * Getting here, as the September site had it (a map, the address, then the ways in), in the classic kit:
- * our own street map with the venue in red, in a dark panel with the address under it; beside it (stacked
- * on phones) the four ways in as a tab rail (icon tiles), each drawing its route on the map when picked,
- * the picked route's directions, then the map links. Server-rendered; RouteBoard is the only client code (the picked route and a one-time
- * draw as the map scrolls into view).
+ * Getting here, in the classic kit: our own street map with the venue in red, in a dark panel with the four
+ * ways in as tabs docked on its top edge (tabs and map fit one view; each tab draws its route on the map);
+ * under it (beside it from 1024) the picked route's directions, the address, then the map links.
+ * Server-rendered; RouteBoard is the only client code (the picked route and a one-time draw as the map
+ * scrolls into view).
  */
 export function GettingHere() {
   return (

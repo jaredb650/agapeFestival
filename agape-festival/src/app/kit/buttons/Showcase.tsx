@@ -159,7 +159,7 @@ const MODES = [
   { id: "subway", label: "Subway", icon: <TrainIcon size={20} /> },
   { id: "drive", label: "Drive", icon: <CarIcon size={20} /> },
   { id: "ride", label: "Rideshare", icon: <CarFrontIcon size={20} /> },
-  { id: "bike", label: "Bus and bike", icon: <BikeIcon size={20} /> },
+  { id: "bike", label: "Bus + bike", icon: <BikeIcon size={20} /> },
 ] as const;
 type Mode = (typeof MODES)[number]["id"];
 
@@ -303,15 +303,19 @@ export function Showcase({ background, address, routes }: { background: string; 
           <Block
             id="routes"
             title="Route tabs"
-            note="Getting here's own control: a tile per way in, its glyph over an Orbitron label, all four in view (2 x 2 on phones), the count above. The picked tile lifts, its glyph turns red and a 3px red bar runs along its foot: the route line's colour and weight on the map. Tabs: arrows move and pick."
+            note="Getting here's own control. Attached (the site): all four ways in in one row of short tabs docked on top of the map, inside its frame, so the tabs and the map fit one view and a tap never scrolls. Icon over label on phones, beside it from 768. The picked tab lifts, its glyph turns red and a 3px red bar lies on the map's top edge: the route line's colour and weight. Tiles (the default): 2 across in their own box, for a rail that sits apart from its panel. Tabs: arrows move and pick."
             wide
           >
             <div className="kbs-routes">
-              <div className="gh-modes">
-                <p className="k-label">4 ways in</p>
-                <p className="gh-modes__hint">Pick one to see it on the map</p>
+              <span className="k-label">Attached · on its panel</span>
+              <div className="k-panel kbs-routes__stage">
+                <TabRail label="Ways to get here (attached demo)" items={MODES} value={mode} onChange={(m) => setMode(m)} idBase="kbs-route-att" attached className="gh-tabs" />
+                <div className="kbs-routes__map" aria-hidden="true">
+                  <span className="k-label">{MODES.find((m) => m.id === mode)?.label} on the map</span>
+                </div>
               </div>
-              <TabRail label="Ways to get here (demo)" items={MODES} value={mode} onChange={(m) => setMode(m)} idBase="kbs-route" className="gh-tabs" />
+              <span className="k-label kbs-routes__sub">Tiles · default</span>
+              <TabRail label="Ways to get here (tiles demo)" items={MODES} value={mode} onChange={(m) => setMode(m)} idBase="kbs-route" className="gh-tabs" />
               <p className="k-small">The live section, with its map, is at the foot of this page.</p>
             </div>
           </Block>
@@ -456,7 +460,7 @@ export function Showcase({ background, address, routes }: { background: string; 
                 </Button>
               </div>
               <Segmented label="Day (phone)" options={[{ value: "1", label: "Day 1" }, { value: "2", label: "Day 2" }]} value={day} onChange={setDay} block />
-              <TabRail label="Ways to get here (phone demo)" items={MODES} value={mode} onChange={(m) => setMode(m)} idBase="kbs-route-phone" className="gh-tabs" />
+              <TabRail label="Ways to get here (phone demo)" items={MODES} value={mode} onChange={(m) => setMode(m)} idBase="kbs-route-phone" attached className="gh-tabs" />
               <Button variant="ghost" href="#phone" icon="arrow">
                 View all
               </Button>

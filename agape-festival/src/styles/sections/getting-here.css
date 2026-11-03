@@ -1,63 +1,50 @@
 /* ==========================================================================
    GETTING HERE (page/GettingHere.tsx, map/RouteBoard.tsx, map/RouteMap.tsx),
-   classic. The September section (map, address, the ways in) in the
-   classic kit. Classes gh-*.
+   classic. Classes gh-*.
 
-     ≥1024     [ panel: the map            ]   4 ways in · Pick one …
-               [        address | entrance ]   [Subway][Drive   ]  (tab rail,
-                                               [Ride  ][Bus+bike]   2 x 2)
-                                               the picked route's directions
-                                               Directions: Google | Apple
-     768–1023  the panel (map 16:9), then the rail 4 across, the route,
-               the directions.
-     Phones    the panel (map square), the rail 2 x 2, the route, the
-               directions full width.
+     ≥1024     [Subway|Drive|Rideshare|Bus + bike]   the picked route
+               [ the map                          ]   address | entrance
+               [                                  ]   Directions: Google | Apple
+     <1024     the tabs on the map (16:9 from 768, square on phones), then
+               the route, the address, the directions.
 
-   Picking a tile draws that route on the map (data-mode on .gh-map) and
-   marks the tile: a lighter plate, its glyph in red and a 3px red bar,
-   the route line's own colour and weight.
+   One panel: the ways in as a row of tabs docked on the map's top edge
+   (classic/TabRail, attached). The tabs and the whole map fit in one view
+   under the fixed bar, so a tap changes the map in front of you and the page
+   never scrolls. Picking a tab draws that route on the map (data-mode on
+   .gh-map) and marks the tab: a lighter plate, its glyph in red and a 3px
+   red bar on the map's edge, the route line's own colour and weight.
    ========================================================================== */
 
-.gh-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-10); }
+.gh-board {
+  /* The tab row's height: the map's height cap subtracts it. */
+  --gh-tab-h: 56px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-8);
+}
 @media (min-width: 768px) {
-  .gh-board { gap: var(--s-12); }
+  .gh-board { --gh-tab-h: 60px; gap: var(--s-10); }
 }
 @media (min-width: 1024px) {
-  .gh-board { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--s-16); align-items: stretch; }
+  .gh-board { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: var(--s-16); align-items: start; }
 }
 
-/* ---- The panel: the map over the address ---------------------------------- */
-.gh-panel { display: flex; flex-direction: column; min-width: 0; }
+/* ---- The panel: the tabs on the map ---------------------------------------- */
+.gh-stage { display: flex; flex-direction: column; min-width: 0; }
+.gh-tabs { --kt-mark: 3px; --kt-h: var(--gh-tab-h); }
 .gh-mapbox {
   position: relative;
   aspect-ratio: 1;
-  border-bottom: 1px solid var(--c-line);
+  /* Tabs + map fit under the bar with a little air below; never so short the labels clip. */
+  max-height: max(18rem, calc(100svh - var(--g-nav) - var(--gh-tab-h) - 1px - 2px - var(--s-3)));
   background-color: var(--c-plate);
 }
 @media (min-width: 768px) {
-  .gh-mapbox { aspect-ratio: 16 / 9; }
+  .gh-mapbox { aspect-ratio: 16 / 9; max-height: max(20rem, calc(100svh - var(--g-nav) - var(--gh-tab-h) - 1px - 2px - var(--s-8))); }
 }
 @media (min-width: 1024px) {
-  /* Beside the routes the map takes whatever height the column gives it. */
-  .gh-mapbox { flex: 1 1 auto; aspect-ratio: auto; min-height: 400px; }
-}
-
-.gh-place { display: grid; gap: var(--s-5); margin: 0; padding: var(--s-5); }
-.gh-place__item { display: flex; flex-direction: column; gap: var(--s-2); }
-.gh-place__item dd { margin: 0; }
-.gh-place__v { display: flex; flex-direction: column; gap: var(--s-1); }
-.gh-address {
-  font-family: var(--f-display);
-  font-size: var(--t-h2);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--c-text);
-}
-.gh-place__sub { font-size: var(--t-body); line-height: 1.5; color: var(--c-text-2); }
-@media (min-width: 768px) {
-  .gh-place { grid-template-columns: auto auto; justify-content: start; column-gap: var(--s-16); padding: var(--s-6); }
+  .gh-mapbox { aspect-ratio: 4 / 3; }
 }
 
 /* ---- The map ---------------------------------------------------------------- */
@@ -162,18 +149,10 @@
    its start, so the picked route draws once on arrival. */
 .gh-map[data-armed]:not([data-in]) [data-route] { --on: 0; transition: none; }
 
-/* ---- The ways in: a tab rail (classic/TabRail, styles/kit/buttons.css) ---------------------------
-   A count and a line saying what picking does, then a tile per mode (2 x 2 on phones and beside the map,
-   4 across from 768 to 1023 where the rail runs the full width). The picked tile's foot bar is the route
-   line's own colour and weight (3px, --c-mark). Under it, the picked route's directions: the panels share
-   one grid cell, so the stack is as tall as the longest and nothing below moves when the pick changes. */
+/* ---- Under the panel (beside it from 1024): the picked route, the address, the links ------------
+   The route panels share one grid cell, so the stack is as tall as the longest and nothing below moves
+   when the pick changes. */
 .gh-ways { display: flex; flex-direction: column; min-width: 0; }
-.gh-modes { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-1) var(--s-4); margin-bottom: var(--s-4); }
-.gh-modes__hint { margin: 0; font-size: var(--t-small); line-height: 1.5; color: var(--c-text-3); }
-.gh-tabs { --kt-mark: 3px; }
-@media (min-width: 768px) and (max-width: 1023.98px) {
-  .gh-tabs { --kt-cols: 4; }
-}
 
 .gh-details { display: grid; }
 .gh-detail {
@@ -181,7 +160,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding: var(--s-6) 0;
+  padding: 0 0 var(--s-6);
   border-bottom: 1px solid var(--c-line);
   visibility: hidden;
   opacity: 0;
@@ -211,6 +190,25 @@
   text-wrap: pretty;
 }
 
+/* ---- The address ------------------------------------------------------------------------- */
+.gh-place { display: grid; gap: var(--s-5); margin: 0; padding: var(--s-6) 0; border-bottom: 1px solid var(--c-line); }
+.gh-place__item { display: flex; flex-direction: column; gap: var(--s-2); }
+.gh-place__item dd { margin: 0; }
+.gh-place__v { display: flex; flex-direction: column; gap: var(--s-1); }
+.gh-address {
+  font-family: var(--f-display);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+.gh-place__sub { font-size: var(--t-body); line-height: 1.5; color: var(--c-text-2); }
+@media (min-width: 768px) {
+  .gh-place { grid-template-columns: auto auto; justify-content: start; column-gap: var(--s-16); }
+}
+
 /* ---- Directions ----------------------------------------------------------------------------- */
 .gh-dirs { display: flex; flex-direction: column; gap: var(--s-4); margin-top: var(--s-8); }
 .gh-dirs__links { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
@@ -223,6 +221,10 @@
 /* ---- Phones ------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
   .gh-tag--bay { display: none; }
+  /* A touch smaller (0.375 px per metre) and nudged right and down: the labels left of the venue (Industry
+     City, Lots B + C) reach further than the station's on the right, and 2nd Ave's sits near the top, so
+     every label clears the box's edges at 375 in every mode. */
+  .gh-world { width: max(100cqw, 160cqh, 900px); translate: calc(-50% + 6px) calc(-50% + 18px); }
   /* The square shows less of the district: tighter caps and a closer gap keep the labels left of the
      venue (Industry City, Lots B + C) inside the box. */
   .gh-tag { letter-spacing: 0.06em; }

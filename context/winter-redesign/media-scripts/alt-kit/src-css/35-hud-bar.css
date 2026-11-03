@@ -1,0 +1,244 @@
+/* ==========================================================================
+   HudBar — the HUD top bar (c9688b5 page/Nav.tsx + sections/nav.css .whud*):
+   a chrome frame hung from the top edge (caps with silver clamps, runs), a
+   chrome notch under its centre (ChromeNotch: glass orbs + sector LCD), a
+   scroll meter with a tick per section, an instrument ruler and a glint, the
+   lock-on bracket that slides to the current link, and the readout slots.
+   In flow by default (the original was position: fixed; pass `fixed`).
+   Breakpoints are container queries on the bar's own width.
+   ========================================================================== */
+.rhk-bar {
+  position: relative;
+  container: rhk-bar / inline-size;
+  padding-bottom: 26px; /* room for the hung notch when the bar sits in flow */
+  color: var(--rhk-frost);
+}
+.rhk-bar[data-fixed] { position: fixed; top: 0; left: 0; right: 0; z-index: 40; padding-bottom: 0; pointer-events: none; }
+.rhk-bar__in {
+  --hud-h: 56px;
+  --hud-hc: 42px;       /* compact height */
+  --hud-nw: 228px;      /* notch width, slopes included */
+  --hud-nd: 18px;       /* notch depth below the bar */
+  --hud-cap: 20px;
+  --hud-pad: 24px;
+  --hud-fill: rgba(6, 9, 14, 0.9);
+  --hud-line: rgba(233, 235, 236, 0.26);
+  --hud-inner: rgba(156, 200, 255, 0.16);
+  --hud-glass: rgba(156, 200, 255, 0.16);
+  --hud-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.32) 0 1px, transparent 1px 3px);
+  --hud-silver: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
+  position: relative;
+  height: var(--hud-h);
+}
+@container rhk-bar (min-width: 1100px) {
+  .rhk-bar__in { --hud-h: 64px; --hud-hc: 36px; --hud-nw: 300px; --hud-nd: 22px; --hud-pad: max(28px, var(--rhk-gutter)); }
+}
+
+/* Over a hero: a soft top scrim; it goes once the page moves ([data-scrolled]). */
+.rhk-bar__in::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 -56px 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(4, 6, 10, 0.62), transparent);
+  transition: opacity var(--rhk-dur) ease;
+  pointer-events: none;
+}
+.rhk-bar[data-scrolled] .rhk-bar__in::before { opacity: 0; }
+
+/* ---- Shell: caps + runs ---------------------------------------------------- */
+.rhk-bar__shell { position: absolute; inset: 0 0 auto; height: var(--hud-h); display: flex; }
+.rhk-bar__shell > * { opacity: 0.74; transition: opacity var(--rhk-dur-slow) ease; }
+.rhk-bar[data-scrolled] .rhk-bar__shell > * { opacity: 1; }
+.rhk-bar__cap { position: relative; flex: none; width: var(--hud-cap); height: 100%; }
+/* Silver clamps where the frame hangs from the top edge. */
+.rhk-bar__cap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 22px;
+  background: linear-gradient(90deg, #7d8592, #eef0f3 45%, #959ca8);
+  box-shadow: 0 1px 0 rgba(4, 6, 10, 0.8);
+}
+.rhk-bar__cap--l::after { left: 7px; }
+.rhk-bar__cap--r::after { right: 7px; }
+.rhk-bar__cap svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.rhk-bar__run { flex: 1; min-width: 0; background: var(--hud-scan), var(--hud-fill); box-shadow: inset 0 -1px 0 var(--hud-line); }
+.rhk-bar-fill { fill: var(--hud-fill); }
+.rhk-bar-stroke { fill: none; stroke: var(--hud-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+/* ---- The hung notch (ChromeNotch) sits under the centre ------------------------ */
+.rhk-bar__in > .rhk-bar__notch { position: absolute; left: 50%; top: calc(var(--hud-h) - 1px); margin-left: calc(var(--hud-nw) / -2); }
+
+/* ---- Scroll meter: inner hairline + ice fill + a tick per section --------- */
+.rhk-bar__meter {
+  position: absolute;
+  left: calc(var(--hud-cap) + 4px);
+  right: calc(var(--hud-cap) + 4px);
+  top: calc(var(--hud-h) - 5px);
+  height: 1px;
+  background: var(--hud-inner);
+}
+.rhk-bar__fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  transform: scaleX(var(--p, 0));
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(61, 107, 255, 0.7), var(--rhk-ice));
+  box-shadow: 0 0 6px rgba(110, 170, 255, 0.55);
+  transition: transform 0.12s linear;
+}
+/* Instrument ruler above the meter: fine ticks every 8px. */
+.rhk-bar__meter::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, rgba(233, 235, 236, 0.13) 0 1px, transparent 1px 8px);
+}
+/* The meter's leading glint. */
+.rhk-bar__head {
+  position: absolute;
+  left: calc(var(--p, 0) * 100% - 5px);
+  top: -2px;
+  width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 6px 2px rgba(156, 200, 255, 0.9), 0 0 14px 3px rgba(61, 107, 255, 0.55);
+  transition: left 0.12s linear;
+}
+.rhk-bar__tick { position: absolute; top: -3px; width: 1px; height: 7px; background: rgba(233, 235, 236, 0.32); transition: background-color var(--rhk-dur) ease; }
+.rhk-bar__tick[data-lit] { background: var(--rhk-ice); }
+
+/* ---- Bar content ------------------------------------------------------------ */
+.rhk-bar__bar {
+  position: relative;
+  height: var(--hud-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rhk-s-4);
+  padding-inline: var(--hud-pad);
+}
+.rhk-bar__bar a, .rhk-bar__bar button { pointer-events: auto; }
+.rhk-bar__start, .rhk-bar__end { display: flex; align-items: center; min-width: 0; }
+.rhk-bar__end { justify-content: flex-end; gap: var(--rhk-s-4); }
+
+.rhk-bar-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; flex: none; color: var(--rhk-frost); text-decoration: none; }
+.rhk-bar-brand__mark { display: block; width: 20px; height: auto; }
+.rhk-bar-brand__word {
+  font: 700 12px / 1 var(--rhk-font-hud);
+  letter-spacing: 0.32em;
+  margin-right: -0.32em;
+  text-shadow: 0 0 1px rgba(233, 235, 236, 0.5);
+  transition: color var(--rhk-dur-fast) ease;
+}
+.rhk-bar-brand:hover .rhk-bar-brand__word { color: var(--rhk-ice); }
+
+.rhk-bar__sep { flex: none; width: 1px; height: 28px; margin-inline: 16px; background: linear-gradient(180deg, transparent, var(--hud-line) 30%, var(--hud-line) 70%, transparent); }
+.rhk-bar__status { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rhk-bar__stack { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.rhk-bar__px {
+  font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel);
+  letter-spacing: 0.08em;
+  color: var(--rhk-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.45);
+  white-space: nowrap;
+}
+.rhk-bar__nano { font: 700 var(--rhk-fs-nano) / 1 var(--rhk-font-hud); letter-spacing: 0.24em; color: var(--rhk-mist); white-space: nowrap; }
+.rhk-bar__nano b { font-weight: inherit; font-variant-numeric: tabular-nums; }
+
+/* Links: hover (mist → ice) and the active underline. */
+.rhk-bar__links { position: relative; display: none; }
+.rhk-bar__links ul { display: flex; gap: var(--rhk-s-6); margin: 0; padding: 0; list-style: none; }
+.rhk-bar__links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--rhk-mist);
+  text-decoration: none;
+  transition: color var(--rhk-dur-fast) ease;
+}
+.rhk-bar__links a:hover { color: var(--rhk-ice); }
+.rhk-bar__links a[aria-current] { color: var(--rhk-frost); }
+.rhk-bar__links a[aria-current]::after { content: ""; position: absolute; left: 0; right: 0.24em; bottom: 10px; height: 1px; background: currentColor; }
+
+/* Lock-on bracket: [ LINK ] slides to the current link. */
+.rhk-bar__reticle { --rx: 0px; --rw: 0px; position: absolute; left: 0; top: 50%; height: 24px; margin-top: -12px; opacity: 0; pointer-events: none; transition: opacity var(--rhk-dur) ease; }
+.rhk-bar__reticle[data-on] { opacity: 1; }
+.rhk-bar__reticle i { position: absolute; top: 0; left: 0; width: 5px; height: 100%; border: 1px solid var(--rhk-bracket-accent); transition: transform 0.55s var(--rhk-ease); }
+.rhk-bar__reticle i:first-child { border-right: 0; transform: translateX(calc(var(--rx) - 11px)); }
+.rhk-bar__reticle i:last-child { border-left: 0; transform: translateX(calc(var(--rx) + var(--rw) + 6px)); }
+
+/* Signal bars (SignalBars): the fourth bar drops out now and then. */
+.rhk-sig { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+.rhk-sig i { width: 3px; background: var(--rhk-ice); box-shadow: 0 0 4px rgba(110, 170, 255, 0.6); }
+.rhk-sig i:nth-child(1) { height: 5px; }
+.rhk-sig i:nth-child(2) { height: 8px; }
+.rhk-sig i:nth-child(3) { height: 11px; }
+.rhk-sig i:nth-child(4) { height: 14px; animation: rhk-sig 26s steps(1, end) infinite; }
+@keyframes rhk-sig { 0%, 13.2%, 16%, 20%, 33.2%, 36%, 40%, 53.2%, 56%, 60%, 73.2%, 76%, 80%, 93.2%, 96%, 100% { opacity: 1; } 12.4%, 14%, 32.4%, 34%, 52.4%, 54%, 72.4%, 74%, 92.4%, 94% { opacity: 0.2; } }
+
+/* ---- Breakpoints (on the bar's width) --------------------------------------- */
+.rhk-bar__end > .rhk-bar__wide { display: none; }
+@container rhk-bar (max-width: 1099px) { .rhk-bar__sep { margin-inline: 12px; } }
+@container rhk-bar (max-width: 339px) { .rhk-bar__sep, .rhk-bar__status { display: none; } }
+@container rhk-bar (min-width: 1100px) {
+  .rhk-bar__bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .rhk-bar__links { display: block; }
+  .rhk-bar__end > .rhk-bar__narrow { display: none; }
+  .rhk-bar__sep, .rhk-bar__status { display: none; }
+}
+@container rhk-bar (min-width: 1100px) and (max-width: 1599px) { .rhk-bar__links ul { gap: 28px; } }
+@container rhk-bar (min-width: 1100px) and (max-width: 1359px) { .rhk-bar__links ul { gap: var(--rhk-s-5); } }
+@container rhk-bar (min-width: 1220px) { .rhk-bar__end > .rhk-bar__wide { display: flex; } }
+@container rhk-bar (min-width: 1400px) { .rhk-bar__sep, .rhk-bar__status { display: flex; } }
+
+/* ---- Compact: the frame slides up to a slim strip, the notch folds into it,
+   the readouts fade (the original did this over the flyer). Compositor only. */
+.rhk-bar__in { --hud-shift: calc(var(--hud-hc) - var(--hud-h)); }
+.rhk-bar__shell, .rhk-bar__meter, .rhk-bar__bar, .rhk-bar__notch {
+  transition: translate 0.5s var(--rhk-ease), scale 0.4s var(--rhk-ease), opacity 0.3s ease;
+}
+.rhk-bar__sep, .rhk-bar__status, .rhk-bar__wide { transition: opacity 0.3s ease; }
+.rhk-bar[data-compact] .rhk-bar__shell,
+.rhk-bar[data-compact] .rhk-bar__meter { translate: 0 var(--hud-shift); }
+.rhk-bar[data-compact] .rhk-bar__bar { translate: 0 calc(var(--hud-shift) / 2 - 2px); }
+.rhk-bar[data-compact] .rhk-bar__notch { translate: 0 var(--hud-shift); scale: 1 0; opacity: 0; }
+.rhk-bar[data-compact] :is(.rhk-bar__sep, .rhk-bar__status, .rhk-bar__wide) { opacity: 0; }
+
+/* ---- Boot (mount): shell flickers on, modules slide in, notch unfolds ------- */
+@media (prefers-reduced-motion: no-preference) {
+  .rhk-bar__shell { animation: rhk-bar-flicker 0.7s steps(1, end) 0.05s backwards; }
+  .rhk-bar__meter { animation: rhk-bar-grow-x 0.8s var(--rhk-ease) 0.2s backwards; }
+  .rhk-bar__notch { animation: rhk-bar-unfold 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.32s backwards; --from: perspective(260px) rotateX(-92deg); --over: perspective(260px) rotateX(10deg); }
+  .rhk-bar__start { animation: rhk-bar-slide 0.6s var(--rhk-ease) 0.15s backwards; --sx: -24px; }
+  .rhk-bar__end { animation: rhk-bar-slide 0.6s var(--rhk-ease) 0.28s backwards; --sx: 24px; }
+  .rhk-bar__links li { animation: rhk-bar-drop 0.5s var(--rhk-ease) backwards; animation-delay: calc(0.3s + var(--i, 0) * 0.05s); }
+}
+@keyframes rhk-bar-flicker { 0% { opacity: 0; } 18% { opacity: 0.7; } 28% { opacity: 0.1; } 44% { opacity: 1; } 58% { opacity: 0.35; } 70% { opacity: 1; } }
+@keyframes rhk-bar-grow-x { from { transform: scaleX(0); opacity: 0; } 40% { opacity: 1; } }
+@keyframes rhk-bar-slide { from { transform: translateX(var(--sx, -110%)); opacity: 0; } }
+@keyframes rhk-bar-drop { from { transform: translateY(-8px); opacity: 0; } }
+@keyframes rhk-bar-unfold {
+  0% { transform: var(--from); opacity: 0; }
+  30% { opacity: 1; }
+  70% { transform: var(--over, none); }
+  100% { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rhk-sig i { animation: none; }
+  .rhk-bar__shell, .rhk-bar__meter, .rhk-bar__bar, .rhk-bar__notch { transition: opacity 0.2s ease; }
+  .rhk-bar__reticle i, .rhk-bar__fill, .rhk-bar__head { transition: none; }
+}

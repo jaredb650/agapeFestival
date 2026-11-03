@@ -6,7 +6,7 @@ import { afterLoadIdle } from "./idle";
 import { withGsap } from "./loadGsap";
 import { BG_GLITCH_EVENT } from "./events";
 import type { FlyerLayer, Still } from "./media";
-import { TOUCH_QUERY } from "./viewport";
+import { onLayoutResize, TOUCH_QUERY } from "./viewport";
 
 /**
  * The flyer's text layers float up out of the tower footage at independent
@@ -53,11 +53,15 @@ interface Props {
 const pct = (n: number, of: number) => `${((n / of) * 100).toFixed(4)}%`;
 
 /**
- * `sizes` for a layer: its share of the flyer box, whose width is
- * min(max(100vw, 56.25vh), 90vh) (winter-page.css .wflyer__box), so the browser
- * picks the 0.5x / 0.75x / full file by the size it is actually drawn at.
+ * `sizes` for a layer: its share of the flyer box, so the browser picks the 0.5x / 0.75x / full
+ * file by the size it is actually drawn at. With the box's measured width (`boxW`, CSS px) it is a
+ * fixed length: the box is sized in lvh, which the iOS toolbar never changes, so the pick stays put
+ * while the toolbar collapses and expands mid-scroll (a viewport-relative `sizes` with an
+ * aspect-ratio query flips across 9:16 there, and Safari may re-pick and re-decode every layer).
+ * Before measuring: the box's width, min(max(100vw, 56.25vh), 90vh) (winter-page.css .wflyer__box).
  */
-const layerSizes = (w: number, of: number) => {
+const layerSizes = (w: number, of: number, boxW: number) => {
+  if (boxW > 0) return `${Math.ceil((boxW * w) / of)}px`;
   const k = (n: number) => `${((n * w) / of).toFixed(2)}`;
   return `(max-aspect-ratio: 9/16) ${k(56.25)}vh, (max-aspect-ratio: 9/10) ${k(100)}vw, ${k(90)}vh`;
 };
@@ -68,16 +72,24 @@ export function FlyerStage({ layers, scrim, space }: Props) {
   // distance, so `loading="lazy"` alone would fetch them alongside the hero.
   // Arm them on the first scroll intent, or once the page is idle.
   const [armed, setArmed] = useState(false);
+  // The flyer box's CSS width, read once on arming and again only when the layout can change.
+  const [boxW, setBoxW] = useState(0);
 
   useEffect(() => {
-    const arm = () => setArmed(true);
+    const measure = () => setBoxW(stageRef.current?.querySelector<HTMLElement>(".wflyer__box")?.offsetWidth ?? 0);
+    const arm = () => {
+      measure();
+      setArmed(true);
+    };
     const events = ["scroll", "wheel", "touchstart", "keydown"] as const;
     events.forEach((e) => window.addEventListener(e, arm, { once: true, passive: true }));
     if (window.scrollY > 0) arm();
     const cancelIdle = afterLoadIdle(arm);
+    const offResize = onLayoutResize(measure);
     return () => {
       events.forEach((e) => window.removeEventListener(e, arm));
       cancelIdle();
+      offResize();
     };
   }, []);
 
@@ -221,7 +233,7 @@ export function FlyerStage({ layers, scrim, space }: Props) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                sizes={l.srcSet ? layerSizes(l.width, space.width) : undefined}
+                sizes={l.srcSet ? layerSizes(l.width, space.width, boxW) : undefined}
                 srcSet={armed ? l.srcSet : undefined}
                 src={armed ? l.src : undefined}
                 width={l.width}

@@ -1,0 +1,11 @@
+# slug src side cx top fx fy zoom q   -> export_headshot.py SRC OUTDIR PREVIEW side cx top fx fy zoom q (src paths: epk2 scratch, see media-notes)
+ben-klock ben-klock/src/gern_2.jpg 1.0 0.49 0.02 0.49 0.33 1.3 76
+fenimore fenimore/src/FENIM0RE-370.tif 1.0 0.5 0.04 0.45 0.40 1.15 76
+uberkikz uberkikz/src/IMG_0397.jpg 0.75 0.58 0.24 0.50 0.38 1.3 76
+kuko kuko/src/kuko-presspics.jpeg 0.8 0.5 0.06 0.50 0.33 1.4 76
+vendex vendex/src/123A1907.jpg 0.9 0.52 0.0 0.52 0.33 1.3 76
+cara-elizabeth cara-elizabeth/src/2_cara.jpg 0.8 0.47 0.24 0.47 0.36 1.35 76
+mika-heggemann mika-heggemann/src/mika_june_25-4.jpg 0.6 0.52 0.04 0.52 0.33 1.4 76
+davyboi davyboi/src/IMG_6648.JPG 0.75 0.55 0.07 0.56 0.36 1.35 76
+len-faki len-faki/src/len-faki-6.jpg 0.665 0.44 0.0 0.48 0.37 1.15 76
+onlynumbers onlynumbers/src/onlynumbers-1.jpg 0.5 0.53 0.02 0.50 0.34 1.35 76

@@ -18,10 +18,10 @@ const CONFIG: BootConfig = {
 };
 
 /**
- * The page's preloader: the deployed site's first breath. Black, the hero
- * frame's corner ticks, and one red hairline across the hero logo's centre line
- * that fills with real readiness (fonts, hero poster + logo decoded, load,
- * scroll background), held 0.9–2.5 s. It then opens as a slit onto the logo,
+ * The page's preloader, in the classic look: black, one red hairline across the
+ * hero logo's centre line that fills with real readiness (fonts, hero poster +
+ * logo decoded, load, scroll background), and a small Orbitron caps "Loading"
+ * under it, held 0.9–2.5 s. It then opens as a slit onto the logo,
  * falls into the hero's red divider and the black lifts: the logo and divider
  * are already where the hero has them, and the hero's intro starts right then
  * (`w:boot-done`). Markup, critical CSS and runtime are all inline in the

@@ -36,8 +36,8 @@
      Five sizes; never set a size outside this list. */
   --f-ui: var(--font-ui, "Archivo"), system-ui, sans-serif;
   --t-display: clamp(2.5rem, 1.73rem + 3.14vw, 4.5rem);  /* 40 → 72: section titles */
-  --t-title: clamp(1.5rem, 1.31rem + 0.76vw, 2rem);      /* 24 → 32: cell titles, the menu */
-  --t-lead: clamp(1.125rem, 1.08rem + 0.19vw, 1.25rem);  /* 18 → 20: intro lines */
+  --t-title: clamp(1.5rem, 1.31rem + 0.76vw, 2rem);      /* 24 → 32: cell titles */
+  --t-lead: clamp(1.125rem, 1.08rem + 0.19vw, 1.25rem);  /* 18 → 20: intro lines, the menu */
   --t-body: 1rem;                                        /* 16: running text */
   --t-small: 0.875rem;                                   /* 14: labels, nav, link cells, meta */
 

@@ -177,7 +177,6 @@ export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark
                 listItem
                 href={l.href}
                 span={6}
-                size="title"
                 className="wmenu__seq wmenu__link"
                 style={seq(i)}
                 aria-current={active && l.href === `#${active}` ? "location" : undefined}
@@ -196,7 +195,6 @@ export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark
             external
             icon="none"
             variant="primary"
-            size="title"
             h={2}
             y="center"
             className="wmenu__seq wmenu__tickets"

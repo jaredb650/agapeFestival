@@ -24,9 +24,9 @@ interface Props {
 /**
  * The top bar (grid redesign): a plain bar divided into hairline cells, on the page's margins. The
  * wordmark cell (back to top), one cell per section link, an empty cell that takes the slack, and the
- * red ticket cell; below 1100px a menu cell replaces the links (MenuDialog). The current section's link
- * carries a red mark along the bar's bottom edge. Transparent over the hero, solid once the page moves,
- * away over the flyer.
+ * red ticket cell; below 1100px a menu cell replaces the links and the ticket cell (MenuDialog). The
+ * current section's link carries a red mark along the bar's bottom edge. Transparent over the hero, solid
+ * once the page moves, away over the flyer.
  *
  * No per-frame work: the active section comes from one IntersectionObserver, the scrolled flag from a
  * rAF-throttled scroll check that only flips an attribute.

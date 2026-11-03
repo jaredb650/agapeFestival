@@ -46,8 +46,8 @@ Red is rare: the primary action, the active state, one key figure. Never a backg
 | Token | Size | Class | Line height / tracking | Use |
 |---|---|---|---|---|
 | `--t-display` | 40 → 72 | `.w-display` | 1.0 / -0.03em, 500 | section titles (one per section) |
-| `--t-title` | 24 → 32 | `.w-title` | 1.1 / -0.015em, 500 | cell titles, a big value, the menu |
-| `--t-lead` | 18 → 20 | `.w-lead` | 1.45, 400, `--c-fg-2`, 36em max | the one intro line under a title |
+| `--t-title` | 24 → 32 | `.w-title` | 1.1 / -0.015em, 500 | cell titles, a big value |
+| `--t-lead` | 18 → 20 | `.w-lead` | 1.45, 400, `--c-fg-2`, 36em max | the one intro line under a title; the menu rows |
 | `--t-body` | 16 | `.w-body` | 1.55, 400, `--c-fg-2`, 62ch max | running text |
 | `--t-small` | 14 | `.w-small` | 1.45, 400, `--c-fg-3` | labels, nav, meta, legal |
 

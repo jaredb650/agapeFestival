@@ -1,7 +1,8 @@
 /* ==========================================================================
    TOP BAR + MENU (Nav.tsx, nav/MenuDialog.tsx), grid redesign.
    A plain bar of hairline cells on the page margins: wordmark, section
-   links, an empty cell, the red ticket cell; a menu cell below 1100px.
+   links, an empty cell, the red ticket cell; below 1100px a menu cell
+   takes the place of the links and the ticket cell.
    The current section's link carries a red mark on the bar's bottom edge.
    Below 1100px the menu is a full-screen grid of cells (grid.css cells).
    Classes wnav-* / wmenu-*. Motion: transform, opacity, clip-path.
@@ -83,7 +84,8 @@
 
 .wnav__fill { flex: 1 1 auto; padding: 0; }
 
-.wnav__tickets { padding: 0 var(--s-6); background-color: var(--c-red); color: var(--c-fg); font-weight: 500; }
+/* Desktop only: below 1100px the menu has its own red ticket row. */
+.wnav__tickets { display: none; padding: 0 var(--s-6); background-color: var(--c-red); color: var(--c-fg); font-weight: 500; }
 
 .wnav__menu { gap: var(--s-2); padding: 0 var(--s-4); color: var(--c-fg); cursor: pointer; }
 .wnav__menu-label { display: none; }
@@ -96,6 +98,7 @@
 
 @media (min-width: 1100px) {
   .wnav__links { display: block; }
+  .wnav__tickets { display: flex; }
   .wnav__menu { display: none; }
 }
 
@@ -152,6 +155,7 @@ html.wnav-lock { overflow: hidden; }
 /* The section cells share the free height, so the grid fills the screen. */
 .wmenu__nav { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
 .wmenu .wmenu__links { flex: 1 1 auto; grid-auto-rows: minmax(var(--g-row-1), 1fr); }
+.wmenu__link .g-link__value, .wmenu__tickets .g-link__value { font-size: var(--t-lead); }
 .wmenu__link .g-link__value { color: var(--c-fg-2); transition: color var(--m-dur-1) var(--m-ease); }
 .wmenu__link > .g-link { justify-content: flex-end; }
 .wmenu__link > .g-link[aria-current] .g-link__value { color: var(--c-fg); }

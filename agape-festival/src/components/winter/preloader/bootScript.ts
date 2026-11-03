@@ -15,6 +15,8 @@
 //    load, the scroll background requested. The hairline's width shows it: never
 //    full before `min`, forced full by `max`, never backwards. A 20 Hz timer
 //    only while booting (no rAF loop); a write only when the value moves.
+//  - Holds the page still while it shows; scrolling is free from the hand-off, and the first scroll input
+//    after it finishes the hero's intro at once.
 //  - Exits: the slit opens onto the logo copy and the hairline falls into the
 //    hero divider ([data-boot-divider], else #hero .winter-divider); the page
 //    intro is released (event + window.__wboot) as the black lifts, and the
@@ -160,8 +162,8 @@ export function wBoot(c: BootConfig): void {
   };
   evs.forEach((e) => w.addEventListener(e, skip, { passive: true, capture: true }));
 
-  // ---- scroll lock: loading at the hero, the page holds still until the hero's intro has played --------
-  // Scrolling mid-intro drags the half-built lockup up through the hero's scroll exit. Inputs are cancelled
+  // ---- scroll lock: loading at the hero, the page holds still until the black lifts ----------------------
+  // (Jared, Nov 3: scrolling is free from the hand-off; see release().) Inputs are cancelled
   // rather than setting overflow: hidden, which would drop the scrollbar and shift the layout.
   let unlock = () => {};
   if (!reduced && (w.scrollY || 0) < 8 && !location.hash) {
@@ -182,7 +184,7 @@ export function wBoot(c: BootConfig): void {
       types.forEach((t) => w.removeEventListener(t, stop, lockOpts));
       w.removeEventListener("scroll", moved);
     };
-    w.setTimeout(() => unlock(), c.max + 6000); // hard cap, whatever happens
+    w.setTimeout(() => unlock(), c.max + 2000); // hard cap, whatever happens
   }
 
   // ---- handover ---------------------------------------------------------------
@@ -217,14 +219,26 @@ export function wBoot(c: BootConfig): void {
     } catch {
       /* very old engines: the page's fallback timer starts the intro */
     }
-    // Unlock once every entrance in the hero (logo, typing, divider, countdown, button, frame) has finished.
-    // Untracked timers on purpose: the overlay (and its timers) is gone long before.
+    // The page scrolls from the moment the black lifts. The first scroll input after that (wheel, touch, key,
+    // or a scroll by any other means) finishes every entrance in the hero (logo, typing, divider, countdown,
+    // button, frame) at once, so the half-built lockup never drags through the hero's scroll exit. Without one,
+    // the intro plays out as designed. Listeners outlive the overlay on purpose; the first input removes them.
+    unlock();
     const hero = d.getElementById("hero");
-    w.setTimeout(() => {
-      const intro = hero && hero.getAnimations ? hero.getAnimations({ subtree: true }).filter((a) => isFinite(Number(a.effect ? a.effect.getComputedTiming().endTime : 0))) : [];
-      Promise.all(intro.map((a) => a.finished.catch(() => 0))).then(() => unlock(), () => unlock());
-    }, 50);
-    w.setTimeout(() => unlock(), 4500);
+    const ffTypes = ["wheel", "touchstart", "touchmove", "keydown", "scroll"];
+    const ff = () => {
+      ffTypes.forEach((t) => w.removeEventListener(t, ff, true));
+      if (hero && hero.getAnimations)
+        hero.getAnimations({ subtree: true }).forEach((a) => {
+          if (!isFinite(Number(a.effect ? a.effect.getComputedTiming().endTime : 0))) return;
+          try {
+            a.finish();
+          } catch {
+            /* not finishable: it simply plays out */
+          }
+        });
+    };
+    ffTypes.forEach((t) => w.addEventListener(t, ff, { passive: true, capture: true }));
   };
   const remove = () => {
     release();

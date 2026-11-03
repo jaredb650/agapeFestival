@@ -10,10 +10,10 @@ function dayText(day: (typeof LINEUP)[number]) {
 }
 
 /**
- * "The flyer moment": a tall section whose sticky stage reassembles the flyer
- * over the scrubbed tower. Two invisible markers set the scroll points where
- * the flyer locks (background shows the flyer's own still) and where the stage
- * releases; ScrollBackground reads their `data-bg-at`.
+ * "The flyer moment" (classic-notext variant): a short section whose sticky
+ * stage shows the assembled flyer, still, over the tower. Two invisible markers
+ * set the scroll points where the flyer locks (LoopBackground shows the flyer's
+ * own still) and where the stage releases (unpins).
  */
 export function FlyerSection() {
   return (

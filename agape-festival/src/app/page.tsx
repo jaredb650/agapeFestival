@@ -8,7 +8,6 @@ import { preload } from "react-dom";
 import { RevealObserver } from "@/components/winter/classic";
 import { winterFontVariables } from "@/components/winter/fonts";
 import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
-import { FlyerSection } from "@/components/winter/page/FlyerSection";
 import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
 import { Hero } from "@/components/winter/page/Hero";
@@ -16,12 +15,11 @@ import { Faq } from "@/components/winter/page/Faq";
 import { GettingHere } from "@/components/winter/page/GettingHere";
 import { Lockers } from "@/components/winter/page/Lockers";
 import { Lineup } from "@/components/winter/page/Lineup";
-import { LoopBackground } from "@/components/winter/page/LoopBackground";
 import { Merch } from "@/components/winter/page/Merch";
 import { Nav } from "@/components/winter/page/Nav";
 import { Tickets } from "@/components/winter/page/Tickets";
 import { Preloader } from "@/components/winter/preloader/Preloader";
-import { BG, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
+import { FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
 
 const SITE = "https://agape-festival.com";
@@ -71,7 +69,8 @@ export default function Home() {
       </a>
       <Preloader />
       <GestureRescue />
-      <LoopBackground media={BG} />
+      {/* A/B variant classic-nobg: no LoopBackground (loop video, poster, flyer still, parallax, vignette, scrim);
+          the page sits on flat --c-ink. The preloader's "background" milestone then completes at window load. */}
       <Nav
         links={NAV_LINKS}
         ticketsUrl={WINTER.tickets.url}
@@ -80,10 +79,10 @@ export default function Home() {
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
       />
       <main id="main" tabIndex={-1}>
-        {/* Frozen: the hero and the flyer layover, under their own scanlines (winter-page.css .wposter). */}
+        {/* Frozen: the hero, under its own scanlines (winter-page.css .wposter). classic-notext: no flyer
+            section, so the hero hands straight over to the first grid section. */}
         <div className="wposter">
           <Hero />
-          <FlyerSection />
           <div className="wposter__scan" aria-hidden="true" />
         </div>
         {/* Classic sections (components/winter/classic): each draws its own hairline and padding. */}

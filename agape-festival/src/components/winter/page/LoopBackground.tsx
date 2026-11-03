@@ -58,12 +58,17 @@ export function LoopBackground({ media }: { media: BgMedia }) {
 
   // The poster and the flyer still sit under the opaque hero at load: they wait for load or the first scroll.
   const [armed, setArmed] = useState(false);
+  // The flyer's still only exists for the flyer section: without #flyer it is never rendered (or fetched).
+  const [hasFlyer, setHasFlyer] = useState(false);
   const [motion, setMotion] = useState(true);
   const [src, setSrc] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    const arm = () => setArmed(true);
+    const arm = () => {
+      setHasFlyer(!!document.getElementById("flyer"));
+      setArmed(true);
+    };
     const events = ["scroll", "wheel", "touchstart", "keydown"] as const;
     if (window.scrollY > 0) arm();
     events.forEach((e) => window.addEventListener(e, arm, { once: true, passive: true }));
@@ -335,7 +340,7 @@ export function LoopBackground({ media }: { media: BgMedia }) {
           />
         )}
       </div>
-      {armed && motion && (
+      {armed && motion && hasFlyer && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           ref={stillRef}

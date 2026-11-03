@@ -149,11 +149,11 @@ function DayBlock({ day, cropFrom, dialogId, onOpen }: DayBlockProps) {
 }
 
 /**
- * The tile's rendered width (a third of the 1280 column from 768px, half the screen on phones), times
+ * The tile's rendered width (a quarter of the 1280 column from 768px, half the screen on phones), times
  * the act's zoom: a 1.5x crop asks for the 1200 photo where the whole one would take the 600.
  */
 const tileSizes = (zoom: number) =>
-  `(min-width: 1376px) ${Math.round(416 * zoom)}px, (min-width: 768px) ${Math.round(32 * zoom)}vw, ${Math.round(50 * zoom)}vw`;
+  `(min-width: 1376px) ${Math.round(308 * zoom)}px, (min-width: 768px) ${Math.round(24 * zoom)}vw, ${Math.round(50 * zoom)}vw`;
 
 interface CardProps {
   act: Act;

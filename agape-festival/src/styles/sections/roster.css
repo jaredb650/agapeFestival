@@ -18,9 +18,12 @@
 
 .rs-day + .rs-day { margin-top: var(--group-gap); }
 
-/* Tiles sit on a doubled track (4 on phones, 6 from 768px) and each spans 2, so they're exactly as wide as a
-   plain 2- or 3-column grid, but a short last row can start half a tile in and sit centred instead of
-   hugging the left edge (Day 2's 9th act on phones). */
+/* Rows always hold an even number of tiles (Jared: never 3 across): 2 on phones, 4 from 768px. Leftovers
+   taper into a centred inverted pyramid: 2 → a centred pair, 3 → a centred pair then a centred single,
+   1 → a centred single (an odd total always ends on one tip tile).
+   Tiles sit on a doubled track (4 / 8) and each spans 2, so they're exactly as wide as a plain 2- or
+   4-column grid, but a leftover row can start half a tile in. A definite column start that's left of the
+   auto-placement cursor drops to the next row, which is what splits a leftover 3 into 2 + 1. */
 .rs-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -32,14 +35,18 @@
   list-style: none;
 }
 .rs-cell { display: flex; min-width: 0; grid-column: auto / span 2; }
-/* Phones: a lone last tile goes in the middle. */
+/* Phones (2 across): a lone last tile goes in the middle. */
 .rs-cell:last-child:nth-child(odd) { grid-column: 2 / span 2; }
 @media (min-width: 768px) {
-  .rs-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .rs-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   .rs-cell:last-child:nth-child(odd) { grid-column: auto / span 2; }
-  /* 3 across: a last row of 1 starts at the middle slot; a last row of 2 starts half a tile in. */
-  .rs-cell:last-child:nth-child(3n + 1) { grid-column: 3 / span 2; }
-  .rs-cell:nth-last-child(2):nth-child(3n + 1) { grid-column: 2 / span 2; }
+  /* Leftover 1: centred single. */
+  .rs-cell:last-child:nth-child(4n + 1) { grid-column: 4 / span 2; }
+  /* Leftover 2: centred pair (the second follows on its own). */
+  .rs-cell:nth-last-child(2):nth-child(4n + 1) { grid-column: 3 / span 2; }
+  /* Leftover 3: centred pair, then the last drops to its own row as the centred tip. */
+  .rs-cell:nth-last-child(3):nth-child(4n + 1) { grid-column: 3 / span 2; }
+  .rs-cell:last-child:nth-child(4n + 3) { grid-column: 4 / span 2; }
 }
 
 /* ---- A tile ------------------------------------------------------------ */
@@ -177,7 +184,8 @@
   .rs-card:hover .rs-card__name { color: var(--c-text-hi); }
   .rs-card:hover .rs-card__arrow { opacity: 1; transform: none; color: var(--c-text-hi); }
 }
-@media (max-width: 767.98px) {
+/* Phones and tablets (tiles up to ~250px wide at 4 across): the compact plate, so long names keep room. */
+@media (max-width: 1099.98px) {
   .rs-card__plate {
     gap: var(--s-2);
     min-height: max(var(--plate-h), calc(2.5 * var(--t-name) + 2 * var(--s-2) + 2px));

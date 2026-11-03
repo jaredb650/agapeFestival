@@ -3,6 +3,13 @@
 import { useState, type KeyboardEvent } from "react";
 import { Button } from "@/components/winter/classic";
 
+/**
+ * Questions are set in Orbitron, which has no macron letters (Ē etc.): the browser would borrow the glyph
+ * from another font and it reads as a glitch. Drop the marks for display only; the data, the answers and
+ * the FAQ structured data keep "ÄGAPĒ".
+ */
+const orbitronSafe = (s: string) => s.replace(/ÄGAPĒ/g, "AGAPE").normalize("NFD").replace(/[\u0304]/g, "").normalize("NFC");
+
 export interface FaqEntry {
   id: string;
   q: string;
@@ -45,7 +52,7 @@ export function FaqList({ items }: { items: FaqEntry[] }) {
               onClick={() => toggle(i)}
               onKeyDown={(e) => onKey(e, i)}
             >
-              <span className="fq-q">{it.q}</span>
+              <span className="fq-q">{orbitronSafe(it.q)}</span>
               <span className="fq-plus" aria-hidden="true" />
             </button>
           </h3>

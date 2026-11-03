@@ -214,7 +214,7 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
 ];
 
 // ============================================================
-// ARTISTS (artist profiler). Only Flash Gea has media and a bio so far.
+// ARTISTS (artist profiler). Flash Gea has a photo, clip and bio; Diossa has a photo only (no bio yet).
 // ============================================================
 
 export interface ArtistSocial {
@@ -299,7 +299,22 @@ const FLASH_GEA_BIO =
 
 const NAMED_ARTISTS: NamedArtist[] = [
   // Day 1
-  pending("diossa", "Diossa", "DIOSSA", 1),
+  {
+    kind: "artist",
+    slug: "diossa",
+    name: "Diossa",
+    displayName: "DIOSSA",
+    day: 1,
+    // Her press kit has photos only: no bio, clip or socials yet, so the bio shows the pending state.
+    bio: null,
+    headshot: `${WINTER_ARTIST_DIR}/diossa/headshot-600.webp`,
+    headshotLarge: `${WINTER_ARTIST_DIR}/diossa/headshot-1200.webp`,
+    clip: null,
+    clipPoster: null,
+    // Press-kit portrait (_DSC3806, Sept 2025), squared from head to jacket: the tile closes in on her face and hand.
+    focus: "52% 36%",
+    zoom: 1.5,
+  },
   pending("fenimore", "Fenimore", "FENIMORE", 1),
   pending("uberkikz", "Überkikz", "ÜBERKIKZ", 1),
   pending("ben-klock", "Ben Klock", "BEN KLOCK", 1),

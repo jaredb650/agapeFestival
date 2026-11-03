@@ -6,6 +6,7 @@ import { afterLoadIdle } from "./idle";
 import { withGsap } from "./loadGsap";
 import { BG_GLITCH_EVENT } from "./events";
 import type { FlyerLayer, Still } from "./media";
+import { TOUCH_QUERY } from "./viewport";
 
 /**
  * The flyer's text layers float up out of the tower footage at independent
@@ -129,7 +130,9 @@ export function FlyerStage({ layers, scrim, space }: Props) {
     if (!stage || !section || !lock || !release) return;
     return withGsap(({ gsap }) => {
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add({ motion: "(prefers-reduced-motion: no-preference)", touch: TOUCH_QUERY }, (ctx) => {
+        const { motion, touch } = ctx.conditions as { motion: boolean; touch: boolean };
+        if (!motion) return;
         const els = gsap.utils.toArray<HTMLElement>("[data-layer]", stage);
         const scrimEl = stage.querySelector<HTMLElement>("[data-flyer-scrim]");
         const vh = () => window.innerHeight;
@@ -142,7 +145,10 @@ export function FlyerStage({ layers, scrim, space }: Props) {
             start: "top bottom",
             endTrigger: lock,
             end: "top top",
-            scrub: 0.7,
+            // Touch: 1:1 with the finger. A smoothed scrub trails the swipe and keeps writing styles
+            // for 0.7 s after it, which on a phone reads as the page being caught. Mouse wheels step,
+            // so they keep the smoothing.
+            scrub: touch ? true : 0.7,
             invalidateOnRefresh: true,
           },
         });

@@ -14,7 +14,7 @@ import { onLayoutResize } from "./viewport";
  *
  * Layers, bottom up: an inline ~0.5 KB still (never plain black), the poster (after load), the looping
  * <video> (fades in only once it actually plays, so a blocked autoplay shows the poster), the flyer's
- * own still, the vignette and the scrim. The whole layer keeps the old saturate(0.3) grade.
+ * own still, the vignette and the scrim. The old saturate(0.3) grade is baked into every file (no CSS filter).
  *
  * - Video: AV1 / HEVC / H.264 picked by load/videoSource (hardware decode only), 1080x1920 on
  *   landscape screens, 720x1280 on portrait. Loaded after the page is idle (or on the first scroll).

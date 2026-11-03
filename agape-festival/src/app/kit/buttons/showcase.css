@@ -9,7 +9,7 @@
   color: var(--c-text);
   font-family: var(--f-ui);
 }
-/* The site's own background: the loop's still, desaturated like .wbg, under the sections' scrim. */
+/* The site's own background: the loop's still (graded in the file, as on the page), under the sections' scrim. */
 .kbs-bg {
   position: fixed;
   inset: 0;
@@ -17,7 +17,6 @@
   background-color: var(--c-ink);
   background-size: cover;
   background-position: 50% 50%;
-  filter: saturate(0.3);
 }
 .kbs-bg::after { content: ""; position: absolute; inset: 0; background: rgb(0 0 0 / var(--g-scrim)); }
 

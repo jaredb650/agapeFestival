@@ -5,19 +5,21 @@
   "background": {
     "source": "agapeFest_Assets/WinterAnimation/AGAPE WINTER FEST LINE UP 001 PLAIN V1.mp4 (2160x3840, 30fps, 20.03s, BT.709)",
     "posterDesktop": {
-      "src": "/assets/winter/bg/poster-desktop.webp",
+      "src": "/assets/winter/bg/poster-desktop-graded.webp",
       "width": 1280,
       "height": 2276,
-      "bytes": 78200,
+      "bytes": 58734,
       "time": 4.2,
-      "notes": "Antenna mast shot (frame 126), mean luma ~38/255. Not the t=0 frame (t=0 is black)."
+      "notes": "Antenna mast shot (frame 126), mean luma ~38/255. Not the t=0 frame (t=0 is black).",
+      "grade": "saturate(0.3) baked in (classic-smooth, smooth_graded_stills.py); the ungraded file is unused."
     },
     "posterMobile": {
-      "src": "/assets/winter/bg/poster-mobile.webp",
+      "src": "/assets/winter/bg/poster-mobile-graded.webp",
       "width": 720,
       "height": 1280,
-      "bytes": 30636,
-      "time": 4.2
+      "bytes": 23468,
+      "time": 4.2,
+      "grade": "saturate(0.3) baked in (classic-smooth, smooth_graded_stills.py); the ungraded file is unused."
     },
     "duration": 20.033,
     "brightRanges": [
@@ -151,10 +153,11 @@
       }
     ],
     "placeholder": {
-      "dataUri": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAwICQsJCAwLCgsODQwOEh4UEhEREiUbHBYeLCcuLisnKyoxN0Y7MTRCNCorPVM+QkhKTk9OLztWXFVMW0ZNTkv/2wBDAQ0ODhIQEiQUFCRLMisyS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0v/wAARCAAgABIDASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAQCAwUH/8QAJBAAAgEEAQIHAAAAAAAAAAAAAQIAAwQRIRMFEjEyUYGRscH/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAVEQEBAAAAAAAAAAAAAAAAAAAAEf/aAAwDAQACEQMRAD8A5wVwwEnx5zGLi3OmxojB+ZbSokKVbbAzUQjxGEe4YRA3XUC3b2+xLVVSahGPN+TEub6o9NVZsHxwupC3u3pqVV2367EtSNvsEIm3UVDEdh0YRR//2Q==",
+      "dataUri": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAwICQsJCAwLCgsODQwOEh4UEhEREiUbHBYeLCcuLisnKyoxN0Y7MTRCNCorPVM+QkhKTk9OLztWXFVMW0ZNTkv/2wBDAQ0ODhIQEiQUFCRLMisyS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0v/wAARCAAgABIDASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAAAAQCAwUH/8QAJRAAAgEEAQEJAAAAAAAAAAAAAQIAAwQRIRMFEiIxMlGBkbHB/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAH/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDnBXDASfHnMYuLc6bGiMH5ltKiQpVtsDKhHiMI9wwgN11At29vsS1VUmoRjzfkxLm+qPTVWbB8cLqQt7t6alVdt+uxA2+wIRRuoKCe4YQP/9k=",
       "width": 18,
       "height": 32,
-      "notes": "Added by J5: poster-mobile at 18x32, JPEG q62, inlined as the background's base layer so the fixed tower is never plain black (before the poster, frames or video arrive). Too small to be an LCP candidate."
+      "notes": "Added by J5: poster-mobile at 18x32, JPEG q62, inlined as the background's base layer so the fixed tower is never plain black (before the poster, frames or video arrive). Too small to be an LCP candidate.",
+      "grade": "saturate(0.3) baked in (classic-smooth)."
     },
     "segments": [
       [
@@ -182,31 +185,31 @@
       "landscape": {
         "sources": [
           {
-            "src": "/assets/winter/bg-loop/loop-1080.av1.mp4",
+            "src": "/assets/winter/bg-loop/loop-graded-1080.av1.mp4",
             "type": "video/mp4; codecs=\"av01.0.08M.08\"",
             "codec": "av1",
             "width": 1080,
             "height": 1920,
-            "bytes": 1632682,
-            "bitrate": 1419723
+            "bytes": 1566488,
+            "bitrate": 1362163
           },
           {
-            "src": "/assets/winter/bg-loop/loop-1080.hevc.mp4",
+            "src": "/assets/winter/bg-loop/loop-graded-1080.hevc.mp4",
             "type": "video/mp4; codecs=\"hvc1.1.6.L120.B0\"",
             "codec": "hevc",
             "width": 1080,
             "height": 1920,
-            "bytes": 1762059,
-            "bitrate": 1532225
+            "bytes": 1698932,
+            "bitrate": 1477332
           },
           {
-            "src": "/assets/winter/bg-loop/loop-1080.mp4",
+            "src": "/assets/winter/bg-loop/loop-graded-1080.mp4",
             "type": "video/mp4; codecs=\"avc1.640029\"",
             "codec": "h264",
             "width": 1080,
             "height": 1920,
-            "bytes": 2799925,
-            "bitrate": 2434717
+            "bytes": 2652331,
+            "bitrate": 2306374
           }
         ],
         "duration": 9.2
@@ -214,35 +217,36 @@
       "portrait": {
         "sources": [
           {
-            "src": "/assets/winter/bg-loop/loop-720.av1.mp4",
+            "src": "/assets/winter/bg-loop/loop-graded-720.av1.mp4",
             "type": "video/mp4; codecs=\"av01.0.05M.08\"",
             "codec": "av1",
             "width": 720,
             "height": 1280,
-            "bytes": 804440,
-            "bitrate": 699513
+            "bytes": 779292,
+            "bitrate": 677645
           },
           {
-            "src": "/assets/winter/bg-loop/loop-720.hevc.mp4",
+            "src": "/assets/winter/bg-loop/loop-graded-720.hevc.mp4",
             "type": "video/mp4; codecs=\"hvc1.1.6.L93.B0\"",
             "codec": "hevc",
             "width": 720,
             "height": 1280,
-            "bytes": 785302,
-            "bitrate": 682871
+            "bytes": 765490,
+            "bitrate": 665643
           },
           {
-            "src": "/assets/winter/bg-loop/loop-720.mp4",
+            "src": "/assets/winter/bg-loop/loop-graded-720.mp4",
             "type": "video/mp4; codecs=\"avc1.64001F\"",
             "codec": "h264",
             "width": 720,
             "height": 1280,
-            "bytes": 1258259,
-            "bitrate": 1094138
+            "bytes": 1203253,
+            "bitrate": 1046306
           }
         ],
         "duration": 9.2
-      }
+      },
+      "grade": "classic-smooth (Nov 3): .wbg's CSS saturate(0.3) is baked in (chroma x0.3 around neutral in BT.709 Y'CbCr, which is exactly CSS saturate(0.3)); the page no longer filters. Same edit, sizes, codecs, CRFs and GOP as g0_bg_loop.sh, from the same source (bg/desktop.mp4). Made by context/winter-redesign/media-scripts/smooth_graded_bg.sh. The ungraded loop-<w>.* files are unused."
     }
   },
   "hero": {
@@ -563,13 +567,14 @@
     },
     "layersNote": "Text-only (alpha = text coverage, grain kept in colour). 'logos' = both logos together; 'logo-mark' (Ä) and 'logo-festival' are the same pixels split for independent motion - use either 'logos' or the two sub-layers, not all three. Reassembly: scrim + logos + title + day1-label + day1-names + day2-label + day2-names + date at their x/y reproduces overlay-full (mean abs diff ~0.1/255).",
     "backgroundStill": {
-      "src": "/assets/winter/flyer/bg-still-1080.webp",
+      "src": "/assets/winter/flyer/bg-still-1080-graded.webp",
       "width": 1080,
       "height": 1920,
-      "bytes": 93910,
+      "bytes": 70648,
       "source": "FlyerIngredients/STILLS/AGAPE 001 (0-00-13-11).png (Adobe RGB -> sRGB)",
       "animationTime": 13.367,
-      "notes": "The v3 story flyer = this still + scrim + text layers (verified: mean abs diff 0.85/255 vs story-9x16_2160x3840.jpg). The designer's layout file sat on still 15-15, but v3 uses 13-11."
+      "notes": "The v3 story flyer = this still + scrim + text layers (verified: mean abs diff 0.85/255 vs story-9x16_2160x3840.jpg). The designer's layout file sat on still 15-15, but v3 uses 13-11.",
+      "grade": "saturate(0.3) baked in (classic-smooth, smooth_graded_stills.py): the page shows it under no filter now. The ungraded bg-still-1080.webp is unused."
     },
     "scrimSmall": {
       "src": "/assets/winter/flyer/scrim-540.webp",

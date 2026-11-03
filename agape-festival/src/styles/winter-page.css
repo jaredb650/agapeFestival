@@ -45,8 +45,9 @@
   background-size: cover;
   background-position: 50% 50%;
   contain: strict;
-  /* The footage is steel blue; most of the way to neutral so red stays the only colour. */
-  filter: saturate(0.3);
+  /* The footage is steel blue, graded most of the way to neutral so red stays the only colour. The grade
+     (the old filter: saturate(0.3)) is baked into the media files (manifest background.loop.grade): a CSS
+     filter over a playing video is an offscreen pass every frame on iOS. */
 }
 /* Taller than the screen so the parallax has slack: the full-width portrait clip on landscape screens,
    130% of the height on portrait ones. */

@@ -113,6 +113,33 @@ export function FlyerStage({ layers, scrim, space }: Props) {
     return () => io.disconnect();
   }, []);
 
+  // The poster wrapper's clip-path (winter-page.css .wposter) is a mask layer in WebKit, redrawn
+  // offscreen every frame the hero or flyer moves, yet it only clips anything once the flyer's end
+  // nears the screen. Lift it until then: the release marker sits one screen (100lvh) above the
+  // flyer's end, so while it is below 40% of the screen the end is more than 0.4 screens below the
+  // bottom edge (margin for IntersectionObserver's lag behind an async scroll). Once the whole
+  // flyer is above the screen, the scanlines (which the clip hides there) are hidden instead.
+  // Clipped by default, so before this runs (or without JS) nothing changes.
+  useEffect(() => {
+    const section = stageRef.current?.closest("section");
+    const poster = section?.closest<HTMLElement>(".wposter");
+    const release = section?.querySelector<HTMLElement>("[data-flyer-release]");
+    if (!section || !poster || !release) return;
+    const near = new IntersectionObserver(
+      ([e]) => e.rootBounds && poster.toggleAttribute("data-noclip", e.boundingClientRect.top > e.rootBounds.bottom),
+      { rootMargin: "0px 0px -60% 0px" },
+    );
+    const past = new IntersectionObserver(([e]) => poster.toggleAttribute("data-past", !e.isIntersecting && e.boundingClientRect.bottom <= 0));
+    near.observe(release);
+    past.observe(section);
+    return () => {
+      near.disconnect();
+      past.disconnect();
+      poster.removeAttribute("data-noclip");
+      poster.removeAttribute("data-past");
+    };
+  }, []);
+
   // Cuts in the background footage glitch a few layers at once (GlitchLayer `restOnly`: only while
   // the page is at rest, so a burst's repaint never lands in a scroll frame).
   useEffect(() => {

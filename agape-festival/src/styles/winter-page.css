@@ -82,7 +82,13 @@
    viewport (as the old global layer was) and clipped to this wrapper, so
    it never shows below the flyer.
    ========================================================================== */
-.wposter { position: relative; clip-path: inset(0); }
+.wposter { position: relative; isolation: isolate; clip-path: inset(0); }
+/* Perf (same pixels): in WebKit a clip-path over composited content is a mask layer, so every frame the
+   hero or flyer moves, the whole subtree is drawn offscreen and masked. The clip only shows once the
+   flyer's end comes near the screen, so FlyerStage lifts it until then (data-noclip; `isolation` keeps
+   the stacking context the clip made), and hides the scanlines once the flyer has gone (data-past). */
+.wposter[data-noclip] { clip-path: none; }
+.wposter[data-past] .wposter__scan { visibility: hidden; }
 .wposter__scan {
   position: fixed;
   inset: 0;

@@ -1,8 +1,9 @@
 // The kits' CSS first, so section stylesheets (imported by their components below) can build on it:
-// base tokens and the button, the page frame, then the classic kit (classic.css, loaded last).
+// base tokens and the hero's button, the page frame, the classic kit (classic.css), then its controls.
 import "@/styles/winter.css";
 import "@/styles/winter-page.css";
 import "@/styles/classic.css";
+import "@/styles/kit/buttons.css";
 import { preload } from "react-dom";
 import { RevealObserver } from "@/components/winter/classic";
 import { winterFontVariables } from "@/components/winter/fonts";

@@ -9,7 +9,8 @@
 
    Guide (tokens, rules, recipes): context/winter-redesign/classic-brief.md.
    Components: src/components/winter/classic/ (Section, StageHeading,
-   RevealObserver), the Button (ui/Button.tsx) restyled below.
+   RevealObserver, and the controls: Button, IconButton, CloseButton,
+   Segmented, TabRail, styled by styles/kit/buttons.css).
 
    Load order (page.tsx): winter.css → winter-page.css → this file →
    section stylesheets. The grid kit was retired and deleted (Nov 3).
@@ -157,6 +158,10 @@
 .k-panel { background: var(--c-panel); border: 1px solid var(--c-line); }
 
 /* ==========================================================================
+   LEGACY: the old ui/Button (.w-btn) restyled. Sections now use the classic
+   controls (classic/Button.tsx, styles/kit/buttons.css); only Merch still
+   renders .w-btn (owned by its own rework). Remove this block once nothing
+   but the hero's .wh__cta uses .w-btn.
    Button (ui/Button.tsx), classic. Flat rectangles, Orbitron caps.
    Primary = deep red fill; secondary = hairline outline; link = Archivo
    text with an underline. No glow, no ticks, no radius. The hero's frozen

@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { TabRail, panelId, tabId } from "@/components/winter/classic";
 import { observeInView } from "@/components/winter/perf";
+import { BikeIcon, CarFrontIcon, CarIcon, TrainIcon } from "@/components/winter/ui";
 import { Bullets, type SubwayLine } from "./Bullets";
 import type { RouteMode } from "./geo";
 
+/** Each way in has its glyph on its tab: the tiles read as choices before a word is read. */
+const MODE_ICON: Record<RouteMode, ReactNode> = {
+  subway: <TrainIcon size={20} />,
+  drive: <CarIcon size={20} />,
+  ride: <CarFrontIcon size={20} />,
+  bike: <BikeIcon size={20} />,
+};
+const ID = "gh-route";
+
 export interface Route {
   mode: RouteMode;
-  /** The mode's short label ("Subway"). */
+  /** The mode's short label ("Subway"): its tab. */
   tab: string;
   title: string;
   body: string;
@@ -27,10 +38,14 @@ interface RouteBoardProps {
 }
 
 /**
- * The Getting here board: a panel with the map and the address, and beside it the ways in as hairline
- * rows, then the directions links. Every route's text is always shown; picking a row (a radio: arrow keys
- * move and pick, as the old tabs did) sets data-mode on the map, and CSS draws that route's line and shows
- * its pins. The only client state is the picked mode.
+ * The Getting here board: a panel with the map and the address, and beside it (under it on phones) the
+ * ways in as a tab rail (classic/TabRail): a tile per mode with its glyph, all four always in view, a
+ * count over them ("4 ways in") and a line saying what picking does. The picked tile lifts, its glyph
+ * turns red and a 3px red bar runs along its foot: the colour and weight of the route it draws on the map.
+ * Under the rail, the picked route's title, train bullets and directions (every panel is in the page; the
+ * others are hidden, and the stack keeps the tallest one's height so nothing below jumps). Picking sets
+ * data-mode on the map and CSS draws that route's line and shows its pins. Tabs semantics: ←/→/↑/↓ move
+ * and pick, Home / End jump.
  *
  * The picked route's line also draws once when the map first comes into view: on mount the map is armed
  * (lines held at zero length), and an IntersectionObserver releases it. Without JavaScript, or with
@@ -39,7 +54,6 @@ interface RouteBoardProps {
 export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoardProps) {
   const [mode, setMode] = useState<RouteMode>(routes[0].mode);
   const mapRef = useRef<HTMLDivElement>(null);
-  const radioRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     const el = mapRef.current;
@@ -61,13 +75,13 @@ export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoard
     return () => stop();
   }, []);
 
-  // On phones the map sits above the rows, so a tap on a lower row would draw its route off screen. A pointer
-  // pick brings the map back into view, only when less than half of it shows below the bar. Keyboard picks
-  // (arrows here, Enter / Space: click with detail 0) leave the scroll alone so focus stays in view.
-  const pick = (next: RouteMode, e: MouseEvent<HTMLButtonElement>) => {
+  // On phones the map sits above the rail, so a tap could draw its route off screen. A pointer pick brings
+  // the map back into view, only when less than half of it shows below the bar. Keyboard picks (arrows,
+  // Enter / Space) leave the scroll alone so focus stays in view.
+  const pick = (next: RouteMode, via: "pointer" | "keyboard") => {
     setMode(next);
     const el = mapRef.current;
-    if (!el || e.detail === 0) return;
+    if (!el || via !== "pointer") return;
     const r = el.getBoundingClientRect();
     const top = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
     const shown = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, top);
@@ -76,19 +90,7 @@ export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoard
     el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
   };
 
-  // Arrow keys move the pick along the rows (automatic activation); Home / End jump to the ends.
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const n = routes.length;
-    const i = routes.findIndex((r) => r.mode === mode);
-    const next = e.key === "ArrowDown" || e.key === "ArrowRight";
-    const prev = e.key === "ArrowUp" || e.key === "ArrowLeft";
-    const k = next ? i + 1 : prev ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? n - 1 : null;
-    if (k === null) return;
-    e.preventDefault();
-    const j = (k + n) % n;
-    setMode(routes[j].mode);
-    radioRefs.current[j]?.focus();
-  };
+  const items = routes.map((r) => ({ id: r.mode, label: r.tab, icon: MODE_ICON[r.mode] }));
 
   return (
     <div className="gh-board" data-reveal="">
@@ -102,34 +104,29 @@ export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoard
       </div>
 
       <div className="gh-ways">
-        <div role="radiogroup" aria-label="Show a route on the map" className="gh-routes" onKeyDown={onKeyDown}>
-          {routes.map((r, i) => {
+        <div className="gh-modes">
+          <p className="k-label">{routes.length} ways in</p>
+          <p className="gh-modes__hint">Pick one to see it on the map</p>
+        </div>
+        <TabRail label="Ways to get here" items={items} value={mode} onChange={pick} idBase={ID} controls="gh-map" className="gh-tabs" />
+        <div className="gh-details">
+          {routes.map((r) => {
             const on = r.mode === mode;
             return (
-              <div key={r.mode} className="gh-route" data-on={on || undefined}>
-                <button
-                  ref={(el) => {
-                    radioRefs.current[i] = el;
-                  }}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  aria-controls="gh-map"
-                  aria-describedby={`gh-route-${r.mode}`}
-                  tabIndex={on ? 0 : -1}
-                  className="gh-route__pick"
-                  onClick={(e) => pick(r.mode, e)}
-                >
-                  <span className="k-label gh-route__mode">{r.tab}</span>
-                  <span className="gh-route__title">
-                    {r.title}
-                    {r.lines?.length ? <Bullets lines={r.lines} /> : null}
-                  </span>
-                  <span className="gh-route__key" aria-hidden="true" />
-                </button>
-                <p id={`gh-route-${r.mode}`} className="gh-route__body">
-                  {r.body}
-                </p>
+              <div
+                key={r.mode}
+                id={panelId(ID, r.mode)}
+                role="tabpanel"
+                aria-labelledby={tabId(ID, r.mode)}
+                tabIndex={on ? 0 : -1}
+                className="gh-detail"
+                data-on={on || undefined}
+              >
+                <h3 className="gh-detail__title">
+                  {r.title}
+                  {r.lines?.length ? <Bullets lines={r.lines} /> : null}
+                </h3>
+                <p className="gh-detail__body">{r.body}</p>
               </div>
             );
           })}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type RefObject } from "react";
-import { ArrowUpRight, CloseIcon } from "@/components/winter/ui";
+import { Button, CloseButton } from "@/components/winter/classic";
 import type { NavLink } from "./sections";
 
 export type MenuPhase = "closed" | "opening" | "open" | "closing";
@@ -123,9 +123,9 @@ function jumpTo(href: string) {
 }
 
 /**
- * The menu below 1100px: a full-screen black panel. The head repeats the bar (mark + wordmark, Close),
- * then the sections as a list of Orbitron caps rows between hairlines (the current one white with a red
- * mark), the red Get tickets and the Instagram handles. Opening fades the panel in and lifts each row in
+ * The menu below 1100px: a full-screen black panel. The head repeats the bar (mark + wordmark, and the
+ * red Close square where the Menu button sits), then the sections as a list of Orbitron caps rows between
+ * hairlines (the current one white with a red mark), the red Get tickets and the Instagram chips. Opening fades the panel in and lifts each row in
  * 40ms apart; closing fades it out. No readouts, no decorative text.
  */
 export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark, socials }: MenuDialogProps) {
@@ -157,12 +157,7 @@ export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark
             <img src={mark.src} width={mark.width} height={mark.height} alt="" className="wnav__mark" />
             <span className="wnav__word">ÄGAPĒ</span>
           </span>
-          <button type="button" className="wnav__menu wmenu__close" onClick={() => close()} aria-label="Close menu">
-            <span className="wnav__menu-label" aria-hidden="true">
-              Close
-            </span>
-            <CloseIcon size={20} />
-          </button>
+          <CloseButton className="wmenu__close" label="Close menu" onClick={() => close()} />
         </div>
 
         <div className="wmenu__body">
@@ -184,21 +179,17 @@ export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark
           </nav>
 
           <div className="wmenu__seq wmenu__cta" style={seq(links.length)}>
-            <a href={ticketsUrl} target="_blank" rel="noopener noreferrer" className="w-btn wmenu__tickets" data-variant="primary" data-size="lg" data-block="">
-              <span className="w-btn__label">{ticketsLabel}</span>
-              <span className="w-sr-only"> (opens in a new tab)</span>
-            </a>
+            <Button href={ticketsUrl} external size="lg" block className="wmenu__tickets">
+              {ticketsLabel}
+            </Button>
           </div>
 
           <ul className="wmenu__socials wmenu__seq" style={seq(links.length + 1)}>
             {socials.map((s) => (
               <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="wmenu__social">
-                  <span className="k-label">Instagram</span>
-                  <span className="wmenu__handle">{s.handle}</span>
-                  <ArrowUpRight size={16} className="wmenu__social-icon" />
-                  <span className="w-sr-only"> (opens in a new tab)</span>
-                </a>
+                <Button variant="secondary" size="sm" href={s.url} external meta={s.handle} className="wmenu__social">
+                  Instagram
+                </Button>
               </li>
             ))}
           </ul>

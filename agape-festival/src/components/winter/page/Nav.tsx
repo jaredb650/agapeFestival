@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/winter/classic";
 import { MenuIcon } from "@/components/winter/ui";
 import { MenuDialog, useMenu } from "@/components/winter/nav/MenuDialog";
 import { barLinks, findSections, type NavLink } from "@/components/winter/nav/sections";
@@ -116,26 +117,24 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials }: Props) {
           </ul>
         </nav>
 
-        <a href={ticketsUrl} target="_blank" rel="noopener noreferrer" className="wnav__tickets">
-          <span className="wnav__tickets-label">{ticketsLabel}</span>
-          <span className="w-sr-only"> (opens in a new tab)</span>
-        </a>
+        <Button href={ticketsUrl} external size="sm" icon={null} className="wnav__tickets">
+          {ticketsLabel}
+        </Button>
 
-        <button
+        <Button
           ref={menuBtnRef}
-          type="button"
+          variant="ghost"
+          size="sm"
           className="wnav__menu"
+          icon={<MenuIcon size={20} className="k-btn__icon" />}
           aria-label="Menu"
           aria-haspopup="dialog"
           aria-expanded={menuOpen}
           aria-controls="wnav-menu"
           onClick={menu.open}
         >
-          <span className="wnav__menu-label" aria-hidden="true">
-            Menu
-          </span>
-          <MenuIcon size={20} />
-        </button>
+          Menu
+        </Button>
       </div>
 
       <MenuDialog menu={menu} links={items} active={active} ticketsUrl={ticketsUrl} ticketsLabel={ticketsLabel} mark={mark} socials={socials} />

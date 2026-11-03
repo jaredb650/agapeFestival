@@ -1,8 +1,7 @@
-import { Section } from "@/components/winter/classic";
+import { Button, Section } from "@/components/winter/classic";
 import { RouteBoard, type Route } from "@/components/winter/map/RouteBoard";
 import { RouteMap } from "@/components/winter/map/RouteMap";
 import { sentenceCase } from "@/components/winter/nav/sections";
-import { ArrowUpRight, Button } from "@/components/winter/ui";
 import { GETTING_HERE } from "@/data/winter";
 import "@/styles/sections/getting-here.css";
 
@@ -50,8 +49,8 @@ const MAP_LABEL =
 /**
  * Getting here, as the September site had it (a map, the address, then the ways in), in the classic kit:
  * our own street map with the venue in red, in a dark panel with the address under it; beside it (stacked
- * on phones) the four ways in as hairline rows, each drawing its route on the map when picked, then the
- * directions links. Server-rendered; RouteBoard is the only client code (the picked route and a one-time
+ * on phones) the four ways in as a tab rail (icon tiles), each drawing its route on the map when picked,
+ * the picked route's directions, then the map links. Server-rendered; RouteBoard is the only client code (the picked route and a one-time
  * draw as the map scrolls into view).
  */
 export function GettingHere() {
@@ -86,24 +85,10 @@ export function GettingHere() {
           <div key="actions" className="gh-dirs">
             <p className="k-label">Directions</p>
             <div className="gh-dirs__links">
-              <Button
-                href={g.mapsDirectionsUrl}
-                external
-                variant="secondary"
-                icon={<ArrowUpRight size={16} />}
-                className="gh-dir"
-                aria-label="Google Maps directions (opens in a new tab)"
-              >
+              <Button href={g.mapsDirectionsUrl} external variant="secondary" className="gh-dir" aria-label="Google Maps directions (opens in a new tab)">
                 Google Maps
               </Button>
-              <Button
-                href={APPLE_MAPS}
-                external
-                variant="secondary"
-                icon={<ArrowUpRight size={16} />}
-                className="gh-dir"
-                aria-label="Apple Maps directions (opens in a new tab)"
-              >
+              <Button href={APPLE_MAPS} external variant="secondary" className="gh-dir" aria-label="Apple Maps directions (opens in a new tab)">
                 Apple Maps
               </Button>
             </div>

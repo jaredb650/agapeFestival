@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { ArrowRight, ArrowUpRight, Button } from "@/components/winter/ui";
+import { Button } from "@/components/winter/classic";
 
 export interface FaqEntry {
   id: string;
@@ -67,13 +67,12 @@ export function FaqList({ items }: { items: FaqEntry[] }) {
   );
 }
 
+/** A link under an answer: the kit's Archivo link, underlined because it stands beside running text. */
 function AnswerLink({ link }: { link: NonNullable<FaqEntry["link"]> }) {
   const external = link.kind === "external";
-  const icon = external ? <ArrowUpRight className="w-btn__icon" /> : link.kind === "page" ? <ArrowRight className="w-btn__icon" /> : undefined;
   return (
-    <Button variant="link" href={link.href} external={external} icon={icon} className="fq-a__link">
+    <Button variant="link" underline href={link.href} external={external} icon={link.kind === "page" ? "arrow" : undefined} className="fq-a__link">
       {link.label}
-      {external && <span className="w-sr-only"> (opens in a new tab)</span>}
     </Button>
   );
 }

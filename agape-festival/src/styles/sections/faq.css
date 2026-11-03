@@ -10,20 +10,8 @@
    beat later; shutting is quicker. Classes fq-*.
    ========================================================================== */
 
-/* ---- Heading column ------------------------------------------------------ */
-.fq-lead__link {
-  color: var(--c-text);
-  text-decoration: underline;
-  text-decoration-color: var(--c-line-2);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
-  overflow-wrap: anywhere;
-  transition: color var(--m-dur-1) var(--m-ease), text-decoration-color var(--m-dur-1) var(--m-ease);
-}
-.fq-lead__link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
-@media (hover: hover) and (pointer: fine) {
-  .fq-lead__link:hover { color: var(--c-text-hi); text-decoration-color: currentColor; }
-}
+/* ---- Heading column ------------------------------------------------------
+   The lead's email is the kit's inline .k-link (styles/kit/buttons.css). */
 
 @media (min-width: 1024px) {
   .fq > .k-wrap {

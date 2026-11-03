@@ -1,0 +1,116 @@
+/* Showcase layout only (the controls' look lives in styles/kit/buttons.css). Scoped to .kbs. */
+.kbs {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  padding-bottom: var(--s-24);
+  overflow-x: clip;
+  background: var(--c-ink);
+  color: var(--c-text);
+  font-family: var(--f-ui);
+}
+/* The site's own background: the loop's still, desaturated like .wbg, under the sections' scrim. */
+.kbs-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--c-ink);
+  background-size: cover;
+  background-position: 50% 50%;
+  filter: saturate(0.3);
+}
+.kbs-bg::after { content: ""; position: absolute; inset: 0; background: rgb(0 0 0 / var(--g-scrim)); }
+
+.kbs-wrap { max-width: var(--wrap); margin-inline: auto; padding: 0 var(--sec-x); }
+.kbs-intro { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-5); padding: var(--s-16) 0 var(--s-12); }
+.kbs-intro .k-small { max-width: 62ch; }
+.kbs-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4); }
+
+.kbs-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-16) var(--s-10); }
+@media (min-width: 1100px) {
+  .kbs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kbs-block[data-wide] { grid-column: 1 / -1; }
+}
+.kbs-block { display: flex; flex-direction: column; gap: var(--s-5); min-width: 0; padding-top: var(--s-5); border-top: 1px solid var(--c-line); }
+.kbs-block__head { display: flex; flex-direction: column; gap: var(--s-2); }
+.kbs-note { max-width: 80ch; }
+
+/* The stage: what the controls sit on (Surface toggle). */
+.kbs-stage { display: flex; flex-direction: column; gap: var(--s-8); padding: var(--s-8) var(--s-6); border: 1px solid transparent; overflow-x: auto; }
+.kbs[data-surface="panel"] .kbs-stage { background: var(--c-panel); border-color: var(--c-line); }
+.kbs[data-surface="plate"] .kbs-stage { background: var(--c-plate); border-color: var(--c-line); }
+@media (max-width: 640px) { .kbs-stage { padding: var(--s-6) var(--s-3); } }
+
+/* The state matrix: sizes down, states across. */
+.kbs-matrix { display: grid; grid-template-columns: 6rem repeat(var(--cols), max-content); align-items: center; gap: var(--s-4) var(--s-6); min-width: max-content; }
+.kbs-matrix__row { display: contents; }
+.kbs-matrix__col { align-self: end; }
+.kbs-matrix__rowhead { color: var(--c-text-3); }
+.kbs-cell { display: flex; align-items: center; min-height: 60px; }
+.kbs-cell--sizes { gap: var(--s-3); }
+
+/* Forced states (the real ones need a pointer or the keyboard): the same tokens the live rules read. */
+.kbs .k-btn:is([data-demo="hover"], [data-demo="press"]) { background-color: var(--kb-bg-h); border-color: var(--kb-bd-h); color: var(--kb-fg-h); text-decoration-color: currentColor; }
+.kbs .k-btn:is([data-demo="hover"], [data-demo="press"]) .k-btn__icon { color: var(--kb-ic-h); }
+.kbs .k-btn[data-demo="hover"][data-icon] .k-btn__icon { transform: var(--kb-nudge); }
+.kbs .k-ibtn:is([data-demo="hover"], [data-demo="press"]) { background-color: var(--kb-bg-h); border-color: var(--kb-bd-h); color: var(--kb-fg-h); }
+.kbs :is(.k-btn, .k-ibtn)[data-demo="press"] { transform: scale(var(--kb-press)); }
+.kbs :is(.k-btn, .k-ibtn)[data-demo="focus"] { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.kbs .k-btn:where([data-variant="ghost"], [data-variant="link"])[data-demo="focus"] { outline-offset: 4px; }
+
+.kbs-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-4); }
+.kbs-col { display: flex; flex-direction: column; align-items: flex-start; }
+.kbs-stack { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-3); }
+.kbs-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s-4); }
+
+/* A mock of the bio pop-out's bar. */
+.kbs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  height: 64px;
+  padding: 0 var(--s-2) 0 var(--s-5);
+  border: 1px solid var(--c-line);
+  background: var(--c-plate);
+}
+.kbs-bar__count { display: flex; gap: var(--s-3); white-space: nowrap; }
+.kbs-bar__day { color: var(--c-mark); }
+.kbs-bar__ctrls { display: flex; align-items: center; gap: var(--s-2); }
+@media (max-width: 767.98px) { .kbs-bar { height: 56px; } }
+
+/* A mock of the bar / menu head. */
+.kbs-menuhead { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--s-5); border: 1px solid var(--c-line); background: var(--c-ink); }
+.kbs-word { font: 500 var(--t-body) / 1 var(--f-ui); letter-spacing: 0.08em; }
+.kbs-menu { --kb-fg: var(--c-text); }
+.kbs-menu .k-btn__icon { width: 20px; height: 20px; }
+
+.kbs-plate { display: flex; align-items: stretch; justify-content: space-between; gap: var(--s-4); width: min(100%, 420px); min-height: var(--plate-h); padding-left: var(--s-4); border: 1px solid var(--c-line); background: var(--c-plate); }
+.kbs-plate .k-name { align-self: center; }
+.kbs-plate .k-seg { --ks-h: var(--plate-h); }
+
+.kbs-routes { display: flex; flex-direction: column; max-width: 520px; }
+.kbs-routes .k-small { margin-top: var(--s-4); }
+
+.kbs-uses { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s-8) var(--s-6); }
+.kbs-use { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-3); min-width: 0; }
+
+.kbs-form { display: flex; width: 100%; max-width: 360px; }
+.kbs-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--c-line-2);
+  border-right: 0;
+  border-radius: 0;
+  background: var(--c-plate);
+  color: var(--c-text);
+  font: 400 var(--t-body) / 1 var(--f-ui);
+}
+.kbs-input::placeholder { color: var(--c-text-3); }
+.kbs-input:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+.kbs-phone { display: flex; flex-direction: column; gap: var(--s-4); width: 390px; max-width: 100%; padding: var(--s-5); border: 1px solid var(--c-line-2); background: var(--c-ink); }
+
+.kbs-live { margin-top: var(--s-16); }

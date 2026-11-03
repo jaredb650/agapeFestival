@@ -94,7 +94,7 @@ export function Footer({ links }: { links: { label: string; href: string }[] }) 
           <p>{legal(FOOTER.copyright)}</p>
           <p>{COPY.origin}</p>
           <a href={FOOTER.credit.url} target="_blank" rel="noopener noreferrer" className="ft-credit">
-            Site design by Meka
+            Site design by MEKA
             <NewTab />
           </a>
         </div>

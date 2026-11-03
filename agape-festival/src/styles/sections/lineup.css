@@ -1,28 +1,66 @@
 /* ==========================================================================
-   LINEUP (page/Lineup.tsx). The section is the grid kit (grid.css) and
-   nothing else: a header row, then per day a heading band and a list of
-   cells, one line of cells per line of the flyer. This file only sets the
-   day heading's type and the height of an act's cell.
+   LINEUP (page/Lineup.tsx), classic. The September site's set-times board:
+   two day columns (stacked on phones), a red day label over the date, then
+   one hairline row per act in flyer order. Classes lu-*.
    ========================================================================== */
 
-/* Day heading: the flyer's label, then the date in the secondary grey. */
-.lu-day {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--s-1) var(--s-3);
-  font-size: var(--t-body);
-  font-weight: 500;
-  line-height: 1.5; /* a 24px line: the band is 56px on phones, 72px from 768px */
-}
-.lu-day__date { font-weight: 400; color: var(--c-fg-2); }
-
-/* An act: a 64px line per name on phones, a tall cell from 768px. */
-.lu-act { --cell-h: var(--s-16); }
+.lu-days { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--group-gap); }
 @media (min-width: 768px) {
-  .lu-act { --cell-h: var(--g-row-3); }
+  .lu-days { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-12); }
 }
-.lu-act .w-title,
-.lu-act .g-link__value { overflow-wrap: break-word; }
-.lu-act__tba { font-size: var(--t-body); line-height: 1.3; color: var(--c-fg-3); }
+@media (min-width: 1024px) {
+  .lu-days { column-gap: var(--s-24); }
+}
+
+.lu-day__head { display: flex; flex-direction: column; gap: var(--s-2); padding-bottom: var(--s-5); }
+
+.lu-list { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--c-line); }
+.lu-row {
+  display: flex;
+  align-items: center;
+  min-height: var(--row-h);
+  border-top: 1px solid var(--c-line);
+}
+
+/* A name: Orbitron, larger than on a plate (this is the content). */
+.lu-name {
+  font-family: var(--f-display);
+  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem); /* 17 → 22 */
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+  color: var(--c-text);
+  overflow-wrap: anywhere;
+}
+
+/* With the roster on: the row opens that act's bio. */
+.lu-link {
+  flex: 1 1 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lu-link .lu-name { transition: color var(--m-dur-1) var(--m-ease); }
+.lu-arrow { flex: none; color: var(--c-text-3); transition: color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease); }
+@media (hover: hover) and (pointer: fine) {
+  .lu-link:hover .lu-name { color: var(--c-text-hi); }
+  .lu-link:hover .lu-arrow { color: var(--c-text-hi); transform: translateX(3px); }
+}
+.lu-link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+
+/* An unannounced slot: deep red question marks, the label beside them. */
+.lu-row--tba { justify-content: space-between; gap: var(--s-4); }
+.lu-tba {
+  font-family: var(--f-display);
+  font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.3em;
+  color: var(--c-red-ink);
+}
+.lu-tba__label { color: var(--c-text-3); }

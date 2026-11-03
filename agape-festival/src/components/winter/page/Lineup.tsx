@@ -1,6 +1,6 @@
-import { Fragment } from "react";
-import { Cell, LinkCell, Row, SectionGrid, SectionHeader } from "@/components/winter/grid";
+import { Section } from "@/components/winter/classic";
 import { sentenceCase } from "@/components/winter/nav/sections";
+import { ArrowRight } from "@/components/winter/ui";
 import { ARTIST_BY_SLUG, LINEUP, type LineupAct, type LineupDay } from "@/data/winter";
 import "@/styles/sections/lineup.css";
 
@@ -12,83 +12,66 @@ const dayDate = (d: LineupDay) => d.dateLong.replace(/,\s*\d{4}$/, "");
 /** The flyer prints caps; the page uses the name as the data spells it ("Ben Klock", "Überkikz"). */
 const nameOf = (act: Artist) => ARTIST_BY_SLUG[act.slug]?.name ?? act.displayName;
 
-/** Column spans (of 12) for a flyer line of `n` acts: thirds for three, halves for two. Always sums to 12. */
-function lineSpans(n: number): number[] {
-  const base = Math.floor(12 / n);
-  const extra = 12 % n;
-  return Array.from({ length: n }, (_, i) => base + (i >= n - extra ? 1 : 0));
-}
-
-function Act({ act, span, linked }: { act: LineupAct; span: number; linked: boolean }) {
+function Act({ act, linked }: { act: LineupAct; linked: boolean }) {
   if (act.kind === "tba") {
     return (
-      <Cell as="li" span={span} x="center" y="center" className="lu-act">
-        <span className="lu-act__tba">To be announced</span>
-      </Cell>
+      <li className="lu-row lu-row--tba">
+        <span className="lu-tba" aria-hidden="true">
+          ???
+        </span>
+        <span className="k-label lu-tba__label">To be revealed</span>
+      </li>
     );
   }
   const name = nameOf(act);
   if (!linked) {
     return (
-      <Cell as="li" span={span} x="center" y="center" className="lu-act">
-        <span className="w-title">{name}</span>
-      </Cell>
+      <li className="lu-row">
+        <span className="lu-name">{name}</span>
+      </li>
     );
   }
-  // The roster (ArtistSelect) listens for clicks on a[data-artist] and opens that act's profile.
+  // The roster (artist-select/Roster.tsx) listens for clicks on a[data-artist] and opens that act's bio.
   return (
-    <LinkCell listItem href="#artists" data-artist={act.slug} span={span} x="center" y="center" size="title" className="lu-act">
-      {name}
-      <span className="w-sr-only">, artist profile</span>
-    </LinkCell>
+    <li className="lu-row">
+      <a className="lu-link" href="#artists" data-artist={act.slug}>
+        <span className="lu-name">{name}</span>
+        <span className="w-sr-only">, bio</span>
+        <ArrowRight className="lu-arrow" size={16} />
+      </a>
+    </li>
   );
 }
 
 /**
- * The lineup, set the way the flyer sets it: each day is a heading band and a list of cells, and each
- * line of the flyer is one line of cells (three names take thirds, two take halves), names centred.
- * Unannounced slots say so. No set times or stages beyond what is announced. Server-rendered, no client JS.
+ * The lineup, as the September site set its schedule: the two days side by side (stacked on phones), a
+ * red day label over the date, then one row per act in flyer order, names in Orbitron. Unannounced slots
+ * keep the old "to be revealed" treatment. No set times or stages beyond what is announced.
+ * Server-rendered, no client JS.
  */
 export function Lineup({ linkToSelect }: { linkToSelect: boolean }) {
   return (
-    <SectionGrid id="lineup" labelledBy="lineup-title" className="lu">
-      <SectionHeader
-        id="lineup-title"
-        title="Lineup"
-        aside={
-          <p>
-            One stage per day.
-            <br />
-            Set times to be announced.
-          </p>
-        }
-      />
-
-      {LINEUP.map((day) => {
-        const headingId = `lineup-day-${day.day}`;
-        return (
-          <Fragment key={day.day}>
-            <Row>
-              <Cell h={1} y="center">
-                <h3 id={headingId} className="lu-day">
-                  {sentenceCase(day.label)}{" "}
-                  <time dateTime={day.isoDate} className="lu-day__date">
-                    {dayDate(day)}
-                  </time>
+    <Section id="lineup" title="Lineup" intro="One stage per day. Set times to be announced." className="lu">
+      <div className="lu-days">
+        {LINEUP.map((day) => {
+          const headingId = `lineup-day-${day.day}`;
+          return (
+            <div key={day.day} className="lu-day">
+              <div className="lu-day__head">
+                <p className="k-label k-label--red">{sentenceCase(day.label)}</p>
+                <h3 id={headingId} className="k-h2">
+                  <time dateTime={day.isoDate}>{dayDate(day)}</time>
                 </h3>
-              </Cell>
-            </Row>
-            <Row as="ul" aria-labelledby={headingId}>
-              {day.lines.flatMap((line) => {
-                const spans = lineSpans(line.length);
-                return line.map((act, i) => (
-                  <Act key={act.kind === "artist" ? act.slug : act.id} act={act} span={spans[i]} linked={linkToSelect} />
-                ));
-              })}
-            </Row>
-          </Fragment>
-        );
-      })}
-    </SectionGrid>
+              </div>
+              <ul className="lu-list" aria-labelledby={headingId} data-reveal="">
+                {day.acts.map((act) => (
+                  <Act key={act.kind === "artist" ? act.slug : act.id} act={act} linked={linkToSelect} />
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    </Section>
   );
 }

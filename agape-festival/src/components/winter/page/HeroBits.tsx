@@ -11,9 +11,10 @@ import { onSecondWhileVisible } from "@/components/winter/perf";
 import { onBootDone } from "@/components/winter/preloader/boot";
 import type { HeroVideo as HeroVideoConfig } from "./media";
 
-// three.js ships only to desktop mice, after the intro and an idle moment: phones get the static logo with a
-// tap glitch (CSS GlitchLayer) and never download WebGL. On a scrolling page the deployed site's touch
-// distortion (touch-action: none on the logo) would trap swipes that start on it.
+// three.js ships after the intro and an idle moment (mouse and touch alike; never under reduced motion or
+// Save-Data). Until then the static logo has the CSS tap glitch (GlitchLayer). On touch the WebGL logo is
+// touch-action: pan-y, so a vertical swipe that starts on it still scrolls the page natively; horizontal and
+// diagonal drags paint the distortion (see GlitchLogo).
 const GlitchLogo = dynamic(() => import("@/components/GlitchLogo"), { ssr: false });
 
 export interface HeroLogoAsset {
@@ -25,9 +26,9 @@ export interface HeroLogoAsset {
 
 /**
  * The ÄGAPĒ Festival logo, as deployed: the static image paints first (and
- * glitches in with the CSS `wh-logo-in`), then desktop mice get the deployed
- * three.js mouse-trail distortion (GlitchLogo, render-on-demand) using the same
- * cached file as its texture. Reduced motion: static image only.
+ * glitches in with the CSS `wh-logo-in`), then the deployed three.js
+ * mouse/touch-trail distortion (GlitchLogo, render-on-demand) takes over, using
+ * the logo file as its texture. Reduced motion: static image only.
  *
  * The static image is never unmounted: the canvas is laid exactly over it and
  * the image is hidden only once the canvas has painted, so the logo can't
@@ -39,8 +40,8 @@ export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }
 
   useEffect(() => {
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    const fine = motionOk && window.matchMedia("(hover: hover) and (pointer: fine)").matches && navigator.maxTouchPoints === 0;
-    if (!fine) return;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (!motionOk || saveData) return;
     let swap = 0;
     let cancelIdle = () => {};
     // After the logo has glitched in (timed from the preloader's hand-off, or from mount without one).

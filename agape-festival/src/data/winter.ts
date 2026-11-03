@@ -203,8 +203,9 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
 ];
 
 // ============================================================
-// ARTISTS (artist profiler). Filled from the press kits: Diossa, Len Faki and Azzel 447 have no kit bio; Vendex's
-// and Azzel 447's kits have no video.
+// ARTISTS (artist profiler). Filled from the press kits: Diossa's and Len Faki's kits have no bio, so theirs are
+// written from public sources (see DIOSSA_BIO / LEN_FAKI_BIO); Azzel 447 has no bio (his rider limits promotion to
+// press-kit material). Vendex's and Azzel 447's kits have no video.
 // ============================================================
 
 export interface ArtistSocial {
@@ -401,6 +402,43 @@ const JOHANNES_SCHUSTER_BIO =
   "attention has also been given to his fantastic productions on his own label 7E6D and other prominent labels, " +
   "such as NineTimesNine, Soma, Green Fetish, Voxnox, and many more.";
 
+// Bios written for the site (Nov 2026) because the kits have none. Fresh wording, only facts the sources below
+// support.
+
+// Diossa: no kit bio. Sources (accessed Nov 3, 2026):
+//   https://ra.co/dj/diossa/biography (Colombian-rooted, Miami debut 2020, opened for Layton Giordani)
+//   https://ra.co/dj/diossa/past-events (ÄGAPĒ at The Chocolate Factory, Signal, H0L0 and ÄGAPĒ Festival 2026;
+//     Kaputt Club and Radio Estrella Bogotá; BAUM Festival 2025; EDC Colombia 2026; ADE 2025 Sketch Club Train)
+//   https://ra.co/events/2398493 (Pulse PDX: "groove, hypnosis, and velocity"; NYC underground; ÄGAPĒ residency)
+//   https://ra.co/events/1600031 (OSW presents ORIGINS: Layton Giordani, Miami 2022)
+//   https://www.beatport.com/artist/diossa/1144413 (Colombian rooted, developed in Miami)
+//   https://hoer.live/artist/diossa/ (HÖR Bogotá Pop-up, Feb 2025; HÖR x Sennheiser Amsterdam Pop-up, Oct 2025)
+const DIOSSA_BIO =
+  "Diossa is a Colombian-rooted DJ who came up in Miami, making her debut there in 2020 and opening for the likes " +
+  "of Layton Giordani. Her sound sits where groove, hypnosis and speed meet, built for sets that keep the body " +
+  "moving. In New York she is a regular at ÄGAPĒ, from its parties at the Chocolate Factory, Signal and H0L0 to " +
+  "the ÄGAPĒ Festival in September 2026. Her calendar also runs through Bogotá, where she plays clubs like Kaputt " +
+  "Club and Radio Estrella and has appeared at BAUM Festival and EDC Colombia. She has recorded HÖR sets in Bogotá " +
+  "and Amsterdam, where she also played Amsterdam Dance Event in 2025.";
+
+// Len Faki: no kit bio (Diagonal "presskit" folder). Sources (accessed Nov 3, 2026):
+//   https://ra.co/dj/lenfaki/biography (Berghain resident since its 2004 opening, moved to Berlin 2003, Monoid and
+//     Feis, Figure 2003, Podium 2006, figure SPC 2009, "Rainbow Delta / Mekong Delta" 2007, "Death By House" on
+//     Cocoon, Berghain 03 in 2009)
+//   https://ra.co/podcast/496 (grew up in Stuttgart, Monoïd and Feis, Berlin 2003, residency at the newly opened
+//     Berghain, "Mekong Delta" one of 2007's biggest techno tracks, Figure and Podium)
+//   https://www.discogs.com/artist/8520-Len-Faki (release facts: Ostgut Ton, Cocoon, Figure FIGURELP10)
+//   https://lenfaki.bandcamp.com/album/fusion (Fusion, Figure, 14 July 2023: two discs, techno plus house, ambient
+//     and broken beats; his first proper album under the Len Faki name)
+const LEN_FAKI_BIO =
+  "Len Faki grew up in Stuttgart, where he found techno in the ’90s and ran his first labels, Monoïd and Feis. " +
+  "He moved to Berlin in 2003, the year he founded Figure, and became a resident at Berghain when the club opened " +
+  "in 2004. His 2007 double A-side “Rainbow Delta / Mekong Delta” on Ostgut Ton was one of the year’s biggest " +
+  "techno records, and club hits such as “My Black Sheep” and “Death By House” on Cocoon followed. He mixed " +
+  "Berghain 03 for Ostgut Ton in 2009 and launched the Podium and figure SPC imprints alongside Figure. In 2023 he " +
+  "released Fusion, his first album under the Len Faki name: a double LP on Figure that runs from driving techno " +
+  "into house, ambient and broken beats.";
+
 /**
  * An act filled from its press kit (Nov 2026): `headshot-600/1200.webp` and, when the kit has usable
  * performance video, `clip.mp4` + `clip-poster.webp`, all in its artists/<slug>/ folder. See media-notes.md.
@@ -435,8 +473,8 @@ const NAMED_ARTISTS: NamedArtist[] = [
     name: "Diossa",
     displayName: "DIOSSA",
     day: 1,
-    // Her press kit has photos only: no bio, clip or socials yet, so the bio shows the pending state.
-    bio: null,
+    // Her press kit has photos only (no bio, clip or socials yet): the bio is written from public sources.
+    bio: DIOSSA_BIO,
     headshot: `${WINTER_ARTIST_DIR}/diossa/headshot-600.webp`,
     headshotLarge: `${WINTER_ARTIST_DIR}/diossa/headshot-1200.webp`,
     clip: null,
@@ -451,9 +489,10 @@ const NAMED_ARTISTS: NamedArtist[] = [
   fromKit("uberkikz", "Überkikz", "ÜBERKIKZ", 1, UBERKIKZ_BIO, { clip: true, focus: "50% 38%", zoom: 1.3 }),
   // Joachim Gern portrait (Gern_2); clip from Boiler Room "Glitch 3", after its logo and name cards.
   fromKit("ben-klock", "Ben Klock", "BEN KLOCK", 1, BEN_KLOCK_BIO, { clip: true, focus: "49% 33%", zoom: 1.3 }),
-  // His kit (Diagonal "presskit" folder) has photos, videos and logos but no bio. "Len Faki 6" (orange light,
-  // direct gaze); clip from De Marktkantine Amsterdam (profile, then from behind over the crowd).
-  fromKit("len-faki", "Len Faki", "LEN FAKI", 1, null, { clip: true, focus: "48% 37%", zoom: 1.15 }),
+  // His kit (Diagonal "presskit" folder) has photos, videos and logos but no bio, so the bio is written from public
+  // sources. "Len Faki 6" (orange light, direct gaze); clip from De Marktkantine Amsterdam (profile, then from
+  // behind over the crowd).
+  fromKit("len-faki", "Len Faki", "LEN FAKI", 1, LEN_FAKI_BIO, { clip: true, focus: "48% 37%", zoom: 1.15 }),
   // Day 2
   {
     kind: "artist",
@@ -487,7 +526,7 @@ const NAMED_ARTISTS: NamedArtist[] = [
   // IMG_6648 (tie and blazer, direct gaze); clip from Unreal @ Junkyard Dortmund (010.mov).
   fromKit("davyboi", "Davyboi", "DAVYBOI", 2, DAVYBOI_BIO, { clip: true, focus: "56% 36%", zoom: 1.35 }),
   // The kit (Liminal) is four press pics (Marvin Ruppert, June 2026) and a rider: no bio, no video, so the bio
-  // shows the pending state. 260605-azzel447-207 (colour, fist to temple, eyes to camera); the "sw" files are
+  // shows the pending state (his rider limits promotion to press-kit material, so no third-party bio). 260605-azzel447-207 (colour, fist to temple, eyes to camera); the "sw" files are
   // the same shots in black and white, and 212 has both hands over the face.
   fromKit("azzel-447", "Azzel 447", "AZZEL 447", 2, null, { clip: false, focus: "49% 33%", zoom: 1.35 }),
   // IMG_6154 (Feb 2026 shoot: black bomber on red, studio light); clip from his kit's square multicam set

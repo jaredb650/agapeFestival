@@ -1,13 +1,13 @@
-// Geometry for the Getting Here map: a stylised, north-up drawing of the
-// Industry City / Sunset Park street grid.
+// Geometry for the Getting Here map: a north-up drawing of the Industry City /
+// Sunset Park street grid, with the real shore, piers and Green-Wood (land.ts).
 //
 // Map space is metres. `w` runs along the numbered streets toward the bay
 // (NW), measured from the venue centreline (midway between 2nd and 3rd Ave);
 // `u` runs along the avenues toward NE, measured from 35th St. Sunset Park's
 // avenues bear ~38° (fitted from the 36 St and 59 St stations on 4th Ave),
-// numbered streets ~80 m apart, avenues ~220 m apart. Stylised, not survey
-// grade: it only has to put the venue, the 4th Ave subway, 3rd Ave's I-278
-// and the bay in the right relationship.
+// numbered streets ~80 m apart, avenues ~220 m apart. A regular grid, not
+// survey grade, but real streets sit within a few metres of it (land.ts fits
+// OpenStreetMap onto it), so the shore and the piers line up.
 
 /** The transport modes, in the order of the route tabs. */
 export type RouteMode = "subway" | "drive" | "ride" | "bike";
@@ -29,11 +29,8 @@ const AV_GAP = 220;
 const ST_GAP = 80;
 /** Half a street's width: the venue block is inset by this. */
 const HALF_ST = 9;
-/** Bulkhead line (the shore), in w. */
-const SHORE = 450;
 /** How far the lines run past the visible box, in m. */
 const U_SPAN = 1500;
-const W_FAR = -1500;
 
 export const aveW = (n: number) => (2.5 - n) * AV_GAP; // 2nd Ave → 110, 3rd → -110, 4th → -330
 export const stU = (k: number) => (35 - k) * ST_GAP; // 35th → 0, 36th → -80, 32nd → 240
@@ -65,20 +62,16 @@ export function seg(a: Pt, b: Pt) {
   };
 }
 
-// ---------------------------------------------------------------- paths (one per layer)
+// ---------------------------------------------------------------- paths
 
 const pt = (p: Pt) => toXY(p).map(r1).join(" ");
 const line = (a: Pt, b: Pt) => `M${pt(a)}L${pt(b)}`;
 
-/** Avenues 1st → 9th. */
-export const AVENUES_D = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => line([aveW(n), U_SPAN], [aveW(n), -U_SPAN])).join("");
+// The shore, piers, Green-Wood and the street grid's real extent come from OpenStreetMap (land.ts).
+export { AVENUES_D, CEMETERY_D, PARK_D, PIERS_D, STREETS_D, WATER_D } from "./land";
 
-/** Numbered streets 18th → 52nd, from the shore inland. */
-export const STREETS_D = Array.from({ length: 35 }, (_, i) => 18 + i)
-  .map((k) => line([SHORE, stU(k)], [W_FAR, stU(k)]))
-  .join("");
-
-export const SHORE_D = line([SHORE, U_SPAN], [SHORE, -U_SPAN]);
+/** I-278, the Gowanus Expressway, rides above 3rd Ave across the whole map: its two carriageways. */
+export const I278_D = line([aveW(3) + 7, U_SPAN], [aveW(3) + 7, -U_SPAN]) + line([aveW(3) - 7, U_SPAN], [aveW(3) - 7, -U_SPAN]);
 
 /** Industry City: the 2nd–3rd Ave blocks from 33rd to 37th St. */
 export const VENUE_D = (() => {
@@ -119,3 +112,15 @@ export const ROUTE_LINES: Record<RouteMode, readonly [Pt, Pt]> = {
   // From the closest dock down 2nd Ave to the venue's corner at 33rd St.
   bike: [BIKE_A, [aveW(2), stU(33) - HALF_ST]],
 };
+
+/** The D, N and R run under 4th Ave: drawn across the map in Subway, toward Manhattan (north-east). */
+export const SUBWAY_AVE: readonly [Pt, Pt] = [
+  [aveW(4), stU(18)],
+  [aveW(4), stU(52)],
+];
+
+/** Industry City's blocks as a box centred on the map's origin, as CSS sizes of the world box (the venue's ping). */
+export const VENUE_BOX = {
+  width: `${r1(((stU(33) - stU(37) - 2 * HALF_ST) / WORLD.w) * 100)}%`,
+  height: `${r1(((aveW(2) - aveW(3) - 2 * HALF_ST) / WORLD.h) * 100)}%`,
+} as const;

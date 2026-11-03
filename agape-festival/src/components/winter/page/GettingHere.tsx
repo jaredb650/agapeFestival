@@ -44,7 +44,7 @@ const ROUTES = candidates.filter((r): r is Route => r !== undefined);
 const APPLE_MAPS = `https://maps.apple.com/?daddr=${encodeURIComponent(g.address.full)}`;
 const MAP_LABEL =
   "Street map of Sunset Park, Brooklyn. Industry City covers the blocks between 2nd and 3rd Avenue from 33rd to 37th Street. " +
-  "36th St Station is on 4th Avenue at 36th Street.";
+  "36th St Station is on 4th Avenue at 36th Street. The bay and its piers lie to the west; Green-Wood Cemetery begins at 5th Avenue.";
 
 /**
  * Getting here, in the classic kit: our own street map with the venue in red, in a dark panel with the four

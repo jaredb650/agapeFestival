@@ -54,6 +54,15 @@
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .wnav__bar::before { background: color-mix(in srgb, var(--c-ink) 97%, transparent); }
 }
+/* Touch screens get the flat 97% too: under the bar the background video plays and the hero and flyer
+   move, so a backdrop blur is re-run every frame, and under 90% black it is all but invisible. */
+@media (pointer: coarse) {
+  .wnav__bar::before {
+    background: color-mix(in srgb, var(--c-ink) 97%, transparent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
 .wnav__bar::after { bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--c-line-2) 20%, var(--c-line-2) 80%, transparent); }
 .wnav[data-scrolled] .wnav__bar::before,
 .wnav[data-scrolled] .wnav__bar::after { opacity: 1; }

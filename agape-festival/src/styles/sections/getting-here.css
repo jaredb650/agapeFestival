@@ -49,20 +49,27 @@
 
 /* ---- The map ---------------------------------------------------------------- */
 /* The world box covers the box (aspect 1.6, like the SVG's viewBox) and never draws smaller than 960px
-   wide (0.4 px per metre), so phones see the venue and the station, not the whole district. */
-.gh-map { position: absolute; inset: 0; overflow: hidden; container-type: size; }
+   wide (0.4 px per metre), so phones see the venue and the station, not the whole district. --gh-ww is
+   that width (the HUD's scale bar measures with it). */
+.gh-map { --gh-ww: max(100cqw, 160cqh, 960px); position: absolute; inset: 0; overflow: hidden; container-type: size; }
 .gh-world {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: max(100cqw, 160cqh, 960px);
+  width: var(--gh-ww);
   aspect-ratio: 1.6;
   translate: -50% -50%;
 }
 .gh-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; fill: none; }
+/* Real geography (land.ts): the bay a step darker than the land, its shore and piers in hairline, Green-Wood
+   and Bush Terminal Park as dashed outlines; then the grid where the streets run, and I-278's two
+   carriageways over 3rd Ave. Grey throughout: red is the venue and the picked route. */
+.gh-water { fill: #000; stroke: var(--c-line-2); stroke-width: 1px; }
+.gh-piers { fill: var(--c-plate); stroke: var(--c-line-2); stroke-width: 1px; }
+.gh-green { fill: rgba(255, 255, 255, 0.025); stroke: var(--c-line-2); stroke-width: 1px; stroke-dasharray: 2 3; }
 .gh-streets { stroke: var(--c-line); stroke-width: 1px; }
 .gh-aves { stroke: var(--c-line-2); stroke-width: 1px; }
-.gh-shore { stroke: var(--c-line-2); stroke-width: 1px; }
+.gh-i278 { stroke: rgba(255, 255, 255, 0.13); stroke-width: 1px; }
 .gh-venue { fill: var(--c-red); }
 
 /* Labels: Orbitron caps on a plate that interrupts the line under it, as print maps do. */
@@ -88,12 +95,89 @@
 .gh-tag[data-align="r"] { translate: calc(-100% - var(--s-3)) -50%; }
 .gh-tag--venue { font-size: 0.8125rem; font-weight: 600; color: var(--c-text); }
 .gh-tag--station { color: var(--c-text); }
+/* Places, not streets: smaller, wider tracked, quieter; no plate where no street runs under them. */
+.gh-tag--area { font-size: 0.625rem; letter-spacing: 0.28em; color: var(--c-text-3); }
+.gh-tag--bare { background-color: transparent; }
+.gh-tag--bay { display: block; text-align: center; line-height: 1.6; }
 .gh-pin {
   position: absolute;
   width: var(--s-2);
   height: var(--s-2);
   translate: -50% -50%;
   background-color: var(--c-text);
+}
+/* The station: an open square, the stop the walk starts from. */
+.gh-pin--stop { width: 10px; height: 10px; border: 2px solid var(--c-text); background-color: var(--c-plate); }
+
+/* The venue's ping: its own outline grows and fades, slowly, while the map is on screen. */
+.gh-ping {
+  position: absolute;
+  translate: -50% -50%;
+  rotate: var(--rot);
+  border: 1px solid var(--c-mark);
+  opacity: 0;
+  pointer-events: none;
+}
+.gh-map[data-live] .gh-ping { animation: gh-ping 4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+@keyframes gh-ping {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* ---- The HUD: fixed to the map's box, over the world --------------------------------------
+   Corner ticks, north, Manhattan's way, the venue's coordinates, a 200 m scale bar, the data credit. */
+.gh-hud {
+  --hud: var(--c-text-3);
+  --tick: 10px;
+  position: absolute;
+  inset: var(--s-3);
+  pointer-events: none;
+  font-family: var(--f-display);
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hud);
+  background:
+    linear-gradient(var(--hud), var(--hud)) left top / var(--tick) 1px,
+    linear-gradient(var(--hud), var(--hud)) left top / 1px var(--tick),
+    linear-gradient(var(--hud), var(--hud)) right top / var(--tick) 1px,
+    linear-gradient(var(--hud), var(--hud)) right top / 1px var(--tick),
+    linear-gradient(var(--hud), var(--hud)) left bottom / var(--tick) 1px,
+    linear-gradient(var(--hud), var(--hud)) left bottom / 1px var(--tick),
+    linear-gradient(var(--hud), var(--hud)) right bottom / var(--tick) 1px,
+    linear-gradient(var(--hud), var(--hud)) right bottom / 1px var(--tick);
+  background-repeat: no-repeat;
+}
+.gh-hud > * { position: absolute; white-space: nowrap; }
+/* North: a hairline over the letter. */
+.gh-hud__north { top: var(--s-1); right: var(--s-4); display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--c-text-2); }
+.gh-hud__north::before { content: ""; width: 1px; height: var(--s-3); background-color: currentColor; }
+/* Manhattan lies due north (5 km): named on the top edge, over the venue. */
+.gh-hud__to { top: var(--s-1); left: 50%; translate: -50% 0; display: flex; align-items: center; gap: var(--s-2); }
+.gh-hud__to::before { content: ""; width: 5px; height: 5px; border-top: 1px solid currentColor; border-left: 1px solid currentColor; rotate: 45deg; translate: 0 1px; }
+.gh-hud__foot { left: var(--s-4); bottom: var(--s-1); display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.gh-hud__ll { color: var(--c-text-2); letter-spacing: 0.1em; }
+.gh-hud__src { font-family: var(--f-ui); font-size: 0.5625rem; letter-spacing: 0.04em; text-transform: none; }
+/* The scale bar: 200 real metres at the world box's scale. */
+.gh-hud__scale { right: var(--s-4); bottom: var(--s-1); display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.gh-hud__scale::after {
+  content: "";
+  width: calc(var(--gh-ww) * var(--k));
+  height: 4px;
+  border: 1px solid currentColor;
+  border-top: 0;
+}
+/* Plates under the HUD's words, so streets never run through them. */
+.gh-hud__to,
+.gh-hud__foot > *,
+.gh-hud__scale { background-color: var(--c-plate); padding: 0 var(--s-1); }
+@media (max-width: 767.98px) {
+  /* The square is busier: Manhattan's pointer and the scale bar go to the top-left, over the bay (the
+     station's label holds the bottom-right). */
+  .gh-hud__to { left: var(--s-4); translate: none; }
+  .gh-hud__scale { top: calc(var(--s-1) + var(--s-6)); bottom: auto; left: var(--s-4); right: auto; align-items: flex-start; }
 }
 
 /* The MTA bullets: round because the real ones are (wayfinding, in their real colours), in the
@@ -129,7 +213,8 @@
   transition: scale var(--t-line, var(--m-dur-1)) var(--m-ease) calc(var(--on, 0) * var(--m-stagger));
 }
 .gh-pin[data-route],
-.gh-tag[data-route] {
+.gh-tag[data-route],
+.gh-rail[data-route] {
   opacity: var(--on, 0);
   transition: opacity var(--t-mark, var(--m-dur-1)) var(--m-ease) calc(var(--on, 0) * var(--m-dur-2));
 }
@@ -141,6 +226,38 @@
   --t-line: var(--m-dur-3);
   --t-mark: var(--m-dur-2);
 }
+/* Subway: the D, N and R under 4th Ave, dashed, toward Manhattan. */
+.gh-rail {
+  position: absolute;
+  height: 1px;
+  transform-origin: 0 50%;
+  rotate: var(--a);
+  background-image: repeating-linear-gradient(90deg, var(--c-text-2) 0 6px, transparent 6px 11px);
+}
+
+/* The runner: a square that travels the picked route, start to end, while the map is on screen. Its
+   track (i) is the line's length; sliding the track from -100% to 0 carries the square at its end from
+   the line's start to its end, by transform alone. */
+.gh-run { position: absolute; height: 0; transform-origin: 0 0; rotate: var(--a); pointer-events: none; }
+.gh-run > i { position: absolute; left: 0; top: -3px; width: 100%; height: 6px; opacity: 0; transform: translateX(-100%); }
+.gh-run > i::after { content: ""; position: absolute; right: -3px; top: 0; width: 6px; height: 6px; background-color: var(--c-text-hi); }
+.gh-run[data-route="subway"] { --run: 2.8s; }
+.gh-run[data-route="drive"] { --run: 5s; }
+.gh-run[data-route="ride"] { --run: 1.8s; }
+.gh-run[data-route="bike"] { --run: 2.2s; }
+.gh-map[data-live][data-in][data-mode="subway"] .gh-run[data-route="subway"] > i,
+.gh-map[data-live][data-in][data-mode="drive"] .gh-run[data-route="drive"] > i,
+.gh-map[data-live][data-in][data-mode="ride"] .gh-run[data-route="ride"] > i,
+.gh-map[data-live][data-in][data-mode="bike"] .gh-run[data-route="bike"] > i {
+  animation: gh-run var(--run) cubic-bezier(0.45, 0, 0.4, 1) var(--m-dur-3) infinite;
+}
+@keyframes gh-run {
+  0% { transform: translateX(-100%); opacity: 0; }
+  12% { opacity: 1; }
+  82% { opacity: 1; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+
 /* I-278 rides above 3rd Ave: in Drive its label takes the avenue's place. */
 .gh-tag--3rd { transition: opacity var(--m-dur-1) var(--m-ease); }
 .gh-map[data-mode="drive"] .gh-tag--3rd { opacity: 0; }
@@ -220,11 +337,14 @@
 
 /* ---- Phones ------------------------------------------------------------------------------- */
 @media (max-width: 767.98px) {
-  .gh-tag--bay { display: none; }
+  .gh-tag--bay,
+  .gh-tag--far { display: none; }
   /* A touch smaller (0.375 px per metre) and nudged right and down: the labels left of the venue (Industry
      City, Lots B + C) reach further than the station's on the right, and 2nd Ave's sits near the top, so
      every label clears the box's edges at 375 in every mode. */
-  .gh-world { width: max(100cqw, 160cqh, 900px); translate: calc(-50% + 6px) calc(-50% + 18px); }
+  /* 0.375 px per metre, a touch less in boxes under 346px (320 phones) so the labels still fit. */
+  .gh-map { --gh-ww: max(100cqw, 160cqh, min(900px, 260cqw)); }
+  .gh-world { translate: calc(-50% + 6px) calc(-50% + 18px); }
   /* The square shows less of the district: tighter caps and a closer gap keep the labels left of the
      venue (Industry City, Lots B + C) inside the box. */
   .gh-tag { letter-spacing: 0.06em; }
@@ -234,8 +354,23 @@
   .gh-tag--station[data-align] { translate: -50% var(--s-2); }
 }
 
+/* A narrow map beside the details (1024 to ~1200): the station's label goes under its pin too. */
+@container (max-width: 560px) {
+  .gh-tag--station[data-align] { translate: -50% var(--s-2); }
+}
+/* The smallest phones (320): tighter labels, and the HUD keeps only what it must (north, Manhattan,
+   the scale and the credit). */
+@container (max-width: 300px) {
+  .gh-tag { font-size: 0.6875rem; letter-spacing: 0.02em; }
+  .gh-tag--station[data-align] { translate: calc(-50% - var(--s-3)) var(--s-2); }
+  .gh-hud__ll { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .gh-ping,
+  .gh-run > i { animation: none !important; }
   .gh-line,
+  .gh-rail[data-route],
   .gh-pin[data-route],
   .gh-tag[data-route],
   .gh-tag--3rd { transition: none; }

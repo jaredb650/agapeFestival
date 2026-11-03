@@ -49,7 +49,8 @@ interface RouteBoardProps {
  *
  * The picked route's line also draws once when the map first comes into view: on mount the map is armed
  * (lines held at zero length), and an IntersectionObserver releases it. Without JavaScript, or with
- * reduced motion, the line is simply there.
+ * reduced motion, the line is simply there. A second observer marks the map data-live while it is on
+ * screen: the venue's ping and the route's runner loop only then, and never with reduced motion.
  */
 export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoardProps) {
   const [mode, setMode] = useState<RouteMode>(routes[0].mode);
@@ -72,7 +73,12 @@ export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoard
       { threshold: 0.3 },
     );
     if (done) stop();
-    return () => stop();
+    // The map's loops (the venue's ping, the route's runner) run only while it is on screen.
+    const stopLive = observeInView(el, (inView) => el.toggleAttribute("data-live", inView));
+    return () => {
+      stop();
+      stopLive();
+    };
   }, []);
 
   const items = routes.map((r) => ({ id: r.mode, label: r.tab, icon: MODE_ICON[r.mode] }));

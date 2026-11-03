@@ -1,18 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type RefObject } from "react";
-import { Cell, Fill, LinkCell, Row } from "@/components/winter/grid";
-import { CloseIcon } from "@/components/winter/grid/icons";
+import { ArrowUpRight, CloseIcon } from "@/components/winter/ui";
 import type { NavLink } from "./sections";
 
 export type MenuPhase = "closed" | "opening" | "open" | "closing";
 
-// Choreography lengths (nav.css): the panel drops in 240ms; the rows wipe in 240ms each, 40ms apart,
-// from 80ms. The close is the panel lifting (240ms).
+// Choreography lengths (nav.css): the panel fades in over 240ms; the rows rise in 240ms each, 40ms apart,
+// from 80ms. The close is a 200ms fade.
 const ROW_START = 80;
 const STAGGER = 40;
 const WIPE = 240;
-const CLOSE_MS = 240;
+const CLOSE_MS = 200;
 const RM_MS = 160;
 const DESKTOP = "(min-width: 1100px)";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -124,10 +123,10 @@ function jumpTo(href: string) {
 }
 
 /**
- * The menu below 1100px: a full-screen grid of cells. The head row redraws the bar (wordmark + close),
- * one cell per section (two columns from 768px), then the red ticket cell and the socials. Opening drops
- * the panel from the bar and wipes each row in from the left, 40ms apart (clip-path on rectangles, so
- * the hairlines draw in with them); closing lifts the panel. No readouts, no decorative text.
+ * The menu below 1100px: a full-screen black panel. The head repeats the bar (mark + wordmark, Close),
+ * then the sections as a list of Orbitron caps rows between hairlines (the current one white with a red
+ * mark), the red Get tickets and the Instagram handles. Opening fades the panel in and lifts each row in
+ * 40ms apart; closing fades it out. No readouts, no decorative text.
  */
 export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark, socials }: MenuDialogProps) {
   const { phase, close, dialogRef } = menu;
@@ -139,8 +138,6 @@ export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark
     e.preventDefault();
     close(() => jumpTo(href));
   };
-
-  const odd = links.length % 2;
 
   return (
     <dialog
@@ -155,74 +152,57 @@ export function MenuDialog({ menu, links, active, ticketsUrl, ticketsLabel, mark
     >
       <div className="wmenu__panel">
         <div className="wmenu__head">
-          <span className="wnav__cell wnav__brand" aria-hidden="true">
+          <span className="wnav__brand" aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={mark.src} width={mark.width} height={mark.height} alt="" className="wnav__mark" />
             <span className="wnav__word">ÄGAPĒ</span>
           </span>
-          <span className="wnav__cell wnav__fill" aria-hidden="true" />
-          <button type="button" className="wnav__cell wmenu__close" onClick={() => close()} aria-label="Close menu">
-            <CloseIcon size={20} />
+          <button type="button" className="wnav__menu wmenu__close" onClick={() => close()} aria-label="Close menu">
             <span className="wnav__menu-label" aria-hidden="true">
               Close
             </span>
+            <CloseIcon size={20} />
           </button>
         </div>
 
-        <nav className="wmenu__nav" aria-label="Sections">
-          <Row as="ul" className="wmenu__links">
-            {links.map((l, i) => (
-              <LinkCell
-                key={l.href}
-                listItem
-                href={l.href}
-                span={6}
-                className="wmenu__seq wmenu__link"
-                style={seq(i)}
-                aria-current={active && l.href === `#${active}` ? "location" : undefined}
-                onClick={(e) => onLink(e, l.href)}
-              >
-                {l.label}
-              </LinkCell>
+        <div className="wmenu__body">
+          <nav aria-label="Sections">
+            <ul className="wmenu__links">
+              {links.map((l, i) => (
+                <li key={l.href} className="wmenu__seq" style={seq(i)}>
+                  <a
+                    href={l.href}
+                    className="wmenu__link"
+                    aria-current={active && l.href === `#${active}` ? "location" : undefined}
+                    onClick={(e) => onLink(e, l.href)}
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="wmenu__seq wmenu__cta" style={seq(links.length)}>
+            <a href={ticketsUrl} target="_blank" rel="noopener noreferrer" className="w-btn wmenu__tickets" data-variant="primary" data-size="lg" data-block="">
+              <span className="w-btn__label">{ticketsLabel}</span>
+              <span className="w-sr-only"> (opens in a new tab)</span>
+            </a>
+          </div>
+
+          <ul className="wmenu__socials wmenu__seq" style={seq(links.length + 1)}>
+            {socials.map((s) => (
+              <li key={s.url}>
+                <a href={s.url} target="_blank" rel="noopener noreferrer" className="wmenu__social">
+                  <span className="k-label">Instagram</span>
+                  <span className="wmenu__handle">{s.handle}</span>
+                  <ArrowUpRight size={16} className="wmenu__social-icon" />
+                  <span className="w-sr-only"> (opens in a new tab)</span>
+                </a>
+              </li>
             ))}
-            {odd ? <Fill as="li" md={6} /> : null}
-          </Row>
-        </nav>
-
-        <Row>
-          <LinkCell
-            href={ticketsUrl}
-            external
-            icon="none"
-            variant="primary"
-            h={2}
-            y="center"
-            className="wmenu__seq wmenu__tickets"
-            style={seq(links.length)}
-          >
-            {ticketsLabel}
-          </LinkCell>
-        </Row>
-
-        <Row as="ul" close>
-          {socials.map((s, i) => (
-            <LinkCell
-              key={s.url}
-              listItem
-              href={s.url}
-              external
-              span={6}
-              spanSm={2}
-              h={1}
-              label="Instagram"
-              className="wmenu__seq"
-              style={seq(links.length + 1 + i)}
-            >
-              {s.handle}
-            </LinkCell>
-          ))}
-          {socials.length % 2 ? <Cell as="li" span={6} spanSm={2} aria-hidden="true" /> : null}
-        </Row>
+          </ul>
+        </div>
       </div>
     </dialog>
   );

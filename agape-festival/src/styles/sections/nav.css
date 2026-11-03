@@ -1,100 +1,162 @@
 /* ==========================================================================
-   TOP BAR + MENU (Nav.tsx, nav/MenuDialog.tsx), grid redesign.
-   A plain bar of hairline cells on the page margins: wordmark, section
-   links, an empty cell, the red ticket cell; below 1100px a menu cell
-   takes the place of the links and the ticket cell.
-   The current section's link carries a red mark on the bar's bottom edge.
-   Below 1100px the menu is a full-screen grid of cells (grid.css cells).
-   Classes wnav-* / wmenu-*. Motion: transform, opacity, clip-path.
+   TOP BAR + MENU (Nav.tsx, nav/MenuDialog.tsx), classic.
+   The bar: mark + wordmark on the left; from 1100px the section links in
+   Orbitron caps and the red Get tickets on the right; below 1100px a Menu
+   button instead (no Get tickets in the phone bar: client, Nov 3). The
+   bar's content lines up with the sections' column (--wrap, --sec-x).
+   Transparent over the hero, dark once the page moves, away over the flyer.
+   Below 1100px the menu is a full-screen black panel with a list of rows.
+   Classes wnav-* / wmenu-*. Motion: transform and opacity only.
    ========================================================================== */
 
 .wnav {
+  --wnav-pad: max(var(--sec-x), calc((100% - var(--wrap)) / 2));
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: var(--z-nav);
   height: var(--g-nav);
-  color: var(--c-fg);
+  color: var(--c-text);
   transition: transform var(--m-dur-2) var(--m-ease);
 }
 /* Away over the flyer, unless a keyboard user is in it or its menu is open. */
 .wnav[data-away]:not(:focus-within):not([data-menu]) { transform: translateY(calc(-100% - 1px)); }
 
 .wnav__bar {
-  display: flex;
-  align-items: stretch;
-  height: 100%;
-  /* Bottom 1px is the bar's rule; +1px right is the frame line (cells end before both). */
-  padding: 0 calc(var(--g-margin) + 1px) 1px var(--g-margin);
-  background-color: transparent;
-  background-image:
-    linear-gradient(var(--c-rule), var(--c-rule)),
-    linear-gradient(var(--c-rule), var(--c-rule));
-  background-size: 100% 1px, 1px 100%;
-  background-position: 0 100%, calc(100% - var(--g-margin)) 0;
-  background-repeat: no-repeat;
-  transition: background-color var(--m-dur-2) var(--m-ease);
-}
-/* Transparent over the hero; solid once the page moves. */
-.wnav[data-scrolled] .wnav__bar { background-color: var(--c-ink); }
-
-.wnav__cell {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  margin: 0;
-  padding: 0 var(--s-5);
-  border: 0;
-  border-left: 1px solid var(--c-rule);
-  background: transparent;
-  background-clip: padding-box;
-  color: var(--c-fg-2);
-  font: 400 var(--t-small) / 1 var(--f-ui);
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  transition: color var(--m-dur-1) var(--m-ease), background-color var(--m-dur-1) var(--m-ease);
+  gap: var(--s-8);
+  height: 100%;
+  padding: 0 var(--wnav-pad);
 }
-.wnav__cell:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
-
-.wnav__brand { color: var(--c-fg); gap: 10px; }
-.wnav__mark { display: block; width: 18px; height: auto; flex: none; }
-.wnav__word { font-size: var(--t-body); font-weight: 500; letter-spacing: 0.04em; }
-
-.wnav__links { display: none; }
-.wnav__links ul { display: flex; height: 100%; margin: 0; padding: 0; list-style: none; }
-.wnav__links li { display: flex; }
-.wnav__link[aria-current] { color: var(--c-fg); }
-/* The current section: a 2px red mark over the bar's bottom rule. */
-.wnav__link[aria-current]::after {
+/* The dark bar and its fading hairline: opacity only, so scrolling past the hero never repaints the bar. */
+.wnav__bar::before,
+.wnav__bar::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: var(--c-mark);
-  transform-origin: left;
-  animation: wnav-mark var(--m-dur-2) var(--m-ease) both;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--m-dur-2) var(--m-ease);
 }
-@keyframes wnav-mark { from { transform: scaleX(0); } }
+.wnav__bar::before { inset: 0; z-index: -1; background: rgba(0, 0, 0, 0.86); }
+.wnav__bar::after { bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--c-line-2) 20%, var(--c-line-2) 80%, transparent); }
+.wnav[data-scrolled] .wnav__bar::before,
+.wnav[data-scrolled] .wnav__bar::after { opacity: 1; }
 
-.wnav__fill { flex: 1 1 auto; padding: 0; }
-
-/* Desktop only: below 1100px the menu has its own red ticket row. */
-.wnav__tickets { display: none; padding: 0 var(--s-6); background-color: var(--c-red); color: var(--c-fg); font-weight: 500; }
-
-.wnav__menu { gap: var(--s-2); padding: 0 var(--s-4); color: var(--c-fg); cursor: pointer; }
-.wnav__menu-label { display: none; }
-@media (min-width: 480px) { .wnav__menu-label { display: inline; } }
-
+.wnav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-right: auto;
+  color: var(--c-text);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--m-dur-1) var(--m-ease);
+}
+.wnav__mark { display: block; width: 18px; height: auto; flex: none; }
+.wnav__word { font: 500 var(--t-body) / 1 var(--f-ui); letter-spacing: 0.08em; }
 @media (hover: hover) and (pointer: fine) {
-  .wnav__brand:hover, .wnav__link:hover, .wnav__menu:hover { background-color: var(--c-wash); color: var(--c-fg); }
+  .wnav__brand:hover { opacity: 0.72; }
+}
+
+/* ---- Section links (from 1100px) --------------------------------------- */
+.wnav__links { display: none; }
+.wnav__links ul { display: flex; align-items: center; gap: var(--s-8); margin: 0; padding: 0; list-style: none; }
+.wnav__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--f-display);
+  font-size: 0.6875rem; /* 11: Orbitron caps read a size larger than their number */
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--c-text-2);
+  text-decoration: none;
+  transition: color var(--m-dur-1) var(--m-ease);
+}
+/* The current section: white, a short red rule under it. */
+.wnav__link[aria-current] { color: var(--c-text-hi); }
+.wnav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0.16em;
+  bottom: 8px;
+  height: 1px;
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--m-dur-2) var(--m-ease);
+}
+.wnav__link[aria-current]::after { transform: scaleX(1); }
+@media (hover: hover) and (pointer: fine) {
+  .wnav__link:hover { color: var(--c-text-hi); }
+}
+
+/* ---- Get tickets (from 1100px) ------------------------------------------ */
+.wnav__tickets {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 var(--s-5);
+  background-color: var(--c-red);
+  color: var(--c-text-hi);
+  font-family: var(--f-display);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
+}
+.wnav__tickets-label { margin-right: -0.16em; }
+@media (hover: hover) and (pointer: fine) {
   .wnav__tickets:hover { background-color: var(--c-red-hover); }
 }
+.wnav__tickets:active { transform: scale(0.97); }
+
+/* ---- Menu button (below 1100px) ------------------------------------------ */
+.wnav__menu {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  margin: 0 calc(-1 * var(--s-2)) 0 0;
+  padding: 0 var(--s-2);
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--m-dur-1) var(--m-ease);
+}
+.wnav__menu-label {
+  display: none;
+  font-family: var(--f-display);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+@media (min-width: 480px) { .wnav__menu-label { display: inline; } }
+@media (hover: hover) and (pointer: fine) {
+  .wnav__menu:hover { opacity: 0.72; }
+}
+
+.wnav__brand:focus-visible,
+.wnav__link:focus-visible,
+.wnav__tickets:focus-visible,
+.wnav__menu:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 @media (min-width: 1100px) {
   .wnav__links { display: block; }
@@ -103,9 +165,8 @@
 }
 
 /* ==========================================================================
-   Menu (below 1100px): a full-screen grid. The panel drops from the bar
-   (clip-path), then each cell wipes in from the left, 40ms apart; the
-   close lifts the panel. Reduced motion: a short fade.
+   Menu (below 1100px): a full-screen black panel. The panel fades in, the
+   rows lift in 40ms apart; the close fades out. Reduced motion: a short fade.
    ========================================================================== */
 html.wnav-lock { overflow: hidden; }
 
@@ -120,7 +181,7 @@ html.wnav-lock { overflow: hidden; }
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--c-fg);
+  color: var(--c-text);
   overflow: hidden;
 }
 .wmenu::backdrop { background: transparent; }
@@ -135,57 +196,90 @@ html.wnav-lock { overflow: hidden; }
   background: var(--c-ink);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-/* The head redraws the bar in place: wordmark, empty cell, close. */
+/* The head repeats the bar in place: mark + wordmark, Close. */
 .wmenu__head {
+  --wnav-pad: max(var(--sec-x), calc((100% - var(--wrap)) / 2));
   flex: none;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   height: var(--g-nav);
-  padding: 0 calc(var(--g-margin) + 1px) 0 var(--g-margin);
-  background-image: linear-gradient(var(--c-rule), var(--c-rule));
-  background-size: 1px 100%;
-  background-position: calc(100% - var(--g-margin)) 0;
-  background-repeat: no-repeat;
-}
-.wmenu__close { gap: var(--s-2); padding: 0 var(--s-4); color: var(--c-fg); cursor: pointer; }
-@media (hover: hover) and (pointer: fine) {
-  .wmenu__close:hover { background-color: var(--c-wash); }
+  padding: 0 var(--wnav-pad);
 }
 
-/* The section cells share the free height, so the grid fills the screen. */
-.wmenu__nav { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-.wmenu .wmenu__links { flex: 1 1 auto; grid-auto-rows: minmax(var(--g-row-1), 1fr); }
-.wmenu__link .g-link__value, .wmenu__tickets .g-link__value { font-size: var(--t-lead); }
-.wmenu__link .g-link__value { color: var(--c-fg-2); transition: color var(--m-dur-1) var(--m-ease); }
-.wmenu__link > .g-link { justify-content: flex-end; }
-.wmenu__link > .g-link[aria-current] .g-link__value { color: var(--c-fg); }
-/* The current section: a small red square in the cell's corner. */
-.wmenu__link > .g-link[aria-current]::after {
+.wmenu__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+  padding: var(--s-6) var(--sec-x) var(--s-10);
+}
+.wmenu__links { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--c-line); }
+.wmenu__links li { border-top: 1px solid var(--c-line); }
+.wmenu__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  font-family: var(--f-display);
+  font-size: 0.9375rem; /* 15: the client asked for smaller menu type (Nov 3) */
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-text-2);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--m-dur-1) var(--m-ease);
+}
+.wmenu__link[aria-current] { color: var(--c-text-hi); }
+/* The current section: a small red square at the row's end. */
+.wmenu__link[aria-current]::after {
   content: "";
   position: absolute;
-  top: var(--g-pad);
-  right: var(--g-pad);
-  width: 8px;
-  height: 8px;
+  right: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
   background: var(--c-mark);
 }
 @media (hover: hover) and (pointer: fine) {
-  .wmenu__link:hover .g-link__value { color: var(--c-fg); }
+  .wmenu__link:hover { color: var(--c-text-hi); }
+}
+.wmenu__link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+
+.wmenu__socials { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.wmenu__social {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  color: var(--c-text-2);
+  text-decoration: none;
+  transition: color var(--m-dur-1) var(--m-ease);
+}
+.wmenu__handle { font-size: var(--t-small); font-weight: 500; }
+.wmenu__social-icon { color: var(--c-text-3); }
+@media (hover: hover) and (pointer: fine) {
+  .wmenu__social:hover { color: var(--c-text-hi); }
+}
+.wmenu__social:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+@media (min-width: 768px) {
+  .wmenu__body { width: 100%; max-width: 560px; margin-inline: auto; padding-top: var(--s-16); }
+  .wmenu__link { min-height: 64px; font-size: 1.0625rem; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-drop var(--m-dur-2) var(--m-ease) both; }
+  .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-fade var(--m-dur-2) var(--m-ease) both; }
   .wmenu[data-phase="opening"] .wmenu__seq {
-    animation: wmenu-wipe var(--m-dur-2) var(--m-ease) both;
+    animation: wmenu-rise var(--m-dur-2) var(--m-ease) both;
     animation-delay: calc(80ms + var(--k, 0) * var(--m-stagger));
   }
-  .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-lift var(--m-dur-2) var(--m-ease) both; }
+  .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-fade 200ms var(--m-ease) reverse both; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wmenu[data-phase="opening"] .wmenu__panel { animation: wmenu-fade var(--m-dur-1) var(--m-ease) both; }
   .wmenu[data-phase="closing"] .wmenu__panel { animation: wmenu-fade var(--m-dur-1) var(--m-ease) reverse both; }
 }
-@keyframes wmenu-drop { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
-@keyframes wmenu-lift { from { clip-path: inset(0); } to { clip-path: inset(0 0 100% 0); } }
-@keyframes wmenu-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
 @keyframes wmenu-fade { from { opacity: 0; } }
+@keyframes wmenu-rise { from { opacity: 0; transform: translateY(8px); } }

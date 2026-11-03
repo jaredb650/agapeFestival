@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MenuIcon } from "@/components/winter/grid/icons";
+import { MenuIcon } from "@/components/winter/ui";
 import { MenuDialog, useMenu } from "@/components/winter/nav/MenuDialog";
 import { barLinks, findSections, type NavLink } from "@/components/winter/nav/sections";
 import { observeInView } from "@/components/winter/perf";
@@ -22,11 +22,11 @@ interface Props {
 }
 
 /**
- * The top bar (grid redesign): a plain bar divided into hairline cells, on the page's margins. The
- * wordmark cell (back to top), one cell per section link, an empty cell that takes the slack, and the
- * red ticket cell; below 1100px a menu cell replaces the links and the ticket cell (MenuDialog). The
- * current section's link carries a red mark along the bar's bottom edge. Transparent over the hero, solid
- * once the page moves, away over the flyer.
+ * The top bar (classic): the mark and wordmark (back to top) on the left; from 1100px the section links in
+ * Orbitron caps and the red Get tickets on the right, below 1100px a Menu button instead (MenuDialog; the
+ * client asked for no Get tickets in the phone bar). The current section's link is white with a short red
+ * rule under it. Transparent over the hero, a dark bar once the page moves, away over the flyer. The
+ * bar's content lines up with the sections' content column.
  *
  * No per-frame work: the active section comes from one IntersectionObserver, the scrolled flag from a
  * rAF-throttled scroll check that only flips an attribute.
@@ -96,7 +96,7 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials }: Props) {
   return (
     <header ref={rootRef} className="wnav" data-menu={menuOpen || undefined}>
       <div className="wnav__bar">
-        <a href="#hero" className="wnav__cell wnav__brand" aria-label="ÄGAPĒ Winter Festival, back to top">
+        <a href="#hero" className="wnav__brand" aria-label="ÄGAPĒ Winter Festival, back to top">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={mark.src} width={mark.width} height={mark.height} alt="" className="wnav__mark" />
           <span className="wnav__word" aria-hidden="true">
@@ -108,7 +108,7 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials }: Props) {
           <ul>
             {items.map((l) => (
               <li key={l.href}>
-                <a href={l.href} className="wnav__cell wnav__link" aria-current={active && l.href === `#${active}` ? "location" : undefined}>
+                <a href={l.href} className="wnav__link" aria-current={active && l.href === `#${active}` ? "location" : undefined}>
                   {l.label}
                 </a>
               </li>
@@ -116,27 +116,25 @@ export function Nav({ links, ticketsUrl, ticketsLabel, mark, socials }: Props) {
           </ul>
         </nav>
 
-        <span className="wnav__cell wnav__fill" aria-hidden="true" />
-
-        <a href={ticketsUrl} target="_blank" rel="noopener noreferrer" className="wnav__cell wnav__tickets">
-          {ticketsLabel}
+        <a href={ticketsUrl} target="_blank" rel="noopener noreferrer" className="wnav__tickets">
+          <span className="wnav__tickets-label">{ticketsLabel}</span>
           <span className="w-sr-only"> (opens in a new tab)</span>
         </a>
 
         <button
           ref={menuBtnRef}
           type="button"
-          className="wnav__cell wnav__menu"
+          className="wnav__menu"
           aria-label="Menu"
           aria-haspopup="dialog"
           aria-expanded={menuOpen}
           aria-controls="wnav-menu"
           onClick={menu.open}
         >
-          <MenuIcon size={20} />
           <span className="wnav__menu-label" aria-hidden="true">
             Menu
           </span>
+          <MenuIcon size={20} />
         </button>
       </div>
 

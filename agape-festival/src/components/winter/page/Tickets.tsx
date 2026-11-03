@@ -70,8 +70,11 @@ export function Tickets() {
             <div className="tk-row tk-row--promo">
               <dt className="k-label">{promo.label}</dt>
               <dd className="tk-promo">
-                <PromoCode code={promo.code} />
-                <span className="tk-promo__exp">Expires {promo.expires}</span>
+                <PromoCode code={promo.code} until={promo.until} />
+                <span className="tk-promo__exp">Valid until {promo.expires}</span>
+                <Button variant="link" href={promo.url} external className="tk-promo__apply" aria-label={`Apply promo code ${promo.code} on DICE (opens in a new tab)`}>
+                  Apply on DICE
+                </Button>
               </dd>
             </div>
           )}

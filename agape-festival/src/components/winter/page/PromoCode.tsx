@@ -34,10 +34,18 @@ async function copyText(text: string): Promise<boolean> {
  * the copy glyph turns to a check and the label reads "Copied" for a moment. Code and "Copied" share one
  * grid cell, so the button keeps its width. A polite live region tells screen readers what happened.
  */
-export function PromoCode({ code }: { code: string }) {
+export function PromoCode({ code, until }: { code: string; until?: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => () => clearTimeout(timer.current), []);
+  // The page is static, so an expired code would stay up: once `until` has passed, hide the whole row.
+  useEffect(() => {
+    const end = until ? Date.parse(until) : NaN;
+    if (!(Date.now() > end)) return;
+    const row = ref.current?.closest<HTMLElement>(".tk-row");
+    if (row) row.hidden = true;
+  }, [until]);
 
   const copy = async () => {
     const ok = await copyText(code);
@@ -68,7 +76,7 @@ export function PromoCode({ code }: { code: string }) {
           </span>
         </span>
       </Button>
-      <span className="w-sr-only" role="status" aria-live="polite">
+      <span ref={ref} className="w-sr-only" role="status" aria-live="polite">
         {copied ? `Promo code ${code} copied` : state === "failed" ? `Couldn't copy. The code is ${code}` : ""}
       </span>
     </>

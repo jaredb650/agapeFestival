@@ -815,20 +815,21 @@ export const TICKETS = {
   needsConfirm: WINTER.tickets.needsConfirm,
   confirmNote: WINTER.tickets.confirmNote,
   /**
-   * The promo code row (a tap copies the code). PLACEHOLDERS (Nov 3): swap `code` and `expires` for the
-   * real ones, one line each. `expires` is shown exactly as written. Set `code` to null to hide the row.
+   * The promo code row (a tap copies the code; "Apply on DICE" opens the ticket page with it applied).
+   * From the client, Nov 3: code WINTER, active until Nov 30. The row hides itself once `until` passes
+   * (end of Nov 30, New York time). Set `code` to null to hide it sooner.
    */
   promo: {
     label: "Promo code",
-    code: "AGAPE00" as string | null, // PLACEHOLDER: the real DICE promo code
-    expires: "00/00/00", // PLACEHOLDER: the real expiry date (MM/DD/YY)
-    needsConfirm: true,
-    confirmNote: "TODO_CONFIRM: the real promo code and its expiry date (both are placeholders)" satisfies ConfirmNote,
+    code: "WINTER" as string | null,
+    expires: "Nov 30", // shown as "Valid until Nov 30"
+    until: "2026-12-01T05:00:00Z", // end of Nov 30, ET: the row disappears after this
+    url: "https://link.dice.fm/hf32837920f3?code=WINTER", // the client's link: opens DICE with the code applied
   },
-  /** The quiet pay-later line under Get tickets (client voice note, Nov 3): the Afterpay mark + this note. */
+  /** The pay-later line under Get tickets: the Afterpay mark + the client's wording (Nov 3). */
   afterpay: {
     logo: `${BASE_PATH}/assets/winter/afterpay-white.svg`, // official white wordmark, from static.afterpay.com
-    note: "Available at checkout · 4 interest-free installments",
+    note: "Secure your tickets now and split your payment into 4 interest-free installments with Afterpay, available directly at checkout on DICE.",
   },
 } as const;
 
@@ -907,7 +908,6 @@ export function pendingConfirmations(): { where: string; note: string }[] {
   };
   push("WINTER.venue", WINTER.venue);
   push("WINTER.tickets", WINTER.tickets);
-  push("TICKETS.promo", TICKETS.promo);
   push("WINTER.countdown", WINTER.countdown);
   FAQ.forEach((item) => push(`FAQ.${item.id}`, item));
   push("GETTING_HERE", GETTING_HERE);

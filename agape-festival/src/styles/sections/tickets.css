@@ -133,11 +133,14 @@
   color: var(--c-text-3);
 }
 
-/* ---- Afterpay: one quiet line under the button. The official white wordmark at 14px tall, the note
-   in small grey Archivo. Wraps under the mark on a phone rather than breaking mid-phrase. */
+/* "Apply on DICE": the kit's link, at the expiry's size. */
+.tk-promo__apply { font-size: var(--t-label); white-space: nowrap; }
+
+/* ---- Afterpay: under the button, the official white wordmark (14px tall) over the client's sentence
+   in small grey Archivo, kept to a short measure. */
 .tk-pay {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--s-2) var(--s-3);
@@ -150,4 +153,4 @@
   text-align: center;
 }
 .tk-pay__logo { display: block; flex: none; width: auto; height: 14px; }
-.tk-pay__note { text-wrap: balance; }
+.tk-pay__note { max-width: 44ch; text-wrap: balance; }

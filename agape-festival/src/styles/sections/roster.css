@@ -1,175 +1,166 @@
 /* ==========================================================================
-   THE ROSTER (page/ArtistSelectSection.tsx, artist-select/*). Classes rs-*.
-   Rows of grid cells: the feature (one artist across the full width), then
-   one row of tiles per day. The bio is a <dialog> whose panel is itself a
-   grid of cells, unfolded out of the feature (artist-select/unfold.ts).
-   Structure comes from grid.css; this file sets only what belongs here.
-   Motion: transform, opacity, clip-path; one curve (--m-ease).
+   THE ROSTER (page/ArtistSelectSection.tsx, artist-select/*), classic.
+   The September site's artist cards, refined: per day a stage heading
+   between hairlines, then a grid of cards (2 across on phones, 3 from
+   768px). A card = a 4:5 photo graded to black and white over a dark name
+   plate in Orbitron. The bio is a <dialog> that pops out of the card.
+   Classes rs-*. Motion: transform and opacity only; one curve (--m-ease).
    ========================================================================== */
 
-.rs {
-  --rs-feature-h: 320px;
-  --rs-tile-h: 72px;
-  --rs-tile-pad: var(--s-2);
-}
-@media (min-width: 768px) {
-  .rs { --rs-feature-h: 360px; --rs-tile-h: var(--g-row-2); --rs-tile-pad: var(--s-3); }
-}
-@media (min-width: 1024px) {
-  .rs { --rs-feature-h: 440px; --rs-tile-pad: var(--s-4); }
-}
-/* Short laptop screens: the feature gives way so it and both days fit one screen. */
-@media (min-width: 1024px) and (max-height: 860px) {
-  .rs { --rs-feature-h: var(--g-row-5); }
-}
+.rs-day + .rs-day { margin-top: var(--group-gap); }
 
-/* ---- The feature ------------------------------------------------------- */
-.rs-feature { grid-auto-rows: minmax(var(--rs-feature-h), auto); }
-
-/* The whole row is one button, laid over the cells (inside the frame lines). */
-.rs-feature__hit {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  bottom: 0;
-  left: var(--g-margin);
-  right: calc(var(--g-margin) + 1px);
+.rs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--card-gap);
   margin: 0;
   padding: 0;
-  border: 0;
-  background: transparent;
+  list-style: none;
+}
+@media (min-width: 768px) {
+  .rs-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.rs-cell { display: flex; min-width: 0; }
+/* Phones, an odd count: the first card takes the full width (a 4:3 crop, so it stays one screen). */
+@media (max-width: 767.98px) {
+  .rs-cell[data-wide] { grid-column: 1 / -1; }
+  .rs-cell[data-wide] .rs-card__media { aspect-ratio: 4 / 3; }
+}
+
+/* ---- A card ------------------------------------------------------------ */
+.rs-card {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--c-line);
+  background: var(--c-plate);
+  color: var(--c-text);
+  text-align: start;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: transform var(--m-dur-1) var(--m-ease), border-color var(--m-dur-1) var(--m-ease);
 }
-.rs-feature__hit:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+.rs-card:active { transform: scale(0.985); }
+.rs-card:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
-.rs-feature__text { gap: var(--s-2); transition: background-color var(--m-dur-1) var(--m-ease); }
-.rs-feature__name { overflow-wrap: break-word; }
-.rs-feature__cue {
-  position: absolute;
-  top: var(--g-pad);
-  right: var(--g-pad);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-size: var(--t-small);
-  line-height: 1.45;
-  color: var(--c-fg-3);
-  transition: color var(--m-dur-1) var(--m-ease);
+.rs-card__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  /* No photo yet: a crop of the thread texture (its own ground is #080808), held well down by ::before. */
+  background-color: #080808;
+  background-image: url("/assets/winter/texture/threads.webp");
+  background-size: 380% auto;
+  background-position: var(--crop, 50% 50%);
+  background-repeat: no-repeat;
 }
-.rs-feature__cue svg { transition: transform var(--m-dur-1) var(--m-ease); }
-@media (hover: hover) and (pointer: fine) {
-  .rs-feature__hit:hover ~ .rs-feature__text { background-color: var(--c-wash); }
-  .rs-feature__hit:hover ~ .rs-feature__text .rs-feature__cue { color: var(--c-fg); }
-  .rs-feature__hit:hover ~ .rs-feature__text .rs-feature__cue svg { transform: translateX(2px); }
+@media (min-width: 768px) {
+  .rs-card__media { aspect-ratio: 4 / 3; }
 }
-.rs-feature__hit:active ~ .rs-feature__text { background-color: var(--c-wash); }
-
-.rs-feature__media { position: relative; overflow: hidden; }
-.rs-media {
+.rs-card__media[data-photo] { background-image: none; }
+.rs-card__media:not([data-photo])::before {
+  content: "";
   position: absolute;
   inset: 0;
-  transition: opacity var(--m-dur-2) var(--m-ease);
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(8, 8, 8, 0.42), rgba(8, 8, 8, 0.76));
 }
-@starting-style {
-  .rs-media { opacity: 0; }
+/* The grade's floor: the bottom of every frame sinks into the plate. */
+.rs-card__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 45%);
+  transition: opacity var(--m-dur-3) var(--m-ease);
+  pointer-events: none;
 }
-.rs-media__img,
-.rs-media__video {
+/* One grade for every photo: black and white, a touch of contrast, a little under. */
+.rs-card__img,
+.rs-card__clip {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: var(--focus, 50% 40%);
-  /* The palette is black, white and red: artist media is shown in greyscale. */
-  filter: grayscale(1);
+  object-position: 50% 28%;
+  filter: grayscale(1) contrast(1.08) brightness(0.86);
+  transition: transform 700ms var(--m-ease);
 }
-.rs-media__video { opacity: 0; transition: opacity var(--m-dur-2) var(--m-ease); }
-.rs-media__video[data-playing] { opacity: 1; }
+.rs-card__clip { z-index: 1; opacity: 0; transition: opacity var(--m-dur-2) var(--m-ease), transform 700ms var(--m-ease); }
+.rs-card__clip[data-playing] { opacity: 1; }
 
-/* Phones: one cell. The media runs behind the name under the shade. */
-@media (max-width: 767.98px) {
-  .rs-feature__text,
-  .rs-feature__media { grid-column: 1 / -1; grid-row: 1; }
-  .rs-feature__text { z-index: 1; }
-  .rs-feature__media { border: 0; }
-  .rs-media::after { content: ""; position: absolute; inset: 0; background: var(--c-shade); }
-}
-
-/* ---- Days and tiles ---------------------------------------------------- */
-.rs-day { grid-auto-rows: minmax(var(--rs-tile-h), auto); }
-.rs-day__label { justify-content: flex-end; gap: var(--s-1); }
-/* Phones: the label shares its line with a 72px tile, so it sits a little tighter. */
-@media (max-width: 767.98px) {
-  .rs-day__label { gap: 0; padding-block: var(--s-3); }
-}
-/* Same inset as the tile names beside it, so the line's text shares one edge. */
-.rs-more { justify-content: flex-end; padding: var(--rs-tile-pad); }
-
-.rs-tile {
+.rs-card__plate {
   position: relative;
-  isolation: isolate;
-  flex: 1 1 auto;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-start;
-  width: 100%;
-  margin: 0;
-  padding: var(--rs-tile-pad);
-  border: 0;
-  overflow: hidden;
-  background: transparent;
-  color: var(--c-fg-2);
-  font: 500 var(--t-small) / 1.3 var(--f-ui);
-  text-align: start;
-  hyphens: manual;
-  overflow-wrap: break-word;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: var(--plate-h);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--c-line);
+  transition: background-color var(--m-dur-1) var(--m-ease);
 }
-@media (min-width: 1024px) {
-  .rs-tile { font-size: var(--t-body); }
+.rs-card__name { min-width: 0; overflow-wrap: break-word; transition: color var(--m-dur-1) var(--m-ease); }
+.rs-card__arrow {
+  flex: none;
+  color: var(--c-text-3);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
 }
-.rs-tile__word { display: inline-block; max-width: 100%; }
-.rs-tile__photo {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 30%;
-  filter: grayscale(1);
-  opacity: 0.48;
-  transition: opacity var(--m-dur-1) var(--m-ease);
+/* Touch: the cue is always there (there is no hover to reveal it). */
+@media (hover: none) {
+  .rs-card__arrow { opacity: 1; transform: none; }
 }
-/* The featured artist: white name and the red mark (the menu's "current" square). */
-.rs-tile[aria-pressed="true"] { color: var(--c-fg); }
-.rs-tile[aria-pressed="true"]::after {
-  content: "";
-  position: absolute;
-  top: var(--rs-tile-pad);
-  right: var(--rs-tile-pad);
-  width: 8px;
-  height: 8px;
-  background: var(--c-mark);
-}
-.rs-tile[aria-pressed="true"] .rs-tile__photo { opacity: 0.72; }
 @media (hover: hover) and (pointer: fine) {
-  .rs-tile:hover { background-color: var(--c-wash); color: var(--c-fg); }
-  .rs-tile:hover .rs-tile__photo { opacity: 0.72; }
+  .rs-card:hover { border-color: var(--c-line-2); }
+  .rs-card:hover .rs-card__img,
+  .rs-card:hover .rs-card__clip { transform: scale(1.035); }
+  .rs-card:hover .rs-card__media::after { opacity: 0.55; }
+  .rs-card:hover .rs-card__plate { background-color: var(--c-plate-hi); }
+  .rs-card:hover .rs-card__name { color: var(--c-text-hi); }
+  .rs-card:hover .rs-card__arrow { opacity: 1; transform: none; color: var(--c-text-hi); }
 }
-.rs-tile:active { background-color: var(--c-wash); }
-.rs-tile:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+@media (max-width: 767.98px) {
+  .rs-card__plate { padding: var(--s-2) var(--s-3); }
+}
+
+/* ---- The acts still to come: dark, the red question marks ---------------- */
+.rs-card--tba { cursor: default; border-color: rgba(139, 0, 0, 0.28); }
+.rs-card--tba:active { transform: none; }
+.rs-tba {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #070707;
+  background-image: none;
+}
+.rs-tba::after { display: none; }
+.rs-tba__marks {
+  font-family: var(--f-display);
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.24em;
+  margin-right: -0.24em;
+  color: var(--c-red-ink);
+}
+.rs-tba__label { color: var(--c-text-3); }
+@media (max-width: 767.98px) {
+  .rs-tba__label { letter-spacing: 0.12em; }
+}
 
 /* ==========================================================================
-   The bio: a modal <dialog> over the page. Its panel spans the frame lines
-   from under the nav bar to the bottom of the screen and is built from the
-   same rows and cells (the page margin is zero inside it).
+   The bio: a modal <dialog> over a dark scrim. The panel (photo beside the
+   text from 768px, above it on phones) pops out of the card that opened it
+   (artist-select/popout.ts). Two layers: .rs-panel__bg (plain, animated)
+   and .rs-panel__content (fades in once the box lands).
    ========================================================================== */
 html.rs-lock { overflow: hidden; }
 
@@ -185,7 +176,7 @@ html.rs-lock { overflow: hidden; }
   border: 0;
   overflow: hidden;
   background: transparent;
-  color: var(--c-fg);
+  color: var(--c-text);
 }
 .rs-dialog::backdrop { background: transparent; }
 .rs-dialog:not([open]) { display: none; }
@@ -193,89 +184,93 @@ html.rs-lock { overflow: hidden; }
 .rs-scrim {
   position: absolute;
   inset: 0;
-  background: var(--c-shade);
+  background: rgba(0, 0, 0, 0.82);
   opacity: 0;
   transition: opacity var(--m-dur-2) var(--m-ease);
 }
 .rs-dialog[data-phase="opening"] .rs-scrim,
 .rs-dialog[data-phase="open"] .rs-scrim { opacity: 1; }
+.rs-dialog[data-phase="closing"] .rs-scrim { transition-duration: var(--m-dur-3); }
 @starting-style {
   .rs-dialog[open] .rs-scrim { opacity: 0; }
 }
 
-.rs-panel {
-  position: absolute;
-  top: var(--g-nav);
-  left: var(--g-margin);
-  right: var(--g-margin);
-  bottom: 0;
+/* Phones: the whole screen. From 768px: a centred box. */
+.rs-panel { position: absolute; inset: 0; }
+@media (min-width: 768px) {
+  .rs-panel {
+    inset: auto;
+    left: 50%;
+    top: 50%;
+    width: min(1040px, calc(100% - 2 * var(--sec-x)));
+    height: min(640px, calc(100% - 2 * var(--s-16)));
+    transform: translate(-50%, -50%);
+  }
+  .rs-panel:not([data-photo]) { width: min(760px, calc(100% - 2 * var(--sec-x))); height: auto; max-height: calc(100% - 2 * var(--s-16)); }
 }
-.rs-panel__fill {
-  --g-margin: 0px;
+.rs-panel__bg {
   position: absolute;
   inset: 0;
+  background: var(--c-plate);
+  border: 1px solid var(--c-line);
+  transform-origin: 0 0;
+}
+.rs-panel__content {
+  position: relative;
+  /* Inside the background's 1px edge, so the photo never covers it. */
+  padding: 1px;
   display: flex;
   flex-direction: column;
-  background: var(--c-ink);
+  height: 100%;
+  max-height: inherit;
 }
 
-/* The unfold's edges: brighter hairlines riding the clip (unfold.ts animates them; hidden at rest).
-   They are the panel's own cell edges in motion: the grid's hairlines are the brief's client-mandated
-   exception to the no-rules house style. */
-.rs-edge { position: absolute; background: var(--c-rule-control); opacity: 0; transform-origin: 0 0; pointer-events: none; }
-.rs-edge[data-edge="t"] { top: 0; left: 0; width: 100%; height: 1px; } /* taste-skill-ignore: grid hairline */
-.rs-edge[data-edge="r"] { top: 0; right: 0; width: 1px; height: 100%; }
-.rs-edge[data-edge="b"] { bottom: 0; left: 0; width: 100%; height: 1px; } /* taste-skill-ignore: grid hairline */
-.rs-edge[data-edge="l"] { top: 0; left: 0; width: 1px; height: 100%; }
-
-/* The bar: position, previous, next, close. */
-.rs-bar { flex: none; grid-auto-rows: var(--g-row-1); }
-.rs-count { white-space: nowrap; }
-.rs-count__day { margin-right: var(--s-2); color: var(--c-fg); }
-.rs-btn {
-  flex: 1 1 auto;
+/* The bar: the act's place in its day, previous / next, close. */
+.rs-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  height: var(--g-nav);
+  padding: 0 var(--s-2) 0 var(--s-5);
+  border-bottom: 1px solid var(--c-line);
+}
+.rs-count { display: flex; gap: var(--s-3); white-space: nowrap; }
+.rs-count__day { color: var(--c-mark); }
+.rs-count__n { font-variant-numeric: tabular-nums; }
+.rs-ctrls { display: flex; height: 100%; align-items: center; }
+.rs-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 44px;
+  height: 44px;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--c-fg);
+  color: var(--c-text-2);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color var(--m-dur-1) var(--m-ease);
+  transition: color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
 }
-.rs-btn--prev svg { transform: scaleX(-1); }
-/* The two step buttons split their cell; the line between them is a real cell edge. */
-.rs-steps { flex-direction: row; gap: 0; }
-.rs-steps .rs-btn + .rs-btn { border-left: 1px solid var(--c-rule); } /* taste-skill-ignore: grid hairline */
+.rs-icon--prev svg { transform: scaleX(-1); }
 @media (hover: hover) and (pointer: fine) {
-  .rs-btn:hover { background-color: var(--c-wash); }
+  .rs-icon:hover { color: var(--c-text-hi); }
 }
-.rs-btn:active { background-color: var(--c-wash); }
-.rs-btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+.rs-icon:active { transform: scale(0.94); }
+.rs-icon:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
 
-/* The body: name, day and bio beside the photo; the socials below the text. */
+/* The body: the photo and the text. Phones scroll the body; from 768px only the bio scrolls. */
 .rs-body {
   flex: 1 1 auto;
   min-height: 0;
-  /* Content-sized lines: the kit's minmax(0, auto) would squeeze them to fit this fixed-height scroller. */
-  grid-auto-rows: auto;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-.rs-text { gap: var(--s-6); }
-.rs-text .w-display { overflow-wrap: break-word; }
-.rs-tba { color: var(--c-fg-3); }
-.rs-bio:focus-visible { outline: 2px solid var(--c-focus); outline-offset: var(--s-1); }
-/* The facts line: label over value at the foot of each cell (the socials link cell matches it). */
-.rs-fact { gap: var(--s-1); }
-.rs-fact.g-link { justify-content: flex-end; }
-.rs-fact__value { margin: 0; font-size: var(--t-body); font-weight: 500; line-height: 1.3; color: var(--c-fg); }
-.rs-photo { position: relative; overflow: hidden; }
+.rs-photo { position: relative; aspect-ratio: 4 / 5; max-height: 58vh; width: 100%; overflow: hidden; background: #080808; }
 .rs-photo img {
   position: absolute;
   inset: 0;
@@ -283,21 +278,62 @@ html.rs-lock { overflow: hidden; }
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 50% 30%;
-  filter: grayscale(1);
+  object-position: 50% 28%;
+  filter: grayscale(1) contrast(1.08) brightness(0.9);
 }
-@media (max-width: 767.98px) {
-  .rs-photo { order: -1; min-height: var(--g-row-5); }
-  /* The kit's min-height: 0 would let this fixed-height scroller squeeze the bio's line under the facts. */
-  .rs-text { min-height: auto; }
-  /* Spare height goes to the text's line, not to the facts. */
-  .rs-body { grid-template-rows: minmax(auto, 1fr); }
-  .rs-body[data-photo] { grid-template-rows: auto minmax(auto, 1fr); }
+.rs-text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-5); padding: var(--s-8) var(--s-5) var(--s-10); }
+.rs-name {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  color: var(--c-text);
+  overflow-wrap: break-word;
 }
-/* From 768px the panel never scrolls: the bio does, inside its cell. */
+.rs-tba { color: var(--c-text-3); }
+.rs-bio:focus-visible { outline: 2px solid var(--c-focus); outline-offset: var(--s-1); }
+
+.rs-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-5) var(--s-6);
+  width: 100%;
+  margin: var(--s-3) 0 0;
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--c-line);
+}
+.rs-fact { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
+.rs-fact dd { margin: 0; font-size: var(--t-body); font-weight: 500; line-height: 1.4; color: var(--c-text); }
+@media (min-width: 1024px) {
+  .rs-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.rs-socials { display: flex; flex-wrap: wrap; gap: var(--s-2); width: 100%; margin: 0; padding: 0; list-style: none; }
+.rs-social {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--c-line-2);
+  color: var(--c-text);
+  text-decoration: none;
+  transition: border-color var(--m-dur-1) var(--m-ease), background-color var(--m-dur-1) var(--m-ease);
+}
+.rs-social__handle { font-size: var(--t-small); font-weight: 500; }
+.rs-social__icon { color: var(--c-text-3); }
+@media (hover: hover) and (pointer: fine) {
+  .rs-social:hover { border-color: var(--c-text-3); background-color: rgba(255, 255, 255, 0.04); }
+}
+.rs-social:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
 @media (min-width: 768px) {
-  .rs-body { overflow: hidden; grid-template-rows: minmax(0, 1fr) auto; }
-  .rs-text { min-height: 0; overflow: hidden; }
+  .rs-bar { padding-left: var(--s-6); }
+  .rs-body { display: flex; overflow: hidden; }
+  .rs-photo { flex: 0 0 40%; aspect-ratio: auto; max-height: none; height: auto; border-right: 1px solid var(--c-line); }
+  .rs-text { flex: 1 1 auto; min-width: 0; min-height: 0; padding: var(--s-10) var(--s-10) var(--s-10); overflow: hidden; }
   .rs-bio {
     flex: 1 1 auto;
     min-height: 0;
@@ -305,22 +341,21 @@ html.rs-lock { overflow: hidden; }
     overscroll-behavior: contain;
     padding-right: var(--s-4);
     scrollbar-width: thin;
-    scrollbar-color: var(--c-rule-control) transparent;
+    scrollbar-color: var(--c-line-2) transparent;
+    /* The last visible line fades instead of being cut: it reads as "more below". */
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+    padding-bottom: var(--s-8);
   }
+  .rs-panel:not([data-photo]) .rs-body { overflow-y: auto; }
+  .rs-panel:not([data-photo]) .rs-text { overflow: visible; }
 }
 
-/* The content arrives once the panel has mostly risen (40ms apart), and leaves first on close.
-   Stepping to another artist re-mounts the text, which fades in without the delay. */
+/* Stepping to another act re-mounts its text and photo: a short fade. */
 @media (prefers-reduced-motion: no-preference) {
-  .rs-reveal { transition: opacity var(--m-dur-2) var(--m-ease), transform var(--m-dur-2) var(--m-ease); }
-  .rs-dialog[data-phase="opening"] .rs-reveal { transition-delay: calc(var(--m-dur-2) + var(--k, 0) * var(--m-stagger)); }
-  .rs-dialog[data-phase="closing"] .rs-reveal { opacity: 0; transition-duration: var(--m-dur-1); transition-delay: 0ms; }
-  /* An explicit inset(0): clip-path cannot interpolate from a shape to "none". */
-  .rs-photo img { clip-path: inset(0); transition: clip-path var(--m-dur-3) var(--m-ease); }
-  .rs-dialog[data-phase="opening"] .rs-photo img { transition-delay: var(--m-dur-2); }
-  .rs-dialog[data-phase="closing"] .rs-photo img { opacity: 0; transition: opacity var(--m-dur-1) var(--m-ease); }
+  .rs-text, .rs-photo img { transition: opacity var(--m-dur-2) var(--m-ease); }
   @starting-style {
-    .rs-reveal { opacity: 0; transform: translateY(8px); }
-    .rs-photo img { clip-path: inset(0 0 100% 0); }
+    .rs-dialog[data-phase="open"] .rs-text,
+    .rs-dialog[data-phase="open"] .rs-photo img { opacity: 0; }
   }
 }

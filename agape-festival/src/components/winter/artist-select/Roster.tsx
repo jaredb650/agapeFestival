@@ -1,14 +1,14 @@
 "use client";
 
-import { Fragment, startTransition, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
-import { ArrowRight, Cell, Fill, Row } from "@/components/winter/grid";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { StageHeading } from "@/components/winter/classic";
 import { playWithRescue } from "@/components/winter/page/GestureRescue";
 import { observeInView } from "@/components/winter/perf";
+import { ArrowRight } from "@/components/winter/ui";
 import type { ArtistEntry, WinterDay } from "@/data/winter";
 import { BioDialog } from "./BioDialog";
 import { useReducedMotion } from "./hooks";
-import { buildRoster, featureMedia, photoSet, tileWords, type Act, type RosterDay } from "./acts";
-import type { Point } from "./unfold";
+import { buildRoster, photoSet, type Act, type RosterDay } from "./acts";
 import "@/styles/sections/roster.css";
 
 export interface RosterProps {
@@ -20,267 +20,165 @@ export interface RosterProps {
   venue: string;
 }
 
-/** A hover has to rest this long on a tile before it changes the feature (sweeping across stays cheap). */
-const HOVER_INTENT = 80;
-/** A pointer entering a tile this soon after the page scrolled was carried there by the scroll: ignored. */
-const SCROLL_QUIET = 150;
+/**
+ * Where each photo-less card looks into the thread texture (the September site's wireframe, as a still):
+ * a different crop per card, so the set reads as one material rather than one tile repeated.
+ */
+const THREAD_CROPS = ["18% 24%", "78% 18%", "42% 62%", "70% 38%", "8% 78%", "58% 30%", "30% 8%", "56% 72%", "50% 48%", "4% 40%", "86% 46%", "24% 96%", "64% 4%", "38% 34%"];
 
 /**
- * The roster, below the section header: one featured artist across the full width (name, day, and their
- * footage or photo where it exists), then one row of tiles per day. Hovering, focusing or pressing a tile
- * features that artist; pressing anywhere on the feature opens their bio, which unfolds out of the
- * feature into a large panel (BioDialog). Arrow keys move between tiles (one tab stop for the grid).
+ * The roster: the September site's artist cards. Per day a stage heading between hairlines, then a grid
+ * of cards (two across on phones, three from 768px): the photo, graded to black and white, over a dark
+ * name plate in Orbitron. Acts without a photo yet show a crop of the thread texture. Day 1's unannounced
+ * acts share one "to be revealed" card. Pressing a card (or a name in the lineup) pops its bio out of it.
  *
- * Performance: hover never renders by itself (an 80ms intent timer, then one transition render); the
- * footage loads only near the viewport and plays only while it is on screen and the bio is closed.
+ * Performance: the bio dialog mounts only once the roster is near the viewport; photos are lazy; an act's
+ * clip loads on the first hover (fine pointers only) and plays only while hovered.
  */
 export function Roster({ artists, days, id, venue }: RosterProps) {
   const roster = useMemo(() => buildRoster(artists, days), [artists, days]);
-  const [selected, setSelected] = useState(roster.first);
+  const [slug, setSlug] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const selectedRef = useRef(roster.first);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const tiles = useRef(new Map<string, HTMLButtonElement>());
-  const hitRef = useRef<HTMLButtonElement>(null);
-  const originRef = useRef<Point | null>(null);
-  const reduced = useReducedMotion();
   const [near, setNear] = useState(false);
-  const [onScreen, setOnScreen] = useState(false);
-
-  const act = roster.bySlug.get(selected) ?? roster.order[0];
-  const day = roster.days[act.day - 1];
+  const rootRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLElement | null>(null);
+  const reduced = useReducedMotion();
   const dialogId = `${id}-bio`;
 
-  const select = useCallback(
-    (slug: string) => {
-      if (slug === selectedRef.current || !roster.bySlug.has(slug)) return;
-      selectedRef.current = slug;
-      // A newer hover or key press pre-empts this render instead of queueing behind it.
-      startTransition(() => setSelected(slug));
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    return observeInView(el, (v) => v && setNear(true), { rootMargin: "800px 0px" });
+  }, []);
+
+  const openAct = useCallback((next: string, from: HTMLElement) => {
+    anchorRef.current = from;
+    setSlug(next);
+    setNear(true);
+    setOpen(true);
+  }, []);
+  const close = useCallback(() => setOpen(false), []);
+
+  // Names in the lineup link here (a[data-artist]): open that act's bio right where it was pressed.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = (e.target as HTMLElement | null)?.closest<HTMLElement>("a[data-artist]");
+      const next = link?.dataset.artist;
+      if (!link || !next || !roster.bySlug.has(next)) return;
+      e.preventDefault();
+      openAct(next, link);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [roster, openAct]);
+
+  const step = useCallback(
+    (dir: -1 | 1) => {
+      setSlug((cur) => {
+        const list = roster.order;
+        const at = list.findIndex((a) => a.artist.slug === cur);
+        return list[(at + dir + list.length) % list.length].artist.slug;
+      });
     },
     [roster],
   );
 
-  // The footage mounts once the feature is near the viewport and plays only while it is on screen.
-  useEffect(() => {
-    const el = hitRef.current;
-    if (!el) return;
-    const offNear = observeInView(el, (v) => v && setNear(true), { rootMargin: "800px 0px" });
-    const offView = observeInView(el, setOnScreen);
-    return () => {
-      offNear();
-      offView();
-    };
-  }, []);
-
-  // Lineup rows link here with data-artist: feature that act.
-  useEffect(() => {
-    const onClick = (e: globalThis.MouseEvent) => {
-      const slug = (e.target as HTMLElement | null)?.closest<HTMLElement>("a[data-artist]")?.dataset.artist;
-      if (slug) select(slug);
-    };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, [select]);
-
-  // A page scroll carries tiles under a resting pointer (a lineup link scrolls the roster into view right
-  // under it): only a pointer that moves over a tile features it, never the page moving under the pointer.
-  const scrolledAt = useRef(0);
-  /** The tile whose hover intent is running. */
-  const armed = useRef<string | null>(null);
-  const disarm = () => {
-    clearTimeout(hoverTimer.current);
-    armed.current = null;
-  };
-  useEffect(() => {
-    const onScroll = () => {
-      scrolledAt.current = performance.now();
-      clearTimeout(hoverTimer.current);
-      armed.current = null;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      clearTimeout(hoverTimer.current);
-    };
-  }, []);
-
-  const onTileEnter = (slug: string) => {
-    disarm();
-    if (performance.now() - scrolledAt.current < SCROLL_QUIET) return;
-    armed.current = slug;
-    hoverTimer.current = setTimeout(() => {
-      armed.current = null;
-      select(slug);
-    }, HOVER_INTENT);
-  };
-  /** A real move inside a tile the scroll carried in arms it as an entry would have. */
-  const onTileMove = (slug: string) => {
-    if (armed.current !== slug && slug !== selectedRef.current) onTileEnter(slug);
-  };
-  const onTileLeave = disarm;
-
-  /** Arrow keys: the nearest tile in that direction, by geometry (works for both layouts). */
-  const onGridKey = (e: KeyboardEvent<HTMLElement>) => {
-    const dirs: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
-    const order = roster.order.map((a) => a.artist.slug);
-    const from = (document.activeElement as HTMLElement | null)?.dataset.slug ?? selectedRef.current;
-    let next: string | undefined;
-    if (e.key === "Home") next = order[0];
-    else if (e.key === "End") next = order[order.length - 1];
-    else if (dirs[e.key]) next = nearest(tiles.current, from, dirs[e.key]);
-    if (!next) return;
-    e.preventDefault();
-    tiles.current.get(next)?.focus();
-  };
-
-  const openBio = (e: MouseEvent<HTMLButtonElement>) => {
-    disarm();
-    // detail 0: Enter / Space. The panel then rises without the sideways leg.
-    originRef.current = e.detail > 0 ? { x: e.clientX, y: e.clientY } : null;
-    setOpen(true);
-  };
-  const closeBio = useCallback(() => setOpen(false), []);
-  const step = useCallback(
-    (dir: -1 | 1) => {
-      const list = roster.order;
-      const at = list.findIndex((a) => a.artist.slug === selectedRef.current);
-      select(list[(at + dir + list.length) % list.length].artist.slug);
-    },
-    [roster, select],
-  );
-
-  const tileRef = (slug: string) => (el: HTMLButtonElement | null) => {
-    if (el) tiles.current.set(slug, el);
-    else tiles.current.delete(slug);
-  };
+  const act = slug ? roster.bySlug.get(slug) : undefined;
 
   return (
-    <>
-      <Row className="rs-feature">
-        {/* The whole row is the button; the cells below draw it. First in the DOM so hover can style its siblings. */}
-        <button
-          ref={hitRef}
-          type="button"
-          className="rs-feature__hit"
-          data-roster-open=""
-          aria-haspopup="dialog"
-          aria-controls={dialogId}
-          aria-label={`${act.artist.name}, ${day.label}. ${act.artist.bio ? "Read bio" : "Bio to be announced"}`}
-          onClick={openBio}
+    <div ref={rootRef} className="rs">
+      {roster.days.map((d, i) => (
+        <DayBlock key={d.day} day={d} cropFrom={i === 0 ? 0 : roster.days[0].acts.length} dialogId={dialogId} onOpen={openAct} />
+      ))}
+      {near && act && (
+        <BioDialog
+          id={dialogId}
+          act={act}
+          day={roster.days[act.day - 1]}
+          open={open}
+          anchorRef={anchorRef}
+          venue={venue}
+          reduced={reduced}
+          onClose={close}
+          onStep={step}
         />
-        <Cell span={8} y="end" className="rs-feature__text" aria-hidden="true">
-          <p className="w-display rs-feature__name">{act.artist.name}</p>
-          <p className="w-small">
-            {day.label} · {day.date}
-          </p>
-          <span className="rs-feature__cue">
-            {act.artist.bio ? "Read bio" : "Bio to be announced"}
-            {act.artist.bio ? <ArrowRight /> : null}
-          </span>
-        </Cell>
-        <Cell span={4} pad="none" className="rs-feature__media" aria-hidden="true">
-          <FeatureMedia key={act.artist.slug} act={act} near={near} play={near && onScreen && !open && !reduced} reduced={reduced} />
-        </Cell>
-        {/* Mounted once the roster is near the viewport (it can't be opened before): the closed dialog's
-            markup stays out of the initial HTML, and its photo is not preloaded with the hero. */}
-        {near && (
-          <BioDialog id={dialogId} act={act} day={day} open={open} originRef={originRef} anchorRef={hitRef} venue={venue} reduced={reduced} onClose={closeBio} onStep={step} />
-        )}
-      </Row>
-
-      {roster.days.map((d) => (
-        <DayRow key={d.day} day={d} selected={selected} tileRef={tileRef} onEnter={onTileEnter} onMove={onTileMove} onLeave={onTileLeave} onSelect={select} onKey={onGridKey} />
-      ))}
-    </>
-  );
-}
-
-interface DayRowProps {
-  day: RosterDay;
-  selected: string;
-  tileRef: (slug: string) => (el: HTMLButtonElement | null) => void;
-  onEnter: (slug: string) => void;
-  onMove: (slug: string) => void;
-  onLeave: () => void;
-  onSelect: (slug: string) => void;
-  onKey: (e: KeyboardEvent<HTMLElement>) => void;
-}
-
-/**
- * One day: its label cell, then a tile per act, then (Day 1) the cell for the acts still to come.
- * From 768px: the label spans two lines of five 2-column tiles. Phones: the label takes three of the
- * four columns of the first line, so nine acts tile three full lines.
- */
-function DayRow({ day, selected, tileRef, onEnter, onMove, onLeave, onSelect, onKey }: DayRowProps) {
-  const n = day.acts.length;
-  // From 768px: two columns of label, then lines of ten columns.
-  const used = n * 2 + (day.more ? 10 : 0);
-  const lines = Math.max(2, Math.ceil(used / 10));
-  const restMd = lines * 10 - used;
-  // Phones: a three-column label, one column per tile, four for the "more" cell.
-  const usedSm = 3 + n + (day.more ? 4 : 0);
-  const restSm = (4 - (usedSm % 4)) % 4;
-  const fills = restMd > 10 ? [restMd - 10, 10] : restMd ? [restMd] : [];
-
-  return (
-    <Row as="ul" className="rs-day" aria-label={`${day.label}, ${day.date}`} onKeyDown={onKey}>
-      <Cell as="li" span={2} rows={2} spanSm={3} className="rs-day__label" aria-hidden="true">
-        <p className="w-title">{day.label}</p>
-        <p className="w-small">{day.date}</p>
-      </Cell>
-      {day.acts.map((a) => (
-        <Tile key={a.artist.slug} act={a} shown={a.artist.slug === selected} tileRef={tileRef(a.artist.slug)} onEnter={onEnter} onMove={onMove} onLeave={onLeave} onSelect={onSelect} />
-      ))}
-      {day.more && (
-        <Cell as="li" span={10} spanSm={4} className="rs-more">
-          <p className="w-small">More acts to be announced</p>
-        </Cell>
       )}
-      {fills.map((f, i) => (
-        <Fill key={i} as="li" md={f} />
-      ))}
-      <Fill as="li" sm={restSm} />
-    </Row>
+    </div>
   );
 }
 
-interface TileProps {
-  act: Act;
-  shown: boolean;
-  tileRef: (el: HTMLButtonElement | null) => void;
-  onEnter: (slug: string) => void;
-  onMove: (slug: string) => void;
-  onLeave: () => void;
-  onSelect: (slug: string) => void;
+interface DayBlockProps {
+  day: RosterDay;
+  /** Index of this day's first act in THREAD_CROPS. */
+  cropFrom: number;
+  dialogId: string;
+  onOpen: (slug: string, from: HTMLElement) => void;
 }
 
-function Tile({ act, shown, tileRef, onEnter, onMove, onLeave, onSelect }: TileProps) {
+/** One day: the stage heading, then its cards. An odd count on phones gives the first card the full width. */
+function DayBlock({ day, cropFrom, dialogId, onOpen }: DayBlockProps) {
+  const headingId = `artists-day-${day.day}`;
+  const count = day.acts.length + (day.more ? 1 : 0);
+  const wideFirst = count % 2 === 1;
+  return (
+    <div className="rs-day">
+      <StageHeading label={day.label} id={headingId} red>
+        {day.date}
+      </StageHeading>
+      <ul className="rs-grid" aria-labelledby={headingId} data-reveal="">
+        {day.acts.map((a, i) => (
+          <li key={a.artist.slug} className="rs-cell" data-wide={(wideFirst && i === 0) || undefined}>
+            <Card act={a} crop={THREAD_CROPS[(cropFrom + i) % THREAD_CROPS.length]} dialogId={dialogId} onOpen={onOpen} wide={wideFirst && i === 0} />
+          </li>
+        ))}
+        {day.more && (
+          <li className="rs-cell">
+            <Mystery />
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+interface CardProps {
+  act: Act;
+  crop: string;
+  dialogId: string;
+  wide: boolean;
+  onOpen: (slug: string, from: HTMLElement) => void;
+}
+
+function Card({ act, crop, dialogId, wide, onOpen }: CardProps) {
   const { artist } = act;
   const photo = photoSet(artist);
+  const [hovered, setHovered] = useState(false);
+  const [clipOn, setClipOn] = useState(false);
+  const style = photo ? undefined : ({ "--crop": crop } as CSSProperties);
   return (
-    <Cell as="li" span={2} spanSm={1} pad="none" className="rs-tile-cell">
-      <button
-        ref={tileRef}
-        type="button"
-        className="rs-tile"
-        data-slug={artist.slug}
-        data-roster-tile=""
-        tabIndex={shown ? 0 : -1}
-        aria-pressed={shown}
-        onPointerEnter={(e) => e.pointerType === "mouse" && onEnter(artist.slug)}
-        onPointerMove={(e) => e.pointerType === "mouse" && (e.movementX || e.movementY) && onMove(artist.slug)}
-        onPointerLeave={onLeave}
-        onFocus={() => onSelect(artist.slug)}
-        onClick={() => onSelect(artist.slug)}
-      >
+    <button
+      type="button"
+      className="rs-card"
+      data-slug={artist.slug}
+      aria-haspopup="dialog"
+      aria-controls={dialogId}
+      onClick={(e) => onOpen(artist.slug, e.currentTarget)}
+      onPointerEnter={(e) => {
+        if (e.pointerType !== "mouse") return;
+        setHovered(true);
+        if (artist.clip) setClipOn(true);
+      }}
+      onPointerLeave={() => setHovered(false)}
+    >
+      <span className="rs-card__media" data-photo={photo ? "" : undefined} style={style}>
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            className="rs-tile__photo"
+            className="rs-card__img"
             src={photo.src}
             srcSet={photo.srcSet}
-            sizes="(min-width: 1280px) 15vw, (min-width: 768px) 17vw, 23vw"
+            sizes={wide ? "(min-width: 768px) 400px, 100vw" : "(min-width: 768px) 400px, 50vw"}
             alt=""
             width={600}
             height={600}
@@ -288,52 +186,43 @@ function Tile({ act, shown, tileRef, onEnter, onMove, onLeave, onSelect }: TileP
             decoding="async"
           />
         )}
-        <span className="rs-tile__name">
-          {tileWords(artist.name).map((w, i) => (
-            <Fragment key={i}>
-              {i > 0 && " "}
-              <span className="rs-tile__word">{w}</span>
-            </Fragment>
-          ))}
-        </span>
-      </button>
-    </Cell>
+        {clipOn && artist.clip && <Clip src={artist.clip} play={hovered} />}
+      </span>
+      <span className="rs-card__plate">
+        <span className="k-name rs-card__name">{artist.name}</span>
+        <ArrowRight className="rs-card__arrow" size={16} />
+      </span>
+      <span className="w-sr-only">
+        , Day {act.day}. {artist.bio ? "Read bio" : "Bio to be announced"}
+      </span>
+    </button>
   );
 }
 
-/**
- * The feature's footage (muted loop over its poster) or photo; nothing for acts without media yet. Nothing
- * at all until the feature is near the viewport: a lazy image this far below the hero still loads with the
- * page where the browser's lazy margin is large (unknown connection: 2500px), competing with the hero.
- */
-function FeatureMedia({ act, near, play, reduced }: { act: Act; near: boolean; play: boolean; reduced: boolean }) {
-  const media = featureMedia(act.artist);
-  const photo = photoSet(act.artist);
-  if (!media) return null;
+/** The acts still to come on a day: one card, the September site's red "to be revealed" treatment. */
+function Mystery() {
   return (
-    <div className="rs-media" style={{ "--focus": media.focus } as CSSProperties}>
-      {media.kind === "video" ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {near && media.poster && <img className="rs-media__img" src={media.poster} alt="" decoding="async" />}
-          {near && !reduced && <Clip src={media.src} play={play} />}
-        </>
-      ) : near ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="rs-media__img" src={photo?.src ?? media.src} srcSet={photo?.srcSet} sizes="(min-width: 768px) 34vw, 100vw" alt="" decoding="async" />
-      ) : null}
+    <div className="rs-card rs-card--tba">
+      <span className="rs-card__media rs-tba" aria-hidden="true">
+        <span className="rs-tba__marks">???</span>
+      </span>
+      <span className="rs-card__plate">
+        <span className="k-label rs-tba__label">To be revealed</span>
+      </span>
     </div>
   );
 }
 
-/** Muted loop: hidden until it is actually playing (iOS Low Power Mode shows the poster), unloaded on unmount. */
+/** A muted loop over the photo: visible only once it is actually playing; unloaded on unmount. */
 function Clip({ src, play }: { src: string; play: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
-    if (play) playWithRescue(v);
-    else v.pause();
+    if (play) {
+      v.currentTime = 0;
+      playWithRescue(v);
+    } else v.pause();
   }, [play]);
   useEffect(() => {
     const v = ref.current;
@@ -347,7 +236,7 @@ function Clip({ src, play }: { src: string; play: boolean }) {
   return (
     <video
       ref={ref}
-      className="rs-media__video"
+      className="rs-card__clip"
       src={src}
       muted
       loop
@@ -356,33 +245,9 @@ function Clip({ src, play }: { src: string; play: boolean }) {
       disablePictureInPicture
       disableRemotePlayback
       tabIndex={-1}
+      aria-hidden="true"
       onPlaying={(e) => e.currentTarget.setAttribute("data-playing", "")}
       onPause={(e) => e.currentTarget.removeAttribute("data-playing")}
     />
   );
-}
-
-/** The nearest tile from `from` in direction (dx, dy): rows stay rows, columns take the closest below/above. */
-function nearest(tiles: Map<string, HTMLElement>, from: string, [dx, dy]: [number, number]) {
-  const el = tiles.get(from);
-  if (!el) return undefined;
-  const centre = (r: DOMRect) => [r.left + r.width / 2, r.top + r.height / 2];
-  const [ox, oy] = centre(el.getBoundingClientRect());
-  let best: string | undefined;
-  let bestScore = Infinity;
-  tiles.forEach((node, slug) => {
-    if (slug === from) return;
-    const r = node.getBoundingClientRect();
-    if (!r.width) return;
-    const [x, y] = centre(r);
-    const along = dx ? (x - ox) * dx : (y - oy) * dy;
-    const across = dx ? Math.abs(y - oy) : Math.abs(x - ox);
-    if (along <= 4) return;
-    const score = dx ? along + across * 6 : along + across * 1.4;
-    if (score < bestScore) {
-      bestScore = score;
-      best = slug;
-    }
-  });
-  return best;
 }

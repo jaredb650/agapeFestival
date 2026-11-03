@@ -1,5 +1,5 @@
+import { Button } from "@/components/winter/classic";
 import { sentenceCase } from "@/components/winter/nav/sections";
-import { ArrowUpRight, Button } from "@/components/winter/ui";
 import { LOCKERS } from "@/data/winter";
 import "@/styles/sections/lockers.css";
 
@@ -19,9 +19,8 @@ export function Lockers() {
             </h2>
             <p className="lk-line">Book ahead on Elockers.</p>
           </div>
-          <Button variant="secondary" href={LOCKERS.url} external icon={<ArrowUpRight className="w-btn__icon" />} className="lk-btn">
+          <Button variant="secondary" href={LOCKERS.url} external className="lk-btn">
             {sentenceCase(LOCKERS.cta.replace(/\s*→\s*$/, ""))}
-            <span className="w-sr-only"> (opens in a new tab)</span>
           </Button>
         </div>
       </div>

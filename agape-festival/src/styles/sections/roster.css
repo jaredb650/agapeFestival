@@ -289,34 +289,15 @@ html.rs-lock { overflow: hidden; }
   justify-content: space-between;
   gap: var(--s-4);
   height: var(--g-nav);
-  padding: 0 var(--s-2) 0 var(--s-5);
+  /* The squares sit as far from the right edge as from the top and bottom. */
+  padding: 0 calc((var(--g-nav) - 44px) / 2) 0 var(--s-5);
   border-bottom: 1px solid var(--c-line);
 }
 .rs-count { display: flex; gap: var(--s-3); white-space: nowrap; }
 .rs-count__day { color: var(--c-mark); }
 .rs-count__n { font-variant-numeric: tabular-nums; }
-.rs-ctrls { display: flex; height: 100%; align-items: center; }
-.rs-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--c-text-2);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
-}
-.rs-icon--prev svg { transform: scaleX(-1); }
-@media (hover: hover) and (pointer: fine) {
-  .rs-icon:hover { color: var(--c-text-hi); }
-}
-.rs-icon:active { transform: scale(0.94); }
-.rs-icon:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+/* Previous / next (outline squares) and the red Close: the kit's icon buttons (styles/kit/buttons.css). */
+.rs-ctrls { display: flex; height: 100%; align-items: center; gap: var(--s-2); }
 
 /* The body: the photo and the text. Phones scroll the body; from 768px only the bio scrolls. */
 .rs-body {
@@ -382,24 +363,8 @@ html.rs-lock { overflow: hidden; }
   .rs-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+/* The socials: the kit's secondary chips, label + handle. */
 .rs-socials { display: flex; flex-wrap: wrap; gap: var(--s-2); width: 100%; margin: 0; padding: 0; list-style: none; }
-.rs-social {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 44px;
-  padding: 0 var(--s-4);
-  border: 1px solid var(--c-line-2);
-  color: var(--c-text);
-  text-decoration: none;
-  transition: border-color var(--m-dur-1) var(--m-ease), background-color var(--m-dur-1) var(--m-ease);
-}
-.rs-social__handle { font-size: var(--t-small); font-weight: 500; }
-.rs-social__icon { color: var(--c-text-3); }
-@media (hover: hover) and (pointer: fine) {
-  .rs-social:hover { border-color: var(--c-text-3); background-color: rgba(255, 255, 255, 0.04); }
-}
-.rs-social:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 @media (min-width: 768px) {
   .rs-bar { padding-left: var(--s-6); }

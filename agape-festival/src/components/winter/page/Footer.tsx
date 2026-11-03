@@ -1,6 +1,6 @@
+import { Button } from "@/components/winter/classic";
 import { barLinks } from "@/components/winter/nav/sections";
 import { FLYER } from "@/components/winter/page/media";
-import { ArrowUpRight } from "@/components/winter/ui";
 import { COPY } from "@/data/festival";
 import { FOOTER, WINTER } from "@/data/winter";
 import "@/styles/sections/footer.css";
@@ -13,8 +13,9 @@ const blurb = FOOTER.contactBlurb.replace(", and ", " and ");
 const NewTab = () => <span className="w-sr-only"> (opens in a new tab)</span>;
 
 /**
- * The footer, quiet, after the September one: the mark and the dates; the sections in Orbitron caps;
- * the Instagram handles and the newsletter; the contact email. A fading hairline on top and a legal line
+ * The footer, quiet, after the September one: the mark and the dates; the sections in Orbitron caps
+ * (the kit's ghost buttons); the Instagram handles, the newsletter and the contact email (the kit's
+ * Archivo links). A fading hairline on top and a legal line
  * at the foot. The section links come through barLinks like the top bar's, so both follow the same order.
  * Server-rendered, no client JS.
  */
@@ -47,9 +48,9 @@ export function Footer({ links }: { links: { label: string; href: string }[] }) 
             <ul className="ft-list ft-list--nav">
               {sections.map((l) => (
                 <li key={l.href}>
-                  <a href={l.href} className="ft-nav">
+                  <Button variant="ghost" size="sm" href={l.href} className="ft-nav">
                     {l.label}
-                  </a>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -60,20 +61,16 @@ export function Footer({ links }: { links: { label: string; href: string }[] }) 
             <ul className="ft-list">
               {FOOTER.socials.map((s) => (
                 <li key={s.url}>
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="ft-link">
+                  <Button variant="link" href={s.url} external className="ft-link">
                     <span className="w-sr-only">{s.platform} </span>
                     {s.handle}
-                    <ArrowUpRight size={16} className="ft-link__icon" />
-                    <NewTab />
-                  </a>
+                  </Button>
                 </li>
               ))}
               <li>
-                <a href={WINTER.laylo.url} target="_blank" rel="noopener noreferrer" className="ft-link">
+                <Button variant="link" href={WINTER.laylo.url} external className="ft-link">
                   Newsletter
-                  <ArrowUpRight size={16} className="ft-link__icon" />
-                  <NewTab />
-                </a>
+                </Button>
               </li>
             </ul>
           </div>
@@ -84,9 +81,9 @@ export function Footer({ links }: { links: { label: string; href: string }[] }) 
             </h2>
             <ul className="ft-list">
               <li>
-                <a href={`mailto:${FOOTER.contactEmail}`} className="ft-link">
+                <Button variant="link" href={`mailto:${FOOTER.contactEmail}`} className="ft-link">
                   {FOOTER.contactEmail}
-                </a>
+                </Button>
               </li>
             </ul>
             <p className="ft-line">{blurb}</p>

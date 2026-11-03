@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type RefObject, type SyntheticEvent } from "react";
-import { ArrowRight, ArrowUpRight, CloseIcon } from "@/components/winter/ui";
+import { Button, CloseButton, IconButton } from "@/components/winter/classic";
+import { ArrowLeft, ArrowRight } from "@/components/winter/ui";
 import { photoSet, type Act, type RosterDay } from "./acts";
 import { originOf, popClose, popOpen } from "./popout";
 
@@ -25,7 +26,7 @@ const FOCUSABLE = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1
 /**
  * The bio: a modal <dialog> (focus trapped, page inert, Esc) over a dark scrim. A panel in the September
  * site's modal shape: the photo beside the text (above it on phones), a bar with the act's place in the
- * day, previous / next and close, then the name, the bio, what is known for certain (date, venue, set
+ * day, previous / next (outline squares) and the kit's red Close square, then the name, the bio, what is known for certain (date, venue, set
  * time) and the socials. An act with a clip plays it over the photo while the panel is open (BioClip).
  * It pops out of the element that opened it (popout.ts); the phase is a data attribute (no React
  * renders). Reduced motion: it simply appears and goes, and the photo stays still.
@@ -151,15 +152,9 @@ export function BioDialog({ id, act, day, open, anchorRef, venue, reduced, onClo
               </span>
             </p>
             <div className="rs-ctrls">
-              <button type="button" className="rs-icon rs-icon--prev" onClick={() => onStep(-1)} aria-label="Previous artist">
-                <ArrowRight size={20} />
-              </button>
-              <button type="button" className="rs-icon" onClick={() => onStep(1)} aria-label="Next artist" data-roster-next="">
-                <ArrowRight size={20} />
-              </button>
-              <button ref={closeRef} type="button" className="rs-icon" onClick={onClose} aria-label="Close bio">
-                <CloseIcon size={20} />
-              </button>
+              <IconButton variant="outline" label="Previous artist" icon={<ArrowLeft size={20} />} onClick={() => onStep(-1)} />
+              <IconButton variant="outline" label="Next artist" icon={<ArrowRight size={20} />} onClick={() => onStep(1)} data-roster-next="" />
+              <CloseButton ref={closeRef} label="Close bio" onClick={onClose} />
             </div>
           </div>
 
@@ -199,12 +194,9 @@ export function BioDialog({ id, act, day, open, anchorRef, venue, reduced, onClo
                 <ul className="rs-socials">
                   {socials.map((s) => (
                     <li key={s.url}>
-                      <a className="rs-social" href={s.url} target="_blank" rel="noopener noreferrer">
-                        <span className="k-label">{s.platform}</span>
-                        <span className="rs-social__handle">{s.handle ?? s.platform}</span>
-                        <ArrowUpRight size={16} className="rs-social__icon" />
-                        <span className="w-sr-only"> (opens in a new tab)</span>
-                      </a>
+                      <Button variant="secondary" size="sm" href={s.url} external meta={s.handle}>
+                        {s.platform}
+                      </Button>
                     </li>
                   ))}
                 </ul>

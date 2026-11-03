@@ -30,7 +30,7 @@ export function Faq() {
       intro={
         <p className="k-lead fq-lead">
           Still have questions? Email{" "}
-          <a className="fq-lead__link" href={`mailto:${email}`}>
+          <a className="k-link" href={`mailto:${email}`}>
             {email}
           </a>
         </p>

@@ -1,6 +1,6 @@
-import { Section } from "@/components/winter/classic";
+import { Button, Section } from "@/components/winter/classic";
 import { sentenceCase } from "@/components/winter/nav/sections";
-import { ArrowRight, ArrowUpRight, Button } from "@/components/winter/ui";
+import { ArrowRight } from "@/components/winter/ui";
 import { TICKETS, WINTER, WINTER_DAYS } from "@/data/winter";
 import "@/styles/sections/tickets.css";
 
@@ -66,14 +66,7 @@ export function Tickets() {
         </dl>
 
         <div className="tk-cta">
-          <Button
-            href={url}
-            external
-            size="lg"
-            className="tk-btn"
-            icon={<ArrowUpRight className="w-btn__icon" size={16} />}
-            aria-label={`${cta} on ${provider} (opens in a new tab)`}
-          >
+          <Button href={url} external size="lg" className="tk-btn" aria-label={`${cta} on ${provider} (opens in a new tab)`}>
             {cta}
           </Button>
         </div>

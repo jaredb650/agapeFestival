@@ -1,0 +1,514 @@
+/* ==========================================================================
+   CONTROLS — the classic button family (Nov 2026).
+   components/winter/classic/{Button, IconButton, Segmented, TabRail}.tsx.
+   Guide: context/winter-redesign/classic-brief.md ("Controls").
+
+   One family, five shapes:
+     .k-btn  primary    deep red fill (#8b0000): the one action a view exists for
+             secondary  a #0a0a0a plate with a white-18% hairline: every other boxed action
+             ghost      Orbitron caps + arrow, no box: "View all →", "Back to top"
+             link       Archivo text: handles, emails, a link beside a sentence
+     .k-ibtn plain | outline | red: one glyph in a square. Red = Close, everywhere
+     .k-seg  a segmented toggle: equal cells, a red mark that slides to the choice
+     .k-tabs a tab rail: icon tiles that each show their own panel (Getting here)
+
+   Every state, everywhere:
+     hover     fine pointers only: a colour / plate step, arrows nudge 3px
+     press     scale 0.97 (0.94 on a small square, 0.98 on a tile), 100ms in, 160ms out
+     focus     a 2px white ring, 2px out (keyboard only, :focus-visible)
+     disabled  muted text on a bare hairline; not pressable
+     loading   the label dims, a hairline runs along the foot (aria-busy)
+     selected  white, and a red mark along the foot (aria-pressed / -current / -selected)
+   Touch: 44px targets at every size (a smaller box grows an invisible ::before).
+   Square corners, no glow, no shimmer, no loops (only the loading hairline moves).
+
+   Colours are tokens on the element (--kb-*), read by one set of rules, so a
+   section can retune a control with custom properties and the states follow.
+   Modifiers sit in :where() so a section's single class can override them.
+   The hero's frozen Get tickets is .w-btn.wh__cta (winter.css): nothing here
+   matches it.
+   ========================================================================== */
+
+/* ---- Shared reset ------------------------------------------------------- */
+.k-btn,
+.k-ibtn,
+.k-seg__opt,
+.k-tab {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: 0;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.k-btn:focus-visible,
+.k-ibtn:focus-visible,
+.k-seg__opt:focus-visible,
+.k-tab:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+/* ==========================================================================
+   Button
+   ========================================================================== */
+.k-btn {
+  --kb-h: 48px;
+  --kb-px: var(--s-8);
+  --kb-fs: var(--t-label);
+  --kb-track: 0.2em;
+  --kb-press: 0.97;
+  --kb-bg: transparent;
+  --kb-bd: transparent;
+  --kb-fg: var(--c-text);
+  --kb-ic: currentColor;
+  --kb-bg-h: var(--kb-bg);
+  --kb-bd-h: var(--kb-bd);
+  --kb-fg-h: var(--c-text-hi);
+  --kb-ic-h: currentColor;
+  --kb-nudge: translateX(3px);
+  --kb-load: var(--c-mark);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  min-width: 44px;
+  min-height: var(--kb-h);
+  max-width: 100%;
+  padding: var(--s-2) var(--kb-px);
+  border: 1px solid var(--kb-bd);
+  background-color: var(--kb-bg);
+  color: var(--kb-fg);
+  font-family: var(--f-display);
+  font-size: var(--kb-fs);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: var(--kb-track);
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--m-dur-1) var(--m-ease),
+    border-color var(--m-dur-1) var(--m-ease),
+    color var(--m-dur-1) var(--m-ease),
+    text-decoration-color var(--m-dur-1) var(--m-ease),
+    transform var(--m-dur-1) var(--m-ease);
+}
+/* The touch target: a box under 44px tall grows an invisible strip above and below. */
+.k-btn::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: min(0px, calc((var(--kb-h) - 44px) / 2));
+  bottom: min(0px, calc((var(--kb-h) - 44px) / 2));
+}
+/* Tracked caps carry the tracking after the last letter: pull it back so the label sits centred. */
+.k-btn__label { min-width: 0; margin-right: calc(-1 * var(--kb-track)); }
+.k-btn__meta {
+  font-family: var(--f-ui);
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--c-text);
+}
+.k-btn__lead,
+.k-btn__icon { flex: none; display: block; width: 16px; height: 16px; color: var(--kb-ic); transition: color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease); }
+.k-btn__lead > svg { display: block; width: 16px; height: 16px; }
+.k-btn:where([data-icon="external"]) { --kb-nudge: translate(2px, -2px); }
+.k-btn:where([data-block]) { display: flex; width: 100%; white-space: normal; text-wrap: balance; }
+
+/* ---- Sizes ---- */
+.k-btn:where([data-size="sm"]) { --kb-h: 40px; --kb-px: var(--s-5); --kb-fs: 0.6875rem; --kb-track: 0.16em; gap: var(--s-2); }
+.k-btn:where([data-size="lg"]) { --kb-h: 56px; --kb-px: var(--s-10); --kb-fs: 0.8125rem; --kb-track: 0.24em; }
+
+/* ---- Variants ---- */
+.k-btn:where([data-variant="primary"]) {
+  --kb-bg: var(--c-red);
+  --kb-bd: var(--c-red);
+  --kb-fg: var(--c-text-hi);
+  --kb-bg-h: var(--c-red-hover);
+  --kb-bd-h: var(--c-red-hover);
+  --kb-load: var(--c-text-hi);
+}
+.k-btn:where([data-variant="secondary"]) {
+  --kb-bg: var(--c-plate);
+  --kb-bd: var(--c-line-2);
+  --kb-ic: var(--c-text-3);
+  --kb-bg-h: var(--c-plate-hi);
+  --kb-bd-h: var(--c-text-3);
+  --kb-ic-h: var(--c-text-hi);
+}
+.k-btn:where([data-variant="ghost"], [data-variant="link"]) {
+  --kb-px: 0;
+  --kb-h: 44px;
+  --kb-fg: var(--c-text-2);
+  --kb-ic: var(--c-text-3);
+  padding-block: 0;
+  border: 0;
+}
+.k-btn:where([data-variant="ghost"][data-size="sm"]) { --kb-h: 40px; }
+.k-btn:where([data-variant="link"]) {
+  --kb-fs: var(--t-body);
+  --kb-track: 0em;
+  gap: var(--s-2);
+  font-family: var(--f-ui);
+  font-weight: 400;
+  text-transform: none;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.k-btn:where([data-variant="link"][data-size="sm"]) { --kb-fs: var(--t-small); font-weight: 500; }
+.k-btn:where([data-variant="link"][data-size="lg"]) { --kb-fs: var(--t-lead); }
+.k-btn:where([data-underline]) {
+  text-decoration: underline;
+  text-decoration-color: var(--c-line-2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+.k-btn:where([data-variant="ghost"], [data-variant="link"]):focus-visible { outline-offset: 4px; }
+
+/* ---- Hover (fine pointers) and press ---- */
+@media (hover: hover) and (pointer: fine) {
+  .k-btn:where(:not(:disabled, [aria-disabled="true"])):hover {
+    background-color: var(--kb-bg-h);
+    border-color: var(--kb-bd-h);
+    color: var(--kb-fg-h);
+    text-decoration-color: currentColor;
+  }
+  .k-btn:where(:not(:disabled, [aria-disabled="true"])):hover .k-btn__icon { color: var(--kb-ic-h); }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .k-btn:where([data-icon]:not(:disabled, [aria-disabled="true"])):hover .k-btn__icon { transform: var(--kb-nudge); }
+}
+.k-btn:where(:not(:disabled, [aria-disabled="true"])):active { transform: scale(var(--kb-press)); transition-duration: 100ms; }
+
+/* ---- Selected: white, a red mark along the foot ---- */
+.k-btn::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--m-dur-2) var(--m-ease);
+  pointer-events: none;
+}
+.k-btn:where([data-variant="ghost"], [data-variant="link"])::after { left: 0; right: 0; bottom: 6px; height: 1px; }
+.k-btn:is([aria-pressed="true"], [aria-current]:not([aria-current="false"])) { --kb-fg: var(--c-text-hi); --kb-bd: var(--c-text-3); }
+.k-btn:is([aria-pressed="true"], [aria-current]:not([aria-current="false"]))::after { transform: scaleX(1); }
+
+/* ---- Disabled: a bare hairline, muted text ---- */
+.k-btn:is(:disabled, [aria-disabled="true"]):not([data-loading]) {
+  --kb-bg: transparent;
+  --kb-bd: var(--c-line);
+  --kb-fg: var(--c-text-3);
+  --kb-ic: var(--c-text-3);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.k-btn:where([data-variant="ghost"], [data-variant="link"]):is(:disabled, [aria-disabled="true"]) { --kb-bd: transparent; }
+
+/* ---- Loading: the label dims, a hairline runs along the foot ---- */
+.k-btn[data-loading] { cursor: progress; }
+.k-btn[data-loading] > :not(.k-load) { opacity: 0.55; }
+
+/* The running hairline (Button + IconButton). Constant motion, so linear. */
+.k-load {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.k-load::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: var(--kb-load, var(--c-mark));
+  animation: k-load 1100ms linear infinite;
+}
+@keyframes k-load {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+/* ==========================================================================
+   Icon button: one glyph in a square
+   ========================================================================== */
+.k-ibtn {
+  --kb-s: 44px;
+  --kb-i: 20px;
+  --kb-press: 0.94;
+  --kb-bg: transparent;
+  --kb-bd: transparent;
+  --kb-fg: var(--c-text-2);
+  --kb-bg-h: rgba(255, 255, 255, 0.06);
+  --kb-bd-h: var(--kb-bd);
+  --kb-fg-h: var(--c-text-hi);
+  --kb-load: var(--c-mark);
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--kb-s);
+  height: var(--kb-s);
+  padding: 0;
+  border: 1px solid var(--kb-bd);
+  background-color: var(--kb-bg);
+  color: var(--kb-fg);
+  transition:
+    background-color var(--m-dur-1) var(--m-ease),
+    border-color var(--m-dur-1) var(--m-ease),
+    color var(--m-dur-1) var(--m-ease),
+    transform var(--m-dur-1) var(--m-ease);
+}
+.k-ibtn::before {
+  content: "";
+  position: absolute;
+  inset: min(0px, calc((var(--kb-s) - 44px) / 2));
+}
+.k-ibtn > svg { flex: none; display: block; width: var(--kb-i); height: var(--kb-i); }
+.k-ibtn:where([data-size="sm"]) { --kb-s: 36px; --kb-i: 16px; }
+.k-ibtn:where([data-size="lg"]) { --kb-s: 56px; }
+
+.k-ibtn:where([data-variant="outline"]) {
+  --kb-bg: var(--c-plate);
+  --kb-bd: var(--c-line-2);
+  --kb-fg: var(--c-text);
+  --kb-bg-h: var(--c-plate-hi);
+  --kb-bd-h: var(--c-text-3);
+}
+.k-ibtn:where([data-variant="red"]) {
+  --kb-bg: var(--c-red);
+  --kb-bd: var(--c-red);
+  --kb-fg: var(--c-text-hi);
+  --kb-bg-h: var(--c-red-hover);
+  --kb-bd-h: var(--c-red-hover);
+  --kb-load: var(--c-text-hi);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .k-ibtn:where(:not(:disabled, [aria-disabled="true"])):hover {
+    background-color: var(--kb-bg-h);
+    border-color: var(--kb-bd-h);
+    color: var(--kb-fg-h);
+  }
+}
+.k-ibtn:where(:not(:disabled, [aria-disabled="true"])):active { transform: scale(var(--kb-press)); transition-duration: 100ms; }
+
+/* On (a toggle: mute, pause): white glyph, red mark along the foot. */
+.k-ibtn::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--m-dur-2) var(--m-ease);
+  pointer-events: none;
+}
+.k-ibtn[aria-pressed="true"] { --kb-fg: var(--c-text-hi); }
+.k-ibtn[aria-pressed="true"]::after { transform: scaleX(1); }
+
+.k-ibtn:is(:disabled, [aria-disabled="true"]):not([data-loading]) {
+  --kb-bg: transparent;
+  --kb-fg: rgba(255, 255, 255, 0.28);
+  cursor: not-allowed;
+}
+.k-ibtn:where([data-variant="outline"], [data-variant="red"]):is(:disabled, [aria-disabled="true"]):not([data-loading]) { --kb-bd: var(--c-line); }
+.k-ibtn[data-loading] { cursor: progress; }
+.k-ibtn[data-loading] > svg { opacity: 0.55; }
+
+/* ==========================================================================
+   Segmented toggle: equal cells between hairlines, a red mark that slides
+   ========================================================================== */
+.k-seg {
+  --ks-h: 44px;
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  max-width: 100%;
+  border: 1px solid var(--c-line);
+  background-color: var(--c-plate);
+}
+.k-seg:where([data-frame="none"]) { border: 0; background: none; }
+.k-seg:where([data-block]) { display: grid; width: 100%; }
+.k-seg:where([data-size="sm"]) { --ks-h: 36px; }
+
+.k-seg__opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: var(--ks-h);
+  padding: 0 var(--s-4);
+  border: 0;
+  border-left: 1px solid var(--c-line);
+  background: transparent;
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--c-text-3);
+  transition: color var(--m-dur-1) var(--m-ease), background-color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
+}
+.k-seg__opt:first-child { border-left: 0; }
+.k-seg:where([data-size="sm"]) .k-seg__opt { padding: 0 var(--s-3); }
+/* A 36px cell still answers to a 44px touch. */
+.k-seg__opt::before { content: ""; position: absolute; left: 0; right: 0; top: min(0px, calc((var(--ks-h) - 44px) / 2)); bottom: min(0px, calc((var(--ks-h) - 44px) / 2)); }
+.k-seg__label { margin-right: -0.2em; }
+.k-seg__opt[aria-pressed="true"] { color: var(--c-text-hi); cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  .k-seg__opt:not(:disabled):not([aria-pressed="true"]):hover { color: var(--c-text-hi); background-color: rgba(255, 255, 255, 0.04); }
+}
+.k-seg__opt:not(:disabled):not([aria-pressed="true"]):active { transform: scale(0.97); transition-duration: 100ms; }
+.k-seg__opt:focus-visible { outline-offset: -2px; z-index: 1; }
+.k-seg__opt:disabled {
+  color: rgba(255, 255, 255, 0.24);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* The mark: one bar, a cell wide, slid to the chosen cell by index. */
+.k-seg__mark {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: calc(100% / var(--ks-n, 2));
+  height: 2px;
+  background: var(--c-mark);
+  transform: translateX(calc(var(--ks-i, 0) * 100%));
+  opacity: 0;
+  transition: transform var(--m-dur-2) var(--m-ease), opacity var(--m-dur-1) var(--m-ease);
+  pointer-events: none;
+}
+.k-seg__mark[data-on] { opacity: 1; }
+.k-seg:where([data-mark="top"]) .k-seg__mark { top: -1px; bottom: auto; }
+.k-seg:where([data-frame="none"]) .k-seg__mark { bottom: 0; }
+.k-seg:where([data-frame="none"][data-mark="top"]) .k-seg__mark { top: 0; }
+
+/* ==========================================================================
+   Tab rail: icon tiles that each show their own panel
+   ========================================================================== */
+.k-tabs {
+  --kt-cols: 2;
+  --kt-mark: 2px;
+  display: grid;
+  grid-template-columns: repeat(var(--kt-cols), minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--c-line);
+  background-color: var(--c-line);
+}
+.k-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-width: 0;
+  min-height: 80px;
+  padding: var(--s-4);
+  border: 0;
+  background-color: var(--c-plate);
+  color: var(--c-text-2);
+  text-align: start;
+  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
+}
+.k-tab__icon { display: block; width: 20px; height: 20px; color: var(--c-text-3); transition: color var(--m-dur-1) var(--m-ease); }
+.k-tab__icon > svg { display: block; width: 20px; height: 20px; }
+.k-tab__label {
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+.k-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--kt-mark);
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--m-dur-2) var(--m-ease);
+  pointer-events: none;
+}
+.k-tab[aria-selected="true"] { background-color: var(--c-plate-hi); color: var(--c-text-hi); cursor: default; }
+.k-tab[aria-selected="true"] .k-tab__icon { color: var(--c-mark); }
+.k-tab[aria-selected="true"]::after { transform: scaleX(1); }
+@media (hover: hover) and (pointer: fine) {
+  .k-tab:not([aria-selected="true"]):hover { background-color: var(--c-plate-hi); color: var(--c-text-hi); }
+  .k-tab:not([aria-selected="true"]):hover .k-tab__icon { color: var(--c-text); }
+}
+.k-tab:not([aria-selected="true"]):active { transform: scale(0.98); transition-duration: 100ms; }
+.k-tab:focus-visible { outline-offset: -2px; z-index: 1; }
+@media (min-width: 768px) {
+  .k-tab { padding: var(--s-4) var(--s-5); }
+}
+
+/* ==========================================================================
+   An inline text link inside a sentence (not a button): Archivo with a hairline underline.
+   ========================================================================== */
+.k-link {
+  color: var(--c-text);
+  text-decoration: underline;
+  text-decoration-color: var(--c-line-2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  overflow-wrap: anywhere;
+  transition: color var(--m-dur-1) var(--m-ease), text-decoration-color var(--m-dur-1) var(--m-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .k-link:hover { color: var(--c-text-hi); text-decoration-color: currentColor; }
+}
+.k-link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+/* ==========================================================================
+   Reduced motion: no travel. Colour still changes; marks appear in place.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .k-btn,
+  .k-ibtn,
+  .k-seg__opt,
+  .k-tab { transition-property: background-color, border-color, color, text-decoration-color; }
+  .k-btn:active,
+  .k-ibtn:active,
+  .k-seg__opt:active,
+  .k-tab:active { transform: none; }
+  .k-btn::after,
+  .k-ibtn::after,
+  .k-tab::after,
+  .k-seg__mark { transition: none; }
+  .k-load::before { animation: none; width: 100%; opacity: 0.6; }
+}

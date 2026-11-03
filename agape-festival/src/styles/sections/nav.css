@@ -112,67 +112,25 @@
   .wnav__link:hover { color: var(--c-text-hi); }
 }
 
-/* ---- Get tickets (from 1100px) ------------------------------------------ */
-.wnav__tickets {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 0 var(--s-5);
-  background-color: var(--c-red);
-  color: var(--c-text-hi);
-  font-family: var(--f-display);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background-color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
-}
-.wnav__tickets-label { margin-right: -0.16em; }
-@media (hover: hover) and (pointer: fine) {
-  .wnav__tickets:hover { background-color: var(--c-red-hover); }
-}
-.wnav__tickets:active { transform: scale(0.97); }
+/* ---- Get tickets (from 1100px): the kit's primary, small (styles/kit/buttons.css) ---- */
+.wnav .wnav__tickets { display: none; }
 
-/* ---- Menu button (below 1100px) ------------------------------------------ */
-.wnav__menu {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 44px;
-  margin: 0 calc(-1 * var(--s-2)) 0 0;
-  padding: 0 var(--s-2);
-  border: 0;
-  background: transparent;
-  color: var(--c-text);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: opacity var(--m-dur-1) var(--m-ease);
-}
-.wnav__menu-label {
-  display: none;
-  font-family: var(--f-display);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-@media (min-width: 480px) { .wnav__menu-label { display: inline; } }
-@media (hover: hover) and (pointer: fine) {
-  .wnav__menu:hover { opacity: 0.72; }
+/* ---- Menu button (below 1100px): the kit's ghost, small, with the bar's brighter text ---- */
+.wnav__menu { --kb-fg: var(--c-text); }
+.wnav__menu .k-btn__icon { width: 20px; height: 20px; }
+/* Phones show the glyph alone; the 44px box then centres it, so it steps out to meet the column edge. */
+@media (max-width: 479.98px) {
+  .wnav__menu .k-btn__label { display: none; }
+  .wnav__menu { margin-right: -12px; }
 }
 
 .wnav__brand:focus-visible,
-.wnav__link:focus-visible,
-.wnav__tickets:focus-visible,
-.wnav__menu:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.wnav__link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 @media (min-width: 1100px) {
   .wnav__links { display: block; }
-  .wnav__tickets { display: flex; }
-  .wnav__menu { display: none; }
+  .wnav .wnav__tickets { display: inline-flex; }
+  .wnav .wnav__menu { display: none; }
 }
 
 /* ==========================================================================
@@ -207,7 +165,7 @@ html.wnav-lock { overflow: hidden; }
   background: var(--c-ink);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-/* The head repeats the bar in place: mark + wordmark, Close. */
+/* The head repeats the bar in place: mark + wordmark, and the red Close square (CloseButton). */
 .wmenu__head {
   --wnav-pad: max(var(--sec-x), calc((100% - var(--wrap)) / 2));
   flex: none;
@@ -258,22 +216,8 @@ html.wnav-lock { overflow: hidden; }
 }
 .wmenu__link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
 
-.wmenu__socials { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.wmenu__social {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 44px;
-  color: var(--c-text-2);
-  text-decoration: none;
-  transition: color var(--m-dur-1) var(--m-ease);
-}
-.wmenu__handle { font-size: var(--t-small); font-weight: 500; }
-.wmenu__social-icon { color: var(--c-text-3); }
-@media (hover: hover) and (pointer: fine) {
-  .wmenu__social:hover { color: var(--c-text-hi); }
-}
-.wmenu__social:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+/* The Instagram handles: the kit's secondary chips (label + handle), side by side. */
+.wmenu__socials { display: flex; flex-wrap: wrap; gap: var(--s-2); margin: 0; padding: 0; list-style: none; }
 
 @media (min-width: 768px) {
   .wmenu__body { width: 100%; max-width: 560px; margin-inline: auto; padding-top: var(--s-16); }

@@ -37,6 +37,9 @@ export type ButtonProps = AnchorProps | NativeButtonProps;
  * set, otherwise <button type="button">.
  *
  * The hero's Get tickets is this component too: winter.css gives `.wh .wh__cta` the frozen deployed look.
+ *
+ * Legacy (Nov 2026): sections use the classic kit's Button (components/winter/classic/Button.tsx,
+ * styles/kit/buttons.css). This one stays only for the frozen hero.
  */
 export function Button({ children, variant = "primary", size, block, icon, className, ...rest }: ButtonProps) {
   const props = {

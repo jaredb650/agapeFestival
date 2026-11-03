@@ -9,14 +9,16 @@
 
    Guide (tokens, rules, recipes): context/winter-redesign/classic-brief.md.
    Components: src/components/winter/classic/ (Section, StageHeading,
-   RevealObserver), the Button (ui/Button.tsx) restyled below.
+   RevealObserver, and the controls: Button, IconButton, CloseButton,
+   Segmented, TabRail, styled by styles/kit/buttons.css).
 
    Load order (page.tsx): winter.css → winter-page.css → this file →
    section stylesheets. The grid kit was retired and deleted (Nov 3).
 
    The hero, the flyer layover and the preloader are frozen: nothing here
-   may style them. Every rule is scoped to a classic class, and the Button
-   rules skip the hero's .wh__cta.
+   may style them. Every rule is scoped to a classic class; the controls
+   (styles/kit/buttons.css) use .k-* classes, so the hero's .w-btn.wh__cta
+   is never matched.
    ========================================================================== */
 
 .winter {
@@ -155,40 +157,6 @@
 
 /* A panel over the footage: long text, a form, a map. */
 .k-panel { background: var(--c-panel); border: 1px solid var(--c-line); }
-
-/* ==========================================================================
-   Button (ui/Button.tsx), classic. Flat rectangles, Orbitron caps.
-   Primary = deep red fill; secondary = hairline outline; link = Archivo
-   text with an underline. No glow, no ticks, no radius. The hero's frozen
-   Get tickets (.wh__cta) is excluded.
-   ========================================================================== */
-.w-btn:not(.wh__cta) {
-  font-family: var(--f-display);
-  font-size: var(--t-label);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  padding: 0 var(--s-8);
-}
-.w-btn:not(.wh__cta) .w-btn__label { margin-right: -0.16em; }
-.w-btn:not(.wh__cta)[data-size="sm"] { padding: 0 var(--s-5); }
-.w-btn:not(.wh__cta)[data-size="lg"] { padding: 0 var(--s-10); font-size: 0.8125rem; }
-.w-btn:not(.wh__cta)[data-variant="secondary"] { border-color: var(--c-line-2); }
-@media (hover: hover) and (pointer: fine) {
-  .w-btn:not(.wh__cta)[data-variant="secondary"]:hover { border-color: var(--c-text-3); background-color: rgba(255, 255, 255, 0.04); }
-}
-.w-btn:not(.wh__cta)[data-variant="link"] {
-  padding: 0;
-  font-family: var(--f-ui);
-  font-size: var(--t-small);
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  color: var(--c-text-2);
-  text-decoration-color: var(--c-line-2);
-}
-.w-btn:not(.wh__cta)[data-variant="link"] .w-btn__label { margin-right: 0; }
 
 /* ==========================================================================
    The one scroll entrance (classic/RevealObserver.tsx). Put data-reveal on

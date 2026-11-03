@@ -204,8 +204,8 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
 ];
 
 // ============================================================
-// ARTISTS (artist profiler). Filled from the press kits: Diossa and Len Faki have no kit bio; Vendex's kit has
-// no video; Azzel 447 has no kit yet (pending).
+// ARTISTS (artist profiler). Filled from the press kits: Diossa, Len Faki and Azzel 447 have no kit bio; Vendex's
+// and Azzel 447's kits have no video.
 // ============================================================
 
 export interface ArtistSocial {
@@ -259,19 +259,6 @@ export interface LockedArtist {
 export type ArtistEntry = NamedArtist | LockedArtist;
 
 const WINTER_ARTIST_DIR = `${BASE_PATH}/assets/winter/artists`;
-
-const pending = (slug: ArtistSlug, name: string, displayName: string, day: DayNumber): NamedArtist => ({
-  kind: "artist",
-  slug,
-  name,
-  displayName,
-  day,
-  bio: null,
-  headshot: null,
-  headshotLarge: null,
-  clip: null,
-  clipPoster: null,
-});
 
 // Adapted from the September press-kit bio in festival.ts ("Flashgea"):
 // September/2026-specific wording removed and nothing added.
@@ -500,8 +487,10 @@ const NAMED_ARTISTS: NamedArtist[] = [
   }),
   // IMG_6648 (tie and blazer, direct gaze); clip from Unreal @ Junkyard Dortmund (010.mov).
   fromKit("davyboi", "Davyboi", "DAVYBOI", 2, DAVYBOI_BIO, { clip: true, focus: "56% 36%", zoom: 1.35 }),
-  // No press kit yet.
-  pending("azzel-447", "Azzel 447", "AZZEL 447", 2),
+  // The kit (Liminal) is four press pics (Marvin Ruppert, June 2026) and a rider: no bio, no video, so the bio
+  // shows the pending state. 260605-azzel447-207 (colour, fist to temple, eyes to camera); the "sw" files are
+  // the same shots in black and white, and 212 has both hands over the face.
+  fromKit("azzel-447", "Azzel 447", "AZZEL 447", 2, null, { clip: false, focus: "49% 33%", zoom: 1.35 }),
   // IMG_6154 (Feb 2026 shoot: black bomber on red, studio light); clip from his kit's square multicam set
   // footage (copy_B01F76FE.mov, face-on at the mixer with the crowd behind).
   fromKit("johannes-schuster", "Johannes Schuster", "JOHANNES SCHUSTER", 2, JOHANNES_SCHUSTER_BIO, {

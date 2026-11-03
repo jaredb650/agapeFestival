@@ -10,3 +10,4 @@ davyboi davyboi/src/IMG_6648.JPG 0.75 0.55 0.07 0.56 0.36 1.35 76
 len-faki len-faki/src/len-faki-6.jpg 0.665 0.44 0.0 0.48 0.37 1.15 76
 onlynumbers onlynumbers/src/onlynumbers-1.jpg 0.5 0.53 0.02 0.50 0.34 1.35 76
 johannes-schuster johannes-schuster/src/IMG_6154.JPEG 0.75 0.42 0.02 0.40 0.36 1.35 76
+azzel-447 azzel-447/src/260605-azzel447-207-foto-marvin-ruppert.jpg 0.8 0.5 0.1 0.49 0.33 1.35 76

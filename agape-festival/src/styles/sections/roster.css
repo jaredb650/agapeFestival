@@ -122,7 +122,10 @@
   transition: opacity var(--m-dur-3) var(--m-ease);
   pointer-events: none;
 }
-/* One grade for every photo: black and white, a touch of contrast, a little under. */
+/* Two grades. At rest a tile is black and white, a touch of contrast, a little under. Colour comes in on
+   hover / keyboard focus (the photo turns at once, so there's colour even before the clip has loaded), the
+   clip is always in colour (it only shows while it plays), and the bio pop-out is in colour (phones have
+   no hover). Jared, Nov 3: "it's depressing, get some colour on there". */
 .rs-card__img,
 .rs-card__clip {
   position: absolute;
@@ -134,7 +137,7 @@
   object-fit: cover;
   object-position: 50% 28%;
   filter: grayscale(1) contrast(1.08) brightness(0.86);
-  transition: transform 700ms var(--m-ease);
+  transition: transform 700ms var(--m-ease), filter 450ms var(--m-ease);
 }
 /* Per act (winter.ts focus / zoom): where the face is, and how far the square closes in on it. */
 .rs-card__img {
@@ -143,7 +146,8 @@
   transform: scale(var(--zoom, 1));
 }
 /* The clip stays transparent until it is actually playing: blocked, loading or failed, the photo shows. */
-.rs-card__clip { z-index: 1; opacity: 0; transition: opacity var(--m-dur-2) var(--m-ease), transform 700ms var(--m-ease); }
+.rs-card__clip { z-index: 1; opacity: 0; filter: contrast(1.04) brightness(0.96); transition: opacity var(--m-dur-2) var(--m-ease), transform 700ms var(--m-ease); }
+.rs-card:has(:focus-visible) .rs-card__img { filter: contrast(1.04) brightness(0.96); }
 .rs-card__clip[data-playing] { opacity: 1; }
 
 .rs-card__plate {
@@ -177,7 +181,7 @@
 }
 @media (hover: hover) and (pointer: fine) {
   .rs-card:not(.rs-card--tba):hover { border-color: var(--c-line-2); }
-  .rs-card:hover .rs-card__img { transform: scale(calc(var(--zoom, 1) * 1.035)); }
+  .rs-card:hover .rs-card__img { transform: scale(calc(var(--zoom, 1) * 1.035)); filter: contrast(1.04) brightness(0.96); }
   .rs-card:hover .rs-card__clip { transform: scale(1.035); }
   .rs-card:not(.rs-card--tba):hover .rs-card__media::after { opacity: 0.55; }
   .rs-card:not(.rs-card--tba):hover .rs-card__plate { background-color: var(--c-plate-hi); }
@@ -325,9 +329,9 @@ html.rs-lock { overflow: hidden; }
   display: block;
   object-fit: cover;
   object-position: var(--focus, 50% 28%);
-  filter: grayscale(1) contrast(1.08) brightness(0.9);
+  filter: contrast(1.04) brightness(0.96);
 }
-/* The act's clip over the photo (BioDialog BioClip), same grade: transparent until it is actually playing,
+/* The act's clip over the photo (BioDialog BioClip), in colour like the photo: transparent until it is actually playing,
    so the photo shows while it loads, if it is refused, and as the panel folds away. */
 .rs-photo__clip {
   position: absolute;
@@ -337,7 +341,7 @@ html.rs-lock { overflow: hidden; }
   display: block;
   object-fit: cover;
   object-position: var(--clip-focus, 50% 30%);
-  filter: grayscale(1) contrast(1.08) brightness(0.9);
+  filter: contrast(1.04) brightness(0.96);
   opacity: 0;
   transition: opacity var(--m-dur-2) var(--m-ease);
 }

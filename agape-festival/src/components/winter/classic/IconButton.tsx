@@ -60,7 +60,7 @@ export function IconButton({ label, icon, variant = "plain", size = "md", loadin
   }
   const { type, onClick, ...button } = rest as Omit<NativeButtonProps, keyof BaseProps>;
   return (
-    <button type={type ?? "button"} {...props} aria-disabled={loading || undefined} onClick={loading ? undefined : onClick} {...button}>
+    <button type={type ?? "button"} {...props} aria-disabled={loading || undefined} onClick={loading ? (e) => e.preventDefault() : onClick} {...button}>
       {inner}
     </button>
   );

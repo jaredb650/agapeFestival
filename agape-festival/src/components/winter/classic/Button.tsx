@@ -109,13 +109,13 @@ export function Button({ children, variant = "primary", size = "md", block, icon
   }
   const { type, onClick, disabled, ...button } = rest as Omit<NativeButtonProps, keyof BaseProps>;
   return (
-    // Loading keeps focus where it is (aria-disabled, not disabled) and swallows the click.
+    // Loading keeps focus where it is (aria-disabled, not disabled) and swallows the click, a submit included.
     <button
       type={type ?? "button"}
       {...props}
       disabled={disabled}
       aria-disabled={loading || undefined}
-      onClick={loading ? undefined : onClick}
+      onClick={loading ? (e) => e.preventDefault() : onClick}
       {...button}
     >
       {inner}

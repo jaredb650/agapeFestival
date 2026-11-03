@@ -136,21 +136,29 @@
 /* "Apply on DICE": the kit's link, at the expiry's size. */
 .tk-promo__apply { font-size: var(--t-label); white-space: nowrap; }
 
-/* ---- Afterpay: under the button, the official white wordmark (14px tall) over the client's sentence
-   in small grey Archivo, kept to a short measure. */
+/* ---- Afterpay: the client's "limited time, buy now pay later" callout under the button. A hairline
+   panel in the column: red eyebrow, the title in the kit's h2, the official white wordmark, then the
+   instruction in small grey Archivo. */
 .tk-pay {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--s-2) var(--s-3);
-  margin: var(--s-5) 0 0;
-  font-family: var(--f-ui);
-  font-size: var(--t-label);
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-  color: var(--c-text-3);
+  gap: var(--s-3);
+  margin: var(--s-10) auto 0;
+  padding: var(--s-8) var(--s-6);
+  max-width: var(--tk-col);
+  border: 1px solid var(--c-line);
+  background: var(--c-panel);
   text-align: center;
 }
-.tk-pay__logo { display: block; flex: none; width: auto; height: 14px; }
-.tk-pay__note { max-width: 44ch; text-wrap: balance; }
+.tk-pay > p { margin: 0; }
+.tk-pay__title { margin-right: -0.08em; }
+.tk-pay__logo { display: block; width: auto; height: 17px; margin-top: var(--s-1); }
+.tk-pay__note {
+  max-width: 36ch;
+  font-family: var(--f-ui);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--c-text-3);
+  text-wrap: balance;
+}

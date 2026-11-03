@@ -826,10 +826,12 @@ export const TICKETS = {
     until: "2026-12-01T05:00:00Z", // end of Nov 30, ET: the row disappears after this
     url: "https://link.dice.fm/hf32837920f3?code=WINTER", // the client's link: opens DICE with the code applied
   },
-  /** The pay-later line under Get tickets: the Afterpay mark + the client's wording (Nov 3). */
+  /** The pay-later callout under Get tickets (client, Nov 3: "limited time for buy now, pay later"). */
   afterpay: {
     logo: `${BASE_PATH}/assets/winter/afterpay-white.svg`, // official white wordmark, from static.afterpay.com
-    note: "Secure your tickets now and split your payment into 4 interest-free installments with Afterpay, available directly at checkout on DICE.",
+    eyebrow: "Limited time",
+    title: "Buy now, pay later",
+    note: "Select Afterpay at checkout on DICE to split your payment into 4 interest-free installments.",
   },
 } as const;
 

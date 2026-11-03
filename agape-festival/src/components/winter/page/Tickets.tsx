@@ -14,7 +14,7 @@ const dayDate = (dateLong: string) => dateLong.replace(/,\s*\d{4}$/, "");
  * from the grid version). Then the facts as hairline rows (the days, the venue, doors once announced) and
  * one red Get tickets to DICE. Tiers and prices aren't published here (TODO_CONFIRM in winter.ts); they
  * live on the DICE page, so the section names none. The last row is the promo code (a tap copies it: the
- * one client island, PromoCode), and under the button a small Afterpay line. Otherwise server-rendered.
+ * one client island, PromoCode), and under the button the Afterpay "buy now, pay later" callout. Otherwise server-rendered.
  */
 export function Tickets() {
   const { provider, url, cta } = WINTER.tickets;
@@ -86,11 +86,13 @@ export function Tickets() {
           </Button>
         </div>
 
-        <p className="tk-pay">
+        <div className="tk-pay">
+          <p className="k-label k-label--red">{afterpay.eyebrow}</p>
+          <p className="k-h2 tk-pay__title">{afterpay.title}</p>
           {/* eslint-disable-next-line @next/next/no-img-element -- a 3 KB SVG mark; static export, no optimiser */}
-          <img className="tk-pay__logo" src={afterpay.logo} width={72} height={14} alt="Afterpay" />
-          <span className="tk-pay__note">{afterpay.note}</span>
-        </p>
+          <img className="tk-pay__logo" src={afterpay.logo} width={88} height={17} alt="Afterpay" />
+          <p className="tk-pay__note">{afterpay.note}</p>
+        </div>
       </div>
     </Section>
   );

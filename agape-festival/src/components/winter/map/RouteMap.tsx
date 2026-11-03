@@ -40,8 +40,8 @@ const MODES = Object.keys(ROUTE_LINES) as RouteMode[];
 
 /**
  * The street map: one static SVG (streets, avenues, the shore, the venue in red) inside a box sized to
- * cover its cell (getting-here.css), and HTML on top for what must stay crisp or move: labels, pins and
- * each mode's route line. A route line is a rotated rectangle that grows along its own axis (scale), so
+ * cover the map's box in its panel (getting-here.css), and HTML on top for what must stay crisp or move:
+ * labels, pins and each mode's route line. A route line is a rotated rectangle that grows along its own axis (scale), so
  * drawing one never repaints the SVG. The selected mode comes from data-mode on the parent (RouteBoard).
  * Server-rendered: it ships no JavaScript.
  */

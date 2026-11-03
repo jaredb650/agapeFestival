@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type RefObject, type SyntheticEvent } from "react";
 import { ArrowRight, ArrowUpRight, CloseIcon } from "@/components/winter/ui";
 import { photoSet, type Act, type RosterDay } from "./acts";
 import { originOf, popClose, popOpen } from "./popout";
@@ -26,8 +26,9 @@ const FOCUSABLE = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1
  * The bio: a modal <dialog> (focus trapped, page inert, Esc) over a dark scrim. A panel in the September
  * site's modal shape: the photo beside the text (above it on phones), a bar with the act's place in the
  * day, previous / next and close, then the name, the bio, what is known for certain (date, venue, set
- * time) and the socials. It pops out of the element that opened it (popout.ts); the phase is a data
- * attribute (no React renders). Reduced motion: it simply appears and goes.
+ * time) and the socials. An act with a clip plays it over the photo while the panel is open (BioClip).
+ * It pops out of the element that opened it (popout.ts); the phase is a data attribute (no React
+ * renders). Reduced motion: it simply appears and goes, and the photo stays still.
  */
 export function BioDialog({ id, act, day, open, anchorRef, venue, reduced, onClose, onStep }: BioDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -169,6 +170,9 @@ export function BioDialog({ id, act, day, open, anchorRef, venue, reduced, onClo
                     square photo covers it at its height: 125vw / 640px. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 768px) 640px, 125vw" alt={artist.name} decoding="async" />
+                {artist.clip && !reduced && (
+                  <BioClip src={artist.clip} poster={artist.clipPoster} focus={artist.splashFocus} play={open} />
+                )}
               </div>
             )}
             <div key={artist.slug} className="rs-text">
@@ -210,5 +214,65 @@ export function BioDialog({ id, act, day, open, anchorRef, venue, reduced, onClo
         </div>
       </div>
     </dialog>
+  );
+}
+
+interface BioClipProps {
+  src: string;
+  poster: string | null;
+  /** object-position of the clip in the photo box (winter.ts splashFocus); default in roster.css. */
+  focus?: string;
+  /** The panel is open: play; closed: pause. */
+  play: boolean;
+}
+
+/**
+ * The act's clip over its photo in the bio: muted, inline, looped, playing while the panel is open (not
+ * rendered under reduced motion). It stays transparent until it is actually playing, so the photo shows
+ * while it loads, and stays if play() is refused (iOS Low Power Mode, data saver). Roster commits the
+ * opening tap synchronously (flushSync), so this play() runs inside the tap and counts as user-started.
+ * Unloaded on unmount (another act, or the roster leaving the page).
+ */
+function BioClip({ src, poster, focus, play }: BioClipProps) {
+  const ref = useRef<HTMLVideoElement>(null);
+  // First (layout effects run in order): the source is (re)attached before play() below. Unmount unloads it;
+  // a remount of the same element (React's dev double-run) puts it back.
+  useLayoutEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (!v.getAttribute("src")) v.setAttribute("src", src);
+    return () => {
+      v.pause();
+      v.removeAttribute("src");
+      v.load();
+    };
+  }, [src]);
+  useLayoutEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (play) v.play()?.catch(() => {});
+    else v.pause();
+  }, [play, src]);
+  const off = (e: SyntheticEvent<HTMLVideoElement>) => e.currentTarget.removeAttribute("data-playing");
+  return (
+    <video
+      ref={ref}
+      className="rs-photo__clip"
+      style={focus ? ({ "--clip-focus": focus } as CSSProperties) : undefined}
+      src={src}
+      poster={poster ?? undefined}
+      muted
+      loop
+      playsInline
+      preload="auto"
+      disablePictureInPicture
+      disableRemotePlayback
+      tabIndex={-1}
+      aria-hidden="true"
+      onPlaying={(e) => e.currentTarget.setAttribute("data-playing", "")}
+      onPause={off}
+      onEmptied={off}
+      onError={off}
+    />
   );
 }

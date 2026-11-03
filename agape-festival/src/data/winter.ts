@@ -329,8 +329,9 @@ const NAMED_ARTISTS: NamedArtist[] = [
     bio: FLASH_GEA_BIO,
     headshot: `${WINTER_ARTIST_DIR}/flash-gea/headshot-600.webp`,
     headshotLarge: `${WINTER_ARTIST_DIR}/flash-gea/headshot-1200.webp`,
-    clip: `${WINTER_ARTIST_DIR}/flash-gea/clip.mp4`,
-    clipPoster: `${WINTER_ARTIST_DIR}/flash-gea/clip-poster.webp`,
+    // Him at ÄGAPĒ (F2F, Sept 2026, from his press kit's CF1_nyx3.mov): three of his shots, 576x720.
+    clip: `${WINTER_ARTIST_DIR}/flash-gea/clip-agape.mp4`,
+    clipPoster: `${WINTER_ARTIST_DIR}/flash-gea/clip-agape-poster.webp`,
     // The press shot is wide (a whole graffiti wall): the tile closes in on his face and folded arms.
     focus: "48% 32%",
     zoom: 1.5,

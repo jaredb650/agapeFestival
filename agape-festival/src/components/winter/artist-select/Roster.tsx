@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SyntheticEvent } from "react";
+import { flushSync } from "react-dom";
 import { StageHeading } from "@/components/winter/classic";
 import { observeInView } from "@/components/winter/perf";
 import { ArrowRight } from "@/components/winter/ui";
@@ -32,7 +33,8 @@ const THREAD_CROPS = ["18% 24%", "78% 18%", "42% 62%", "70% 38%", "8% 78%", "58%
  * acts share one "to be revealed" card. Pressing a card (or a name in the lineup) pops its bio out of it.
  *
  * Performance: the bio dialog mounts only once the roster is near the viewport; photos are lazy; an act's
- * clip loads on the first hover (fine pointers only) and plays only while hovered.
+ * clip loads on the first hover (fine pointers only) and plays only while hovered. Touch has no hover: there
+ * the clip plays in the bio, over the photo, once the card is tapped (on every pointer, for one behaviour).
  */
 export function Roster({ artists, days, id, venue }: RosterProps) {
   const roster = useMemo(() => buildRoster(artists, days), [artists, days]);
@@ -50,11 +52,15 @@ export function Roster({ artists, days, id, venue }: RosterProps) {
     return observeInView(el, (v) => v && setNear(true), { rootMargin: "800px 0px" });
   }, []);
 
+  // Committed synchronously, inside the tap: the bio's clip then calls play() within the gesture, which
+  // iOS needs to start video in Low Power Mode.
   const openAct = useCallback((next: string, from: HTMLElement) => {
     anchorRef.current = from;
-    setSlug(next);
-    setNear(true);
-    setOpen(true);
+    flushSync(() => {
+      setSlug(next);
+      setNear(true);
+      setOpen(true);
+    });
   }, []);
   const close = useCallback(() => setOpen(false), []);
 
@@ -74,11 +80,14 @@ export function Roster({ artists, days, id, venue }: RosterProps) {
 
   const step = useCallback(
     (dir: -1 | 1) => {
-      setSlug((cur) => {
-        const list = roster.order;
-        const at = list.findIndex((a) => a.artist.slug === cur);
-        return list[(at + dir + list.length) % list.length].artist.slug;
-      });
+      // Synchronous for the same reason as openAct (the next act's clip starts inside the press).
+      flushSync(() =>
+        setSlug((cur) => {
+          const list = roster.order;
+          const at = list.findIndex((a) => a.artist.slug === cur);
+          return list[(at + dir + list.length) % list.length].artist.slug;
+        }),
+      );
     },
     [roster],
   );

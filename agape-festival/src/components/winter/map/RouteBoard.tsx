@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { observeInView } from "@/components/winter/perf";
 import { Bullets, type SubwayLine } from "./Bullets";
 import type { RouteMode } from "./geo";
@@ -61,6 +61,21 @@ export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoard
     return () => stop();
   }, []);
 
+  // On phones the map sits above the rows, so a tap on a lower row would draw its route off screen. A pointer
+  // pick brings the map back into view, only when less than half of it shows below the bar. Keyboard picks
+  // (arrows here, Enter / Space: click with detail 0) leave the scroll alone so focus stays in view.
+  const pick = (next: RouteMode, e: MouseEvent<HTMLButtonElement>) => {
+    setMode(next);
+    const el = mapRef.current;
+    if (!el || e.detail === 0) return;
+    const r = el.getBoundingClientRect();
+    const top = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    const shown = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, top);
+    if (shown >= r.height / 2) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  };
+
   // Arrow keys move the pick along the rows (automatic activation); Home / End jump to the ends.
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const n = routes.length;
@@ -103,7 +118,7 @@ export function RouteBoard({ routes, place, map, mapLabel, actions }: RouteBoard
                   aria-describedby={`gh-route-${r.mode}`}
                   tabIndex={on ? 0 : -1}
                   className="gh-route__pick"
-                  onClick={() => setMode(r.mode)}
+                  onClick={(e) => pick(r.mode, e)}
                 >
                   <span className="k-label gh-route__mode">{r.tab}</span>
                   <span className="gh-route__title">

@@ -61,8 +61,10 @@ export function GettingHere() {
         routes={ROUTES}
         mapLabel={MAP_LABEL}
         map={<RouteMap lines={subway?.lines ?? []} />}
+        // place and actions render as siblings in RouteBoard's static children; elements that arrive from the
+        // server that way get key-checked in dev, so they carry a key (no DOM change).
         place={
-          <dl className="gh-place">
+          <dl key="place" className="gh-place">
             <div className="gh-place__item">
               <dt className="k-label">Address</dt>
               <dd className="gh-place__v">
@@ -81,7 +83,7 @@ export function GettingHere() {
           </dl>
         }
         actions={
-          <div className="gh-dirs">
+          <div key="actions" className="gh-dirs">
             <p className="k-label">Directions</p>
             <div className="gh-dirs__links">
               <Button

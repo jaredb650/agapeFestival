@@ -97,7 +97,8 @@
 @media (hover: hover) and (pointer: fine) {
   .ft-credit:hover { color: var(--c-text-hi); }
 }
-@media (min-width: 768px) {
+/* One row only where the four lines fit unbroken (the Meta Pixel notice made it longer). */
+@media (min-width: 1100px) {
   .ft-base { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--s-6); }
   .ft-credit { align-self: auto; }
 }

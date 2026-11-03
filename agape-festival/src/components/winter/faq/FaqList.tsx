@@ -2,13 +2,8 @@
 
 import { useState, type KeyboardEvent } from "react";
 import { Button } from "@/components/winter/classic";
-
-/**
- * Questions are set in Orbitron, which has no macron letters (Ē etc.): the browser would borrow the glyph
- * from another font and it reads as a glitch. Drop the marks for display only; the data, the answers and
- * the FAQ structured data keep "ÄGAPĒ".
- */
-const orbitronSafe = (s: string) => s.replace(/ÄGAPĒ/g, "AGAPE").normalize("NFD").replace(/[\u0304]/g, "").normalize("NFC");
+// Questions are set in Orbitron: marks it can't draw are dropped for display only.
+import { orbitronSafe } from "@/components/winter/ui/orbitron";
 
 export interface FaqEntry {
   id: string;

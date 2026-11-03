@@ -12,6 +12,7 @@ import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
 import { Hero } from "@/components/winter/page/Hero";
 import { Faq } from "@/components/winter/page/Faq";
+import { Gallery } from "@/components/winter/page/Gallery";
 import { GettingHere } from "@/components/winter/page/GettingHere";
 import { Lockers } from "@/components/winter/page/Lockers";
 import { Lineup } from "@/components/winter/page/Lineup";
@@ -91,6 +92,7 @@ export default function Home() {
         <Tickets />
         <Merch />
         <Faq />
+        <Gallery />
         {LOCKERS.enabled && <Lockers />}
         <GettingHere />
       </main>

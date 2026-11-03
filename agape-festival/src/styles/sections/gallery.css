@@ -1,0 +1,147 @@
+/* ==========================================================================
+   GALLERY (page/Gallery.tsx, gallery/GalleryRail.tsx), classic. The
+   September site's "The first edition": 18 photographs from September 5,
+   2026 by @emilyguzz. Classes gl-*.
+
+     ÄGAPE FESTIVAL / 2026
+     THE FIRST EDITION
+     ──
+     [card][card][card][ca…   ← a scroll-snap rail, from the heading's edge
+     ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬         out to the right of the screen
+     SEPTEMBER 05, 2026        01 / 18  [←][→]
+
+   Performance: the browser scrolls (no animation loop, no filters); cards
+   are fixed 3:4 boxes, so nothing shifts as photos arrive. Photos keep
+   their own colour (stage light is the content), like the merch shots.
+   ========================================================================== */
+
+/* The rail spans the whole section width; the heading and the foot keep the
+   page column. */
+.gl > .k-wrap { max-width: none; }
+.gl .k-head,
+.gl-foot { max-width: var(--wrap); margin-inline: auto; }
+
+.gl {
+  /* Card width: 78vw on phones (the next one peeks), 46vw on tablets, a third of
+     the column from 1024. Never taller than 72% of the screen. Page/Gallery.tsx
+     builds `sizes` from the same numbers. */
+  --gl-card: min(78vw, 54svh);
+}
+@media (min-width: 768px) {
+  .gl { --gl-card: min(46vw, 54svh); }
+}
+@media (min-width: 1024px) {
+  .gl { --gl-card: min(34vw, 480px, 54svh); }
+}
+
+/* ---- The rail -------------------------------------------------------------- */
+.gl-rail {
+  /* The gutter lines the first card up with the heading (the page column's edge). */
+  --gl-gutter: max(var(--sec-x), (100% - var(--wrap)) / 2);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--card-gap);
+  margin-inline: calc(-1 * var(--sec-x));
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gl-gutter);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.gl-rail::-webkit-scrollbar { display: none; }
+/* Spacers (not padding: Safari drops a scroller's end padding). */
+.gl-rail::before,
+.gl-rail::after { content: ""; flex: 0 0 max(0px, var(--gl-gutter) - var(--card-gap)); }
+.gl-rail:focus-visible { outline: 1px solid var(--c-focus); outline-offset: 4px; }
+
+.gl-card {
+  position: relative;
+  flex: 0 0 var(--gl-card);
+  /* An explicit 3:4 height, not aspect-ratio (iOS Safari has collapsed aspect-only boxes here). */
+  height: calc(var(--gl-card) * 4 / 3);
+  margin: 0;
+  overflow: hidden;
+  background: var(--c-plate);
+  border: 1px solid var(--c-line);
+  scroll-snap-align: start;
+}
+.gl-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 35%;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+/* A floor under the number, so it reads on any photo. */
+.gl-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 28%;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}
+.gl-num {
+  position: absolute;
+  z-index: 1;
+  left: var(--s-4, 16px);
+  bottom: var(--s-4, 16px);
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  color: var(--c-text);
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .gl-card img { transition: transform 700ms var(--m-ease); }
+  .gl-card:hover img { transform: scale(1.035); }
+}
+
+/* ---- The foot: progress, credit, counter and arrows ------------------------- */
+.gl-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-5) var(--s-8);
+  margin-top: var(--s-6, 24px);
+}
+/* The September progress bar: one segment per photo, the current one red. */
+.gl-bar { flex: 1 0 100%; display: flex; gap: 2px; }
+.gl-bar span { flex: 1; height: 2px; background: var(--c-line-2); transition: background-color var(--m-dur-2) var(--m-ease); }
+.gl-bar span[data-on] { background: var(--c-mark); }
+
+.gl-meta { display: flex; flex-direction: column; gap: var(--s-1, 4px); margin: 0; }
+.gl-meta__date { color: var(--c-text-2); }
+
+.gl-nav { display: flex; align-items: center; gap: var(--s-2); }
+.gl-count {
+  margin: 0 var(--s-3) 0 0;
+  min-width: 7ch;
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  color: var(--c-text);
+  white-space: nowrap;
+}
+.gl-count span { color: var(--c-text-3); }
+
+/* Phones: the counter and arrows first, full width; the credit under them. */
+@media (max-width: 767.98px) {
+  .gl-nav { order: 1; flex: 1 0 100%; }
+  .gl-count { margin-right: auto; }
+  .gl-meta { order: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-rail { scroll-behavior: auto; }
+  .gl-bar span { transition: none; }
+}

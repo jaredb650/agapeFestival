@@ -143,6 +143,8 @@
 /* The heading block: title, a 48px rule, an optional lead. */
 .k-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-5); margin-bottom: var(--head-gap); }
 .k-head__rule { width: 48px; height: 1px; background: var(--c-line-2); }
+/* An optional caps label over the title (Section eyebrow): tucked close to it. */
+.k-head__eyebrow { margin-bottom: calc(var(--s-2) - var(--s-5)); }
 .k-head[data-align="center"] { align-items: center; text-align: center; }
 /* Tracked caps carry the tracking after the last letter: pull it back so centred titles sit centred. */
 .k-head[data-align="center"] .k-h1 { margin-right: -0.06em; }

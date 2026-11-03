@@ -909,6 +909,7 @@ export type SectionId =
   | "tickets"
   | "merch"
   | "faq"
+  | "gallery"
   | "lockers"
   | "getting-here"
   | "footer";
@@ -937,6 +938,7 @@ export const SECTIONS: SectionDef[] = [
   { id: "tickets", label: "TICKETS", href: "#tickets", inNav: true, enabled: true },
   { id: "merch", label: "MERCH", href: "#merch", inNav: true, enabled: true },
   { id: "faq", label: "FAQ", href: "#faq", inNav: true, enabled: true },
+  { id: "gallery", label: "GALLERY", href: "#gallery", inNav: true, enabled: true }, // "The first edition" (Sept 2026 photos)
   { id: "lockers", label: "LOCKERS", href: "#lockers", inNav: false, enabled: LOCKERS.enabled },
   { id: "getting-here", label: "GETTING HERE", href: "#getting-here", inNav: true, enabled: true },
   { id: "footer", label: "CONTACT", href: "#footer", inNav: false, enabled: true },

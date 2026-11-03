@@ -227,6 +227,9 @@ html:has(.winter) { scrollbar-color: rgba(255, 255, 255, 0.24) var(--c-ink, #000
 @media (prefers-reduced-motion: no-preference) {
   .wh .w-btn.wh__cta::after { animation: wh-cta-breathe 40s ease-in-out infinite; }
 }
+/* Parked with the rest of the hero while it is off screen (hero.css .wh[data-off]): the shorthand above resets
+   the play state, so that rule needs this more specific twin, or the glow keeps the compositor ticking all page. */
+.wh[data-off] .w-btn.wh__cta::after { animation-play-state: paused; }
 /* The deployed 4s breath, folded 10x per iteration (fewer iteration events). */
 @keyframes wh-cta-breathe {
   0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100% { opacity: 0; }

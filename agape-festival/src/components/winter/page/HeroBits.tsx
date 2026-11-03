@@ -7,7 +7,7 @@ import { pickHeroVideo } from "../load/videoSource";
 import { withGsap } from "./loadGsap";
 import { GlitchLayer } from "@/components/winter/ui";
 import { playWithRescue } from "./GestureRescue";
-import { onSecondWhileVisible } from "@/components/winter/perf";
+import { observeInView, onSecondWhileVisible } from "@/components/winter/perf";
 import { onBootDone } from "@/components/winter/preloader/boot";
 import type { HeroVideo as HeroVideoConfig } from "./media";
 
@@ -43,22 +43,55 @@ export function HeroLogo({ logo, sizes }: { logo: HeroLogoAsset; sizes: string }
     const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
     if (!motionOk || saveData) return;
     let swap = 0;
+    let cap = 0;
+    let done = false;
     let cancelIdle = () => {};
-    // After the logo has glitched in (timed from the preloader's hand-off, or from mount without one).
-    const off = onBootDone((at) => {
-      const wait = at === null ? 2000 : Math.max(0, at + 2000 - performance.now());
+    let stopView = () => {};
+    // Fetch the three.js chunk first and swap only once it's in: rendering the lazy component before
+    // then leaves the logo box empty for a few frames, which jolts the whole lockup (text jumps).
+    const load = () => {
+      if (done) return;
+      done = true;
+      stopView();
+      void import("@/components/GlitchLogo").then(() => setWebgl(true), () => {});
+    };
+    // Its parse, compile and GL context cost a few long frames on a slow phone, so it waits until the hero
+    // is mostly on screen and idle: never under a scroll through the flyer, and never during the intro.
+    let watching = false;
+    const whenSeen = () => {
+      if (done || watching) return;
+      watching = true;
+      clearTimeout(cap);
+      const hero = document.getElementById("hero");
+      if (!hero) return void (cancelIdle = afterLoadIdle(load, 0));
+      stopView = observeInView(
+        hero,
+        (inView) => {
+          cancelIdle();
+          cancelIdle = inView ? afterLoadIdle(load, 0) : () => {};
+        },
+        { threshold: 0.6 },
+      );
+    };
+    // After the hero's intro has played: every finite entrance in it has finished (timed from the
+    // preloader's hand-off, or from mount without one), capped in case one is parked off screen.
+    const off = onBootDone(() => {
       swap = window.setTimeout(() => {
-        // Fetch the three.js chunk first and swap only once it's in: rendering the lazy component before
-        // then leaves the logo box empty for a few frames, which jolts the whole lockup (text jumps).
-        cancelIdle = afterLoadIdle(() => {
-          void import("@/components/GlitchLogo").then(() => setWebgl(true), () => {});
-        }, 0);
-      }, wait);
+        const hero = document.getElementById("hero");
+        const intro = hero
+          ? hero.getAnimations({ subtree: true }).filter((a) => Number.isFinite(Number(a.effect?.getComputedTiming().endTime)))
+          : [];
+        cap = window.setTimeout(whenSeen, 5000);
+        void Promise.all(intro.map((a) => a.finished.catch(() => null))).then(whenSeen, whenSeen);
+      }, 50);
     });
     return () => {
+      done = true;
       off();
       clearTimeout(swap);
+      clearTimeout(cap);
       cancelIdle();
+      stopView();
     };
   }, []);
 

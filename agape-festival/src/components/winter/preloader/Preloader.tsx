@@ -5,7 +5,8 @@ import { BOOT_CSS, HOLD_CSS } from "./styles";
 import { BootGuard } from "./BootGuard";
 
 const CONFIG: BootConfig = {
-  min: 900,
+  // Minimum on screen (Jared, Nov 3: 900 → 450 ms).
+  min: 450,
   max: 2500,
   ev: BOOT_EVENT,
   // Parks the hero + nav CSS intros until the handover.
@@ -21,7 +22,7 @@ const CONFIG: BootConfig = {
  * The page's preloader, in the classic look: black, one red hairline across the
  * hero logo's centre line that fills with real readiness (fonts, hero poster +
  * logo decoded, load, scroll background), and a small Orbitron caps "Loading"
- * under it, held 0.9–2.5 s. It then opens as a slit onto the logo,
+ * under it, held 0.45–2.5 s. It then opens as a slit onto the logo,
  * falls into the hero's red divider and the black lifts: the logo and divider
  * are already where the hero has them, and the hero's intro starts right then
  * (`w:boot-done`). Markup, critical CSS and runtime are all inline in the

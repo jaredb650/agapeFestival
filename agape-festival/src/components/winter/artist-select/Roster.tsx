@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SyntheticEvent } from "react";
 import { flushSync } from "react-dom";
 import { StageHeading } from "@/components/winter/classic";
+import { afterLoadIdle } from "@/components/winter/page/idle";
 import { observeInView } from "@/components/winter/perf";
 import { ArrowRight } from "@/components/winter/ui";
 import type { ArtistEntry, WinterDay } from "@/data/winter";
@@ -41,6 +42,10 @@ export function Roster({ artists, days, id, venue }: RosterProps) {
   const [slug, setSlug] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [near, setNear] = useState(false);
+  // The photo-less tiles' thread texture (roster.css, 67 KB) is requested once the page has loaded and gone
+  // idle, or as soon as the roster nears the screen: never alongside the hero, and it never holds up `load`
+  // (which the preloader counts). The roster sits a hero and a 280vh flyer down, so it is long in by then.
+  const [tex, setTex] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLElement | null>(null);
   const reduced = useReducedMotion();
@@ -51,6 +56,7 @@ export function Roster({ artists, days, id, venue }: RosterProps) {
     if (!el) return;
     return observeInView(el, (v) => v && setNear(true), { rootMargin: "800px 0px" });
   }, []);
+  useEffect(() => afterLoadIdle(() => setTex(true), 300), []);
 
   // Committed synchronously, inside the tap: the bio's clip then calls play() within the gesture, which
   // iOS needs to start video in Low Power Mode.
@@ -95,7 +101,7 @@ export function Roster({ artists, days, id, venue }: RosterProps) {
   const act = slug ? roster.bySlug.get(slug) : undefined;
 
   return (
-    <div ref={rootRef} className="rs">
+    <div ref={rootRef} className="rs" data-tex={tex || near || undefined}>
       {roster.days.map((d, i) => (
         <DayBlock key={d.day} day={d} cropFrom={i === 0 ? 0 : roster.days[0].acts.length} dialogId={dialogId} onOpen={openAct} />
       ))}

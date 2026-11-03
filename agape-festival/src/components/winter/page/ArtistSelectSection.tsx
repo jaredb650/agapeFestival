@@ -19,6 +19,10 @@ export function ArtistSelectSection() {
   return (
     <Section id="artists" title="The roster" className="rs-sec">
       <Roster artists={ARTISTS} days={WINTER_DAYS} id="artists" venue={`${WINTER.venue.name}, ${WINTER.venue.city}`} />
+      {/* Without JS nothing sets data-tex (roster.css), so the texture is applied here instead. */}
+      <noscript>
+        <style>{`.rs .rs-card__media:not([data-photo],.rs-tba){background-image:url(/assets/winter/texture/threads.webp)}`}</style>
+      </noscript>
     </Section>
   );
 }

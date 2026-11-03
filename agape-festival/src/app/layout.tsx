@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { prefetchDNS } from "react-dom";
 import "./globals.css";
 
 // viewportFit "cover" lets env(safe-area-inset-*) report the iPhone notch/home-bar insets (the floating CTA uses them).
@@ -26,7 +25,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // The merch shots come from Shopify's CDN, far below the fold: resolve its DNS early, but open no connection.
-  prefetchDNS("https://cdn.shopify.com");
   return <html lang="en"><body>{children}</body></html>;
 }

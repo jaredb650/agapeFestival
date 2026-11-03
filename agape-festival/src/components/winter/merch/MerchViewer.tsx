@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { MerchCard } from "@/components/winter/page/MerchCard";
-import { ArrowUpRight, Button } from "@/components/winter/ui";
+import { LockMark } from "./LockMark";
 import { Preview } from "./Preview";
 import type { Plate, Product, Side } from "./types";
 
@@ -13,13 +13,13 @@ const SIDES: { side: Side; label: string }[] = [
 ];
 
 /**
- * The merch board and its shop links. From 768px the preview (with its plate: the product's name and
- * Front | Back) sits beside the product cards, two by two, and stretches to their height; on phones the
- * preview comes first, the cards two to a line under it. Selecting a product puts it in the preview and
- * on the "Shop the …" link; the red marks show which product and which side are showing. Below, centred:
- * that product's page, and the whole shop in red.
+ * The merch board, locked. From 768px the preview (with its plate: the piece's name and Front | Back)
+ * sits beside the cards, two by two, and stretches to their height; on phones the preview comes first,
+ * the cards two to a line under it. Selecting a piece puts its silhouette in the preview; the red marks
+ * show which piece and which side are showing. The lock and its caption sit over the preview and every
+ * card. There are no shop links: nothing is on sale until the new line drops.
  */
-export function MerchViewer({ items, shopUrl }: { items: Product[]; shopUrl: string }) {
+export function MerchViewer({ items, status }: { items: Product[]; status: string }) {
   const [sel, setSel] = useState(0);
   const [side, setSide] = useState<Side>("back");
   const [plates, setPlates] = useState<Plate[]>([{ key: 0, i: 0 }]);
@@ -47,55 +47,44 @@ export function MerchViewer({ items, shopUrl }: { items: Product[]; shopUrl: str
   const wideFirst = items.length % 2 === 1;
 
   return (
-    <>
-      <div className="mx-board">
-        <div className="mx-view">
-          <div className="mx-view__stage">
-            <Preview id={PREVIEW_ID} items={items} plates={plates} side={side} onFlip={flip} onSettled={settle} />
-          </div>
-          <div className="mx-view__plate">
-            <p className="k-name mx-view__name">{item.name}</p>
-            <div className="mx-sides" role="group" aria-label="Side shown">
-              {SIDES.map((s) => (
-                <button
-                  key={s.side}
-                  type="button"
-                  className="mx-sides__btn"
-                  data-side={s.side}
-                  aria-pressed={side === s.side}
-                  aria-controls={PREVIEW_ID}
-                  onClick={() => {
-                    setSide(s.side);
-                    setTouched(true);
-                  }}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="w-sr-only" aria-live="polite">
-            {touched ? `${item.name}, ${side}` : ""}
-          </p>
+    <div className="mx-board">
+      <div className="mx-view">
+        <div className="mx-view__stage">
+          <Preview id={PREVIEW_ID} items={items} plates={plates} side={side} onFlip={flip} onSettled={settle} />
+          <LockMark label={status} size="lg" />
         </div>
-        <ul className="mx-cards" aria-label="Products">
-          {items.map((it, i) => (
-            <li key={it.href} className="mx-cell" data-wide={(wideFirst && i === 0) || undefined}>
-              <MerchCard item={it} i={i} selected={i === sel} controls={PREVIEW_ID} onSelect={select} />
-            </li>
-          ))}
-        </ul>
+        <div className="mx-view__plate">
+          <p className="k-name mx-view__name">{item.name}</p>
+          <div className="mx-sides" role="group" aria-label="Side shown">
+            {SIDES.map((s) => (
+              <button
+                key={s.side}
+                type="button"
+                className="mx-sides__btn"
+                data-side={s.side}
+                aria-pressed={side === s.side}
+                aria-controls={PREVIEW_ID}
+                onClick={() => {
+                  setSide(s.side);
+                  setTouched(true);
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="w-sr-only" aria-live="polite">
+          {touched ? `${item.name}, ${side}, ${status.toLowerCase()}` : ""}
+        </p>
       </div>
-      <div className="mx-actions">
-        <Button variant="secondary" href={item.href} external icon={<ArrowUpRight className="w-btn__icon" />}>
-          Shop the {item.name}
-          <span className="w-sr-only"> (opens in a new tab)</span>
-        </Button>
-        <Button variant="primary" href={shopUrl} external icon={<ArrowUpRight className="w-btn__icon" />}>
-          View all
-          <span className="w-sr-only"> merch in the shop (opens in a new tab)</span>
-        </Button>
-      </div>
-    </>
+      <ul className="mx-cards" aria-label="Products">
+        {items.map((it, i) => (
+          <li key={it.id} className="mx-cell" data-wide={(wideFirst && i === 0) || undefined}>
+            <MerchCard item={it} i={i} selected={i === sel} status={status} controls={PREVIEW_ID} onSelect={select} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

@@ -15,12 +15,11 @@ import { Faq } from "@/components/winter/page/Faq";
 import { GettingHere } from "@/components/winter/page/GettingHere";
 import { Lockers } from "@/components/winter/page/Lockers";
 import { Lineup } from "@/components/winter/page/Lineup";
-import { LoopBackground } from "@/components/winter/page/LoopBackground";
 import { Merch } from "@/components/winter/page/Merch";
 import { Nav } from "@/components/winter/page/Nav";
 import { Tickets } from "@/components/winter/page/Tickets";
 import { Preloader } from "@/components/winter/preloader/Preloader";
-import { BG, FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
+import { FLYER, HERO, HERO_PORTRAIT_QUERY, OG_IMAGE } from "@/components/winter/page/media";
 import { ARTISTS, LOCKERS, NAV_LINKS, SHOW_ARTIST_SELECT, TICKETS, WINTER } from "@/data/winter";
 
 const SITE = "https://agape-festival.com";
@@ -70,7 +69,8 @@ export default function Home() {
       </a>
       <Preloader />
       <GestureRescue />
-      <LoopBackground media={BG} />
+      {/* A/B variant classic-nobg: no LoopBackground (loop video, poster, flyer still, parallax, vignette, scrim);
+          the page sits on flat --c-ink. The preloader's "background" milestone then completes at window load. */}
       <Nav
         links={NAV_LINKS}
         ticketsUrl={WINTER.tickets.url}

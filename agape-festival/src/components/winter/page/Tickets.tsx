@@ -62,7 +62,7 @@ export function Tickets() {
           </div>
           {WINTER.hours && (
             <div className="tk-row">
-              <dt className="k-label">Doors</dt>
+              <dt className="k-label">Hours</dt>
               <dd className="tk-value">{WINTER.hours}</dd>
             </div>
           )}

@@ -112,8 +112,8 @@ export const WINTER = {
   },
   /** One stage per day (flyer). Stage name/host unknown. */
   stagesPerDay: 1,
-  /** Doors/close times are not announced. Keep null until confirmed; don't show placeholder times. */
-  hours: null as string | null,
+  /** Festival hours, both days (client FAQ, Nov 3). Shown as the Tickets "Hours" row; null hides it. */
+  hours: "4 PM – 6 AM, both days" as string | null,
   tickets: {
     /** DICE is the only ticket channel. No tiers or prices are published yet. */
     provider: "DICE",
@@ -124,11 +124,10 @@ export const WINTER = {
       "TODO_CONFIRM: ticket types/prices (weekend vs single day?) and whether this one DICE link covers both days; its slug only says '19th-feb'" satisfies ConfirmNote,
   },
   countdown: {
-    // TODO confirm doors time. Placeholder: midnight New York at the start of Feb 19.
-    targetIso: "2027-02-19T00:00:00-05:00",
-    ariaLabel: "Countdown to February 19, 2027, midnight New York time",
-    needsConfirm: true,
-    confirmNote: "TODO_CONFIRM: Day 1 doors time; countdown currently targets midnight" satisfies ConfirmNote,
+    // Day 1 doors: 4 PM New York (client FAQ, Nov 3: "4:00 PM to 6:00 AM").
+    targetIso: "2027-02-19T16:00:00-05:00",
+    ariaLabel: "Countdown to doors, February 19, 2027, 4 PM New York time",
+    needsConfirm: false,
   },
   contactEmail: FESTIVAL.contactEmail,
   websiteUrl: FESTIVAL.websiteUrl,
@@ -553,9 +552,8 @@ export const FAQ: FaqItem[] = [
   {
     id: "hours",
     q: "What are the festival hours?",
-    a: "Door and closing times for each day will be announced soon. Join the newsletter to hear first.",
-    needsConfirm: true,
-    confirmNote: "TODO_CONFIRM: doors + close time for Day 1 (Fri) and Day 2 (Sat)",
+    a: "ÄGAPĒ Winter Festival runs from 4:00 PM to 6:00 AM on both Friday, February 19, and Saturday, February 20, 2027. Re-entry will be permitted throughout the event.",
+    needsConfirm: false,
   },
   {
     id: "venue",
@@ -604,16 +602,14 @@ export const FAQ: FaqItem[] = [
   {
     id: "reentry",
     q: "Is there re-entry?",
-    a: "Re-entry details for Winter Edition will be confirmed closer to the date.",
-    needsConfirm: true,
-    confirmNote: "TODO_CONFIRM: re-entry policy for winter (Sept: re-entry permitted, keep wristband on)",
+    a: "Yes! Re-entry is allowed throughout the festival, so you can leave and return during event hours.",
+    needsConfirm: false,
   },
   {
     id: "arrival",
     q: "What time should I arrive?",
-    a: "We recommend arriving early to avoid queues. Door times will be announced soon.",
-    needsConfirm: true,
-    confirmNote: "TODO_CONFIRM: doors time (then this answer can name it)",
+    a: "We highly recommend arriving early! Unlike traditional festivals, our headliners will be playing earlier in the evening, with the first headliner starting at 6:00 PM each day. Don't miss out on some of the biggest performances of the weekend.",
+    needsConfirm: false,
   },
   {
     id: "bring",
@@ -625,14 +621,15 @@ export const FAQ: FaqItem[] = [
   {
     id: "coat-check",
     q: "Is there a coat check?",
-    a: "Coat check details will be shared before the event.",
-    needsConfirm: true,
-    confirmNote: "TODO_CONFIRM: is there a coat check? price? (winter event; not covered in Sept)",
+    a: "There will be no traditional coat check. Instead, lockers will be available to securely store your coats and personal belongings throughout the festival. We recommend reserving yours in advance to guarantee availability.",
+    link: { label: "Reserve a locker", href: LOCKER_URL, external: true },
+    needsConfirm: false,
   },
   {
     id: "lockers",
     q: "Will there be lockers?",
-    a: "Locker details for Winter Edition will be confirmed closer to the date.",
+    a: "Yes. Lockers will be available to securely store your coats and personal belongings throughout the festival. We recommend reserving yours in advance to guarantee availability.",
+    link: { label: "Reserve a locker", href: LOCKER_URL, external: true },
     needsConfirm: true,
     confirmNote:
       "TODO_CONFIRM: lockers again for winter? same Elockers booking link (agapefestival.elocke.rs)? then restore the 'reserve in advance' answer + link",

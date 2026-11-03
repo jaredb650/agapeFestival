@@ -205,7 +205,7 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
 
 // ============================================================
 // ARTISTS (artist profiler). Filled from the press kits: Diossa and Len Faki have no kit bio; Vendex's kit has
-// no video; Azzel 447 and Johannes Schuster have no kit yet (pending).
+// no video; Azzel 447 has no kit yet (pending).
 // ============================================================
 
 export interface ArtistSocial {
@@ -403,6 +403,18 @@ const VENDEX_BIO =
   "levels of hell, purgatory and finally reaching paradise. Influenced today in his sessions by artists such as " +
   "Dax J, Parallx, I Hate Models, Scalameriya, Ancient Methods, Tommy Four Seven or Setaoc Mass and many more.";
 
+// "Johannes Schuster - Bio.pdf" (Liminal), complete. Fixes: "Agape" → "ÄGAPĒ", "DJ Sets" → "DJ sets", and
+// "NineTimesNineSoma" → "NineTimesNine, Soma" (two labels run together in the PDF).
+const JOHANNES_SCHUSTER_BIO =
+  "Johannes Schuster’s story is about passion, evolution, and relentless ambition. A tale that begins with a " +
+  "15-year-old and his first piece of vinyl, up to being a resident of the iconic German techno event brand " +
+  "‘Unreal’ and the New York City-based ÄGAPĒ, gaining a global reputation through his incendiary DJ sets and " +
+  "playing regularly on the worldwide techno circuit. His sonic arsenal? Johannes Schuster’s signature sound " +
+  "blends bouncy, rave-inspired rhythms with emotive pads, razor-sharp acid lines, and classic old-school grooves. " +
+  "His dynamic DJ sets have earned him widespread recognition, captivating audiences across continents. Much " +
+  "attention has also been given to his fantastic productions on his own label 7E6D and other prominent labels, " +
+  "such as NineTimesNine, Soma, Green Fetish, Voxnox, and many more.";
+
 /**
  * An act filled from its press kit (Nov 2026): `headshot-600/1200.webp` and, when the kit has usable
  * performance video, `clip.mp4` + `clip-poster.webp`, all in its artists/<slug>/ folder. See media-notes.md.
@@ -490,7 +502,13 @@ const NAMED_ARTISTS: NamedArtist[] = [
   fromKit("davyboi", "Davyboi", "DAVYBOI", 2, DAVYBOI_BIO, { clip: true, focus: "56% 36%", zoom: 1.35 }),
   // No press kit yet.
   pending("azzel-447", "Azzel 447", "AZZEL 447", 2),
-  pending("johannes-schuster", "Johannes Schuster", "JOHANNES SCHUSTER", 2),
+  // IMG_6154 (Feb 2026 shoot: black bomber on red, studio light); clip from his kit's square multicam set
+  // footage (copy_B01F76FE.mov, face-on at the mixer with the crowd behind).
+  fromKit("johannes-schuster", "Johannes Schuster", "JOHANNES SCHUSTER", 2, JOHANNES_SCHUSTER_BIO, {
+    clip: true,
+    focus: "40% 36%",
+    zoom: 1.35,
+  }),
   // "KUKO - PRESSPICS" from the kit's "Updated EPK - Use this!" folder (the older folder says "ONLY USE FULL PIC",
   // so none of those were cropped); clip from the same EPK's 06_kuko_@weshtech.mp4.
   fromKit("kuko", "Kuko", "KUKO", 2, KUKO_BIO, { clip: true, focus: "50% 33%", zoom: 1.4 }),

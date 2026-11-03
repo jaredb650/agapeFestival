@@ -95,11 +95,14 @@
 }
 @keyframes wposter-in { from { opacity: 0; } }
 
-/* The flyer moment: a sticky stage over the background (unchanged). */
-.wflyer { position: relative; height: 280vh; height: 280lvh; }
+/* The flyer moment (classic-notext variant): a sticky stage over the background, the text still.
+   The stage pins for 70lvh (section height minus the 100lvh stage), then scrolls away. LoopBackground
+   cross-fades the flyer's own still in over the last 30% before the lock (21 -> 30lvh, stage pinned),
+   holds it to the release (= the moment the stage unpins) and fades it out as the stage leaves. */
+.wflyer { position: relative; height: 170vh; height: 170lvh; }
 .wflyer__marker { position: absolute; left: 0; width: 1px; height: 1px; pointer-events: none; }
-.wflyer__marker--lock { top: 135vh; top: 135lvh; }
-.wflyer__marker--release { top: 180vh; top: 180lvh; }
+.wflyer__marker--lock { top: 30vh; top: 30lvh; }
+.wflyer__marker--release { top: 70vh; top: 70lvh; }
 .wflyer__stage { position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; pointer-events: none; }
 /* The flyer's 9:16 canvas. Portrait: identical to the background's cover box, so
    the layers sit exactly where they do on the poster. Landscape: scaled so the
@@ -115,13 +118,5 @@
   transform: translate(-50%, -50%);
 }
 .wflyer__scrim { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wflyer__layer { position: absolute; pointer-events: auto; }
-/* Promoted only while the section is within a screen of the viewport (FlyerStage toggles data-live). */
-.wflyer__stage[data-live] .wflyer__scrim { will-change: opacity; }
-.wflyer__stage[data-live] .wflyer__layer { will-change: transform, opacity; }
+.wflyer__layer { position: absolute; }
 .wflyer__layer img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
-.wflyer__layer .w-glitch { cursor: crosshair; }
-
-@media (prefers-reduced-motion: reduce) {
-  .wflyer__layer { will-change: auto; }
-}

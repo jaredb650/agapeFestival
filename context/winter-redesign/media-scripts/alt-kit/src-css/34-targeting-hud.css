@@ -1,0 +1,331 @@
+/* ==========================================================================
+   TargetingHud — the hero's targeting HUD (c9688b5 page/Hero.tsx HeroHud +
+   sections/hero.css "HUD"): viewfinder corners with ice knee ticks,
+   registration crosses, a reticle ringing the centre (two slow counter-rotating
+   layers: 120 + 24 radial ticks, four arcs and two hot ice arcs), axis lines,
+   pitch rulers on both edges, a heading tape with the scroll cue, LCD data rows
+   that type in, a vertical text strip, a scan band every 8s and intro glitch
+   slices. It assembles from first paint (CSS only). Viewport units became
+   container units, so it fits any box: put it in a sized host.
+   ========================================================================== */
+.rhk-th-host {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--th-h, 640px);
+  overflow: hidden;
+  padding: 72px var(--rhk-gutter);
+}
+.rhk-th-host > :not(.rhk-th) { position: relative; z-index: 2; }
+.rhk-th { position: absolute; inset: 0; z-index: 1; pointer-events: none; container: rhk-th / size; }
+.rhk-th__in {
+  --th-top: 24px;      /* HUD frame inset from the top (the hero used 76px to clear the fixed nav) */
+  --th-pb: 24px;       /* room for the bottom HUD row */
+  --th-inset: 24px;    /* HUD frame inset from the sides and bottom */
+  --th-r: min(40cqh, 372px, 38cqw); /* reticle radius */
+  --th-line: rgba(233, 235, 236, 0.3);
+  --th-line-dim: rgba(233, 235, 236, 0.14);
+  --th-ice-glow: 0 0 6px rgba(156, 200, 255, 0.5);
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+}
+
+/* Scan band: one sweep at load, then every 8s (transform only). */
+.rhk-th__scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -28cqh;
+  height: 28cqh;
+  background: linear-gradient(180deg, transparent 0%, rgba(156, 200, 255, 0.035) 60%, rgba(156, 200, 255, 0.12) 97%, rgba(233, 235, 236, 0.3) 99.5%, transparent 100%);
+  opacity: 0;
+}
+
+/* Viewfinder corners */
+.rhk-th__frame { position: absolute; inset: var(--th-top) var(--th-inset) var(--th-inset); }
+.rhk-th__frame i { position: absolute; width: 34px; height: 34px; border: 0 solid var(--th-line); }
+.rhk-th__frame i:nth-child(1) { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; --sx: 1; --sy: 1; }
+.rhk-th__frame i:nth-child(2) { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; --sx: -1; --sy: 1; }
+.rhk-th__frame i:nth-child(3) { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; --sx: -1; --sy: -1; }
+.rhk-th__frame i:nth-child(4) { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; --sx: 1; --sy: -1; }
+/* A short ice tick on each bracket's knee. */
+.rhk-th__frame i::after { content: ""; position: absolute; width: 6px; height: 6px; background: var(--rhk-ice); opacity: 0.7; box-shadow: var(--th-ice-glow); }
+.rhk-th__frame i:nth-child(1)::after { top: -1px; left: -1px; }
+.rhk-th__frame i:nth-child(2)::after { top: -1px; right: -1px; }
+.rhk-th__frame i:nth-child(3)::after { bottom: -1px; right: -1px; }
+.rhk-th__frame i:nth-child(4)::after { bottom: -1px; left: -1px; }
+
+/* Registration crosses, just inside the corners */
+.rhk-th__reg { position: absolute; width: 11px; height: 11px; background: linear-gradient(var(--th-line), var(--th-line)) center / 100% 1px no-repeat, linear-gradient(var(--th-line), var(--th-line)) center / 1px 100% no-repeat; }
+.rhk-th__reg[data-pos="tl"] { top: calc(var(--th-top) + 52px); left: calc(var(--th-inset) + 52px); }
+.rhk-th__reg[data-pos="tr"] { top: calc(var(--th-top) + 52px); right: calc(var(--th-inset) + 52px); }
+.rhk-th__reg[data-pos="bl"] { bottom: calc(var(--th-inset) + 52px); left: calc(var(--th-inset) + 52px); }
+.rhk-th__reg[data-pos="br"] { bottom: calc(var(--th-inset) + 52px); right: calc(var(--th-inset) + 52px); }
+
+/* ---- Reticle ringing the lockup ------------------------------------------- */
+.rhk-thr {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + (var(--th-top) - var(--th-pb)) / 2);
+  width: calc(var(--th-r) * 2);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+}
+.rhk-thr__in { position: absolute; inset: 0; }
+.rhk-thr svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--rhk-frost); }
+.rhk-thr__ring { stroke-width: 1; opacity: 0.16; vector-effect: non-scaling-stroke; }
+.rhk-thr__ring--in { opacity: 0.08; stroke-dasharray: 2 5; }
+.rhk-thr__cross { stroke-width: 1; opacity: 0.45; vector-effect: non-scaling-stroke; }
+.rhk-thr__cross--in { opacity: 0.3; }
+.rhk-thr__pip { fill: var(--rhk-ice); stroke: none; opacity: 0.85; }
+.rhk-thr__spin { position: absolute; inset: 0; }
+/* 120 minor + 24 major radial ticks: a thick dashed stroke around the ring. */
+.rhk-thr__ticks { stroke-width: 6; stroke-dasharray: 1 8.53; opacity: 0.22; }
+.rhk-thr__ticks--major { stroke-width: 12; stroke-dasharray: 1.4 46.25; opacity: 0.4; }
+.rhk-thr__arc { stroke: var(--rhk-frost); stroke-width: 1.5; opacity: 0.35; vector-effect: non-scaling-stroke; }
+.rhk-thr__arc--hot { stroke: var(--rhk-ice); stroke-width: 3; opacity: 0.75; }
+.rhk-thr__tag { position: absolute; }
+.rhk-thr__tag[data-pos="ne"] { left: 85%; top: 12%; }
+.rhk-thr__tag[data-pos="sw"] { right: 85%; bottom: 12%; text-align: right; }
+
+/* Axis lines from the frame to the reticle, at its centre height */
+.rhk-th__axis {
+  position: absolute;
+  top: calc(50% + (var(--th-top) - var(--th-pb)) / 2);
+  height: 9px;
+  width: calc(50% - var(--th-r) - var(--th-inset) - 118px);
+  translate: 0 -50%;
+  background:
+    linear-gradient(var(--th-line-dim), var(--th-line-dim)) center / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--th-line) 0 1px, transparent 1px 24px) center / 100% 5px no-repeat;
+}
+.rhk-th__axis[data-side="l"] { left: calc(var(--th-inset) + 100px); transform-origin: 0 50%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%); mask-image: linear-gradient(90deg, transparent, #000 30%); }
+.rhk-th__axis[data-side="r"] { right: calc(var(--th-inset) + 100px); transform-origin: 100% 50%; -webkit-mask-image: linear-gradient(270deg, transparent, #000 30%); mask-image: linear-gradient(270deg, transparent, #000 30%); }
+
+/* ---- Pitch rulers (left/right edges) -------------------------------------- */
+.rhk-th__ruler {
+  --rh: min(46cqh, 400px);
+  position: absolute;
+  top: calc(50% + (var(--th-top) - var(--th-pb)) / 2);
+  height: var(--rh);
+  width: 44px;
+  translate: 0 -50%;
+}
+.rhk-th__ruler[data-side="l"] { left: calc(var(--th-inset) + 30px); }
+.rhk-th__ruler[data-side="r"] { right: calc(var(--th-inset) + 30px); }
+.rhk-th__ticks {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  background:
+    repeating-linear-gradient(180deg, var(--th-line) 0 1px, transparent 1px calc(var(--rh) / 8)) 0 0 / 12px 100% no-repeat,
+    repeating-linear-gradient(180deg, var(--th-line-dim) 0 1px, transparent 1px calc(var(--rh) / 40)) 0 0 / 6px 100% no-repeat;
+}
+.rhk-th__ruler[data-side="l"] .rhk-th__ticks { left: 0; }
+.rhk-th__ruler[data-side="r"] .rhk-th__ticks { right: 0; background-position: 100% 0, 100% 0; }
+.rhk-th__nums {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font: 400 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.06em;
+  color: var(--rhk-fog);
+}
+.rhk-th__nums b { font-weight: 400; display: block; height: 10px; }
+.rhk-th__nums b:nth-child(5) { color: var(--rhk-ice); text-shadow: var(--th-ice-glow); }
+.rhk-th__ruler[data-side="l"] .rhk-th__nums { left: 18px; }
+.rhk-th__ruler[data-side="r"] .rhk-th__nums { right: 18px; text-align: right; }
+.rhk-th__pin { position: absolute; top: 50%; translate: 0 -50%; font-size: 10px; line-height: 1; color: var(--rhk-ice); text-shadow: var(--th-ice-glow); }
+.rhk-th__ruler[data-side="l"] .rhk-th__pin { left: -12px; }
+.rhk-th__ruler[data-side="r"] .rhk-th__pin { right: -12px; }
+
+/* ---- Heading tape + scroll cue (bottom centre) ---------------------------- */
+.rhk-th__tape { position: absolute; left: 50%; bottom: calc(var(--th-inset) + 10px); width: 300px; height: 40px; translate: -50% 0; }
+.rhk-th__tape-ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 10px;
+  background:
+    repeating-linear-gradient(90deg, var(--th-line) 0 1px, transparent 1px 50px) 0 0 / 100% 10px no-repeat,
+    repeating-linear-gradient(90deg, var(--th-line-dim) 0 1px, transparent 1px 10px) 0 0 / 100% 5px no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+}
+.rhk-th__tape-nums {
+  position: absolute;
+  left: -25px;
+  right: -25px;
+  top: 14px;
+  display: flex;
+  justify-content: space-between;
+  font: 400 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  color: var(--rhk-fog);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent);
+}
+.rhk-th__tape-nums b { width: 50px; text-align: center; font-weight: 400; }
+.rhk-th__tape-nums b[data-n] { color: var(--rhk-frost); font-weight: 700; }
+.rhk-th__tape-pin { position: absolute; left: 50%; top: -12px; translate: -50% 0; font-size: 8px; line-height: 1; color: var(--rhk-ice); text-shadow: var(--th-ice-glow); }
+.rhk-th__scroll {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  translate: -50% 0;
+  font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rhk-mist);
+  white-space: nowrap;
+}
+.rhk-th__scroll::after { content: " \25BE"; color: var(--rhk-ice); }
+
+/* ---- LCD data blocks ------------------------------------------------------- */
+.rhk-th__data {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rhk-mist);
+  text-shadow: 0 0 4px rgba(4, 6, 10, 0.9);
+  white-space: nowrap;
+}
+.rhk-th__data[data-pos="tl"] { top: calc(var(--th-top) + 18px); left: calc(var(--th-inset) + 18px); }
+.rhk-th__data[data-pos="tr"] { top: calc(var(--th-top) + 18px); right: calc(var(--th-inset) + 18px); align-items: flex-end; }
+.rhk-th__data[data-pos="bl"] { bottom: calc(var(--th-inset) + 18px); left: calc(var(--th-inset) + 18px); }
+.rhk-th-type { display: block; }
+.rhk-th-type[data-tone="ice"], .rhk-thr__tag .rhk-th-type[data-tone="ice"] { color: var(--rhk-ice); text-shadow: var(--th-ice-glow); }
+.rhk-th-type[data-tone="fog"] { color: var(--rhk-fog); }
+.rhk-th-type i { font-style: normal; color: rgba(156, 200, 255, 0.45); }
+.rhk-thr__tag .rhk-th-type { font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel); letter-spacing: 0.08em; color: var(--rhk-mist); white-space: nowrap; }
+.rhk-th__rec { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 50%; background: rgb(255, 52, 80); box-shadow: 0 0 6px rgba(255, 52, 80, 0.8); vertical-align: 0; }
+.rhk-th__vtext {
+  position: absolute;
+  left: calc(var(--th-inset) + 6px);
+  top: 0;
+  bottom: 0;
+  height: max-content;
+  /* Physical margins: in vertical-rl the logical block axis is horizontal. */
+  margin-top: auto;
+  margin-bottom: auto;
+  translate: -50% 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font: 700 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--rhk-fog);
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+/* Intro glitch slices across the lockup */
+.rhk-th__slice { position: absolute; left: 22%; right: 22%; height: 2px; background: rgba(156, 200, 255, 0.55); opacity: 0; }
+.rhk-th__slice[data-n="1"] { top: 33%; }
+.rhk-th__slice[data-n="2"] { top: 41%; height: 5px; background: rgba(233, 235, 236, 0.3); }
+.rhk-th__slice[data-n="3"] { top: 50%; }
+
+/* ---- Intro (assemble) + loops ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .rhk-th__scan { animation: rhk-th-sweep 8s cubic-bezier(0.5, 0, 0.3, 1) 0.05s infinite; }
+  .rhk-th__frame i { animation: rhk-th-corner 0.62s var(--rhk-ease) 0.05s both; }
+  .rhk-th__reg { animation: rhk-th-blink-in 0.5s steps(1, end) 0.3s both; }
+  .rhk-thr__in { animation: rhk-th-lock 1s var(--rhk-ease) 0.15s both; }
+  /* The wind-in and the endless spin live on different boxes (svg / wrapper): two transform animations on one
+     element can't share the compositor, which pushed the 120s/48s loops onto the main thread at 60fps. */
+  .rhk-thr__spin--ticks > svg { animation: rhk-th-spin-in 1.5s var(--rhk-ease) 0.15s backwards; }
+  .rhk-thr__spin--ticks { animation: rhk-th-spin 120s linear 1.65s infinite; }
+  .rhk-thr__spin--arcs > svg { animation: rhk-th-spin-in-rev 1.3s var(--rhk-ease) 0.2s backwards; }
+  .rhk-thr__spin--arcs { animation: rhk-th-spin-rev 48s linear 1.5s infinite; }
+  .rhk-th__axis { animation: rhk-th-draw-x 0.7s var(--rhk-ease) 0.35s both; }
+  .rhk-th__ticks { animation: rhk-th-draw-y 0.8s var(--rhk-ease) 0.15s both; }
+  .rhk-th__nums b { animation: rhk-th-blink-in 0.4s steps(1, end) both; }
+  .rhk-th__nums b:nth-child(1), .rhk-th__nums b:nth-child(9) { animation-delay: 0.5s; }
+  .rhk-th__nums b:nth-child(2), .rhk-th__nums b:nth-child(8) { animation-delay: 0.44s; }
+  .rhk-th__nums b:nth-child(3), .rhk-th__nums b:nth-child(7) { animation-delay: 0.38s; }
+  .rhk-th__nums b:nth-child(4), .rhk-th__nums b:nth-child(6) { animation-delay: 0.32s; }
+  .rhk-th__nums b:nth-child(5) { animation-delay: 0.26s; }
+  .rhk-th__pin { animation: rhk-th-blink-in 0.5s steps(1, end) 0.6s both; }
+  .rhk-th__tape-ticks, .rhk-th__tape-nums { animation: rhk-th-draw-x 0.8s var(--rhk-ease) 0.5s both; }
+  .rhk-th__tape-pin, .rhk-th__scroll { animation: rhk-th-blink-in 0.5s steps(1, end) 1.2s both; }
+  .rhk-th-type { animation: rhk-th-type 0.42s steps(16, end) calc(1.05s + var(--i) * 0.11s) both; }
+  .rhk-th__vtext { animation: rhk-th-type-v 0.9s steps(24, end) 0.9s both; }
+  .rhk-th__rec { animation: rhk-th-rec 32s steps(1, end) infinite; }
+  .rhk-th__slice[data-n="1"] { animation: rhk-th-slice 0.3s steps(4, end) 0.32s both; }
+  .rhk-th__slice[data-n="2"] { animation: rhk-th-slice 0.26s steps(3, end) 0.4s both; }
+  .rhk-th__slice[data-n="3"] { animation: rhk-th-slice 0.3s steps(4, end) 0.48s both; }
+}
+
+/* Loops park while the HUD is off screen (the component sets [data-off]). */
+.rhk-th[data-off] * { animation-play-state: paused !important; }
+
+@keyframes rhk-th-sweep {
+  0% { opacity: 0.9; transform: translateY(0); }
+  17% { opacity: 0.9; transform: translateY(128cqh); }
+  17.1%, 100% { opacity: 0; transform: translateY(128cqh); }
+}
+@keyframes rhk-th-corner {
+  0% { opacity: 0; transform: translate(calc(var(--sx) * -36px), calc(var(--sy) * -36px)); }
+  55% { opacity: 1; transform: translate(calc(var(--sx) * 4px), calc(var(--sy) * 4px)); }
+  68% { opacity: 0.25; }
+  80% { opacity: 1; transform: none; }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes rhk-th-blink-in { 0% { opacity: 0; } 20% { opacity: 1; } 40% { opacity: 0; } 60%, 100% { opacity: 1; } }
+@keyframes rhk-th-lock { 0% { opacity: 0; transform: scale(1.32); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes rhk-th-spin-in { from { transform: rotate(-140deg); } to { transform: none; } }
+@keyframes rhk-th-spin-in-rev { from { transform: rotate(110deg); } to { transform: none; } }
+@keyframes rhk-th-spin { to { transform: rotate(360deg); } }
+@keyframes rhk-th-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes rhk-th-draw-x { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes rhk-th-draw-y { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes rhk-th-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes rhk-th-type-v { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+@keyframes rhk-th-rec { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.15; } }
+@keyframes rhk-th-slice {
+  0% { opacity: 1; transform: translateX(-14%) scaleX(0.6); }
+  50% { opacity: 1; transform: translateX(9%) scaleX(0.95); }
+  100% { opacity: 0; transform: translateX(-4%) scaleX(0.3); }
+}
+
+/* ---- Responsive (container queries on the HUD box, which replace the hero's viewport queries) ---- */
+@container rhk-th (max-width: 1100px) {
+  .rhk-th__axis { display: none; }
+}
+@container rhk-th (max-width: 899px) {
+  .rhk-th__in { --th-inset: 12px; --th-r: min(58cqw, 36cqh, 300px); }
+  .rhk-th__ruler { --rh: min(30cqh, 240px); }
+  .rhk-th__ruler[data-side="l"] { left: calc(var(--th-inset) + 2px); }
+  .rhk-th__ruler[data-side="r"] { right: calc(var(--th-inset) + 2px); }
+  .rhk-th__nums { display: none; }
+  .rhk-th__pin { display: none; }
+  .rhk-th__ticks { width: 10px; }
+  .rhk-th__vtext, .rhk-th__reg { display: none; }
+  .rhk-th__data[data-pos="tl"] { top: calc(var(--th-top) + 12px); left: calc(var(--th-inset) + 12px); gap: 5px; }
+  .rhk-th__data[data-pos="tr"] { top: calc(var(--th-top) + 12px); right: calc(var(--th-inset) + 12px); gap: 5px; }
+  .rhk-th__data[data-pos="bl"] { bottom: calc(var(--th-inset) + 14px); left: calc(var(--th-inset) + 12px); gap: 5px; }
+  .rhk-th__data .rhk-th-type:nth-child(3) { display: none; }
+  .rhk-th__tape { width: 150px; bottom: calc(var(--th-inset) + 58px); }
+  .rhk-th__tape-nums { display: none; }
+  .rhk-th__scroll { bottom: 2px; }
+  .rhk-th__frame i { width: 22px; height: 22px; }
+  .rhk-thr__tag { display: none; }
+}
+@container rhk-th (max-width: 640px) {
+  .rhk-th__data { font-size: 10px; }
+}
+@container rhk-th (max-height: 700px) and (min-width: 900px) {
+  .rhk-th__tape { display: none; }
+}

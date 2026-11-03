@@ -1,0 +1,73 @@
+/* ==========================================================================
+   TerminalFrame — the access terminal's cockpit bezel (c9688b5
+   tickets/TerminalFrame.tsx + tickets.css .tk-term / .tk-scrim / .tk-frame*).
+   A chamfered frame with a notch connector on the top edge housing the label,
+   a shallower notch on the bottom edge housing the foot, a hairline inside,
+   connector pins and tick rulers down both sides. Optional cockpit glass
+   behind it: scanlines, a cold core and a hairline grid fading out radially.
+   Entrance: the frame flickers on (steps) when it scrolls into view.
+   ========================================================================== */
+.rhk-tf {
+  /* Frame insets inside the host (the original sat 76px under the fixed nav). */
+  --tf-ft: 0px;
+  --tf-fx: 0px;
+  --tf-fb: 0px;
+  --tf-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.3) 0 1px, transparent 1px 3px);
+  position: relative;
+  isolation: isolate;
+  padding: var(--tf-pad, calc(var(--tf-ft) + 40px) calc(var(--tf-fx) + 32px) calc(var(--tf-fb) + 34px));
+  color: var(--rhk-frost);
+}
+.rhk-tf > :not(.rhk-tf__frame, .rhk-tf__glass) { position: relative; z-index: 3; }
+
+/* Cockpit glass: darkening, a cold core, fine scanlines, a hairline grid. */
+.rhk-tf__glass {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--tf-scan),
+    radial-gradient(ellipse 46% 52% at 50% 52%, rgba(30, 60, 120, 0.3), transparent 72%),
+    linear-gradient(180deg, rgba(4, 6, 10, 0.5) 0%, rgba(4, 6, 10, 0.74) 46%, rgba(4, 6, 10, 0.62) 100%);
+}
+.rhk-tf__glass::after {
+  content: "";
+  position: absolute;
+  inset: var(--tf-ft) var(--tf-fx) var(--tf-fb);
+  background:
+    linear-gradient(rgba(156, 200, 255, 0.05) 1px, transparent 1px) 50% 0 / 48px 48px,
+    linear-gradient(90deg, rgba(156, 200, 255, 0.05) 1px, transparent 1px) 50% 0 / 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 64% at 50% 50%, #000 20%, transparent 100%);
+  mask-image: radial-gradient(ellipse 60% 64% at 50% 50%, #000 20%, transparent 100%);
+}
+
+.rhk-tf__frame { position: absolute; z-index: 2; inset: var(--tf-ft) var(--tf-fx) var(--tf-fb); pointer-events: none; }
+.rhk-tf__frame svg { position: absolute; inset: 0; overflow: visible; fill: none; }
+.rhk-tf__outer { stroke: rgba(233, 235, 236, 0.28); stroke-width: 1; }
+.rhk-tf__inner { stroke: rgba(156, 200, 255, 0.16); stroke-width: 1; }
+.rhk-tf__pins { stroke: var(--rhk-ice); stroke-width: 2; opacity: 0.75; }
+.rhk-tf__ticks { stroke: rgba(233, 235, 236, 0.22); stroke-width: 1; }
+.rhk-tf__label, .rhk-tf__foot {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  font: 700 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.rhk-tf__label { top: 0; color: var(--rhk-frost); }
+.rhk-tf__foot { bottom: 0; height: 16px; color: var(--rhk-fog); letter-spacing: 0.3em; }
+.rhk-tf__frame[data-compact] .rhk-tf__label { height: 20px; }
+.rhk-tf__frame[data-compact] .rhk-tf__foot { height: 14px; font-size: 8px; }
+
+.rhk-tf__frame[data-armed] { opacity: 0; }
+.rhk-tf__frame[data-armed][data-in] { animation: rhk-tf-on 0.7s steps(1, end) 0.1s both; }
+@keyframes rhk-tf-on { 0% { opacity: 0; } 15% { opacity: 1; } 30% { opacity: 0.2; } 45% { opacity: 1; } 60% { opacity: 0.5; } 75%, 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .rhk-tf__frame[data-armed], .rhk-tf__frame[data-armed][data-in] { opacity: 1; animation: none; }
+}

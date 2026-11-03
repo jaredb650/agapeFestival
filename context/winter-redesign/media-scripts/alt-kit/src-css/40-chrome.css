@@ -1,0 +1,522 @@
+/* ==========================================================================
+   CHROME + GLASS PIECES (c9688b5): the silver plates, keys, sockets and
+   housings, the glass orbs, the recessed LCDs, the hologram key, the CTA rig
+   and the HUD chip that the blue build repeated across every section.
+   ========================================================================== */
+
+/* ---- MechWindow rails sit just outside the bezel ---- */
+.rhk-mw > .rhk-rail { top: 18px; bottom: 0; }
+.rhk-mw > .rhk-rail[data-side="l"] { left: -16px; }
+.rhk-mw > .rhk-rail[data-side="r"] { right: -16px; }
+
+/* ==========================================================================
+   Orb — the artist select's glass orb (asel-orb / wmx-orb / wfq__orb /
+   whud-orb / tk-orb). Dark glass at rest; `lit` crossfades an ice core and
+   its glow (opacity only). `beat` breathes, `blink` blinks (folded loops).
+   ========================================================================== */
+.rhk-orb {
+  --d: 10px;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  vertical-align: middle;
+  background: radial-gradient(circle at 34% 30%, rgba(233, 235, 236, 0.5) 0 12%, #4a5566 32%, #1b212c 72%, #0b0e14 100%);
+  box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.7), 0 1px 0 rgba(233, 235, 236, 0.1);
+}
+.rhk-orb[data-size="xs"] { --d: 5px; }
+.rhk-orb[data-size="sm"] { --d: 8px; }
+.rhk-orb[data-size="md"] { --d: 11px; }
+.rhk-orb[data-size="lg"] { --d: 14px; }
+.rhk-orb[data-locked] { background: radial-gradient(circle at 34% 30%, rgba(233, 235, 236, 0.25) 0 10%, #20252e 40%, #07090d 100%); }
+.rhk-orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #fff 0 10%, #cfe6ff 22%, #7ab8ff 44%, #2f62ff 74%, #0d2a99 100%);
+  box-shadow: 0 0 8px 1px rgba(110, 170, 255, 0.75), 0 0 2px rgba(156, 200, 255, 0.9);
+  opacity: 0;
+  transition: opacity var(--rhk-dur) ease;
+}
+.rhk-orb[data-size="xs"]::after { box-shadow: 0 0 4px rgba(110, 170, 255, 0.55); }
+/* The roster's P2 (Day 2) orb: signal crimson in both palettes. */
+.rhk-orb[data-tone="p2"]::after {
+  background: radial-gradient(circle at 34% 30%, #fff 0 10%, color-mix(in srgb, #ffa3b1 55%, #fff) 22%, #ffa3b1 44%, #f0294b 74%, #8c0f27 100%);
+  box-shadow: 0 0 8px 1px rgba(240, 41, 75, 0.6), 0 0 2px #ffa3b1;
+}
+.rhk-orb[data-lit]::after { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .rhk-orb[data-beat]::after { animation: rhk-orb-beat 24s ease-in-out infinite; }
+  .rhk-orb[data-blink]::after { animation: rhk-orb-blink 20s steps(1, end) infinite; }
+}
+/* Folded loops (10 / 20 cycles per iteration): each iteration boundary costs a main-thread frame. */
+@keyframes rhk-orb-beat { 0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100% { opacity: 1; } 5%, 15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95% { opacity: 0.45; } }
+@keyframes rhk-orb-blink { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.15; } }
+
+/* ==========================================================================
+   Lcd — the recessed pixel LCD (wfq__lcd / wmx-lcd / tk-lcd / wlk-lcd /
+   whud__lcd / wft__readout): navy well, inset shadow, ice hairline, glowing
+   Chonky Pixels rows, scanlines. <i> = dim label, <b> = lit value.
+   ========================================================================== */
+.rhk-lcd {
+  --lcd-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.3) 0 1px, transparent 1px 3px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #05080e 0%, #0a1220 100%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(156, 200, 255, 0.16), 0 1px 0 rgba(233, 235, 236, 0.08);
+  font: 400 var(--rhk-fs-micro) / 1.15 var(--rhk-font-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rhk-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.45);
+}
+.rhk-lcd::after { content: ""; position: absolute; inset: 0; background: var(--lcd-scan); pointer-events: none; }
+.rhk-lcd__row { position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rhk-lcd__row + .rhk-lcd__row { color: rgba(156, 200, 255, 0.82); }
+.rhk-lcd i { font-style: normal; color: rgba(156, 200, 255, 0.45); }
+.rhk-lcd b { font-weight: 400; color: var(--rhk-ice); }
+/* The bar readout: chamfered top-left + bottom-right, label left / value right. */
+.rhk-lcd[data-shape="chamfer"] { gap: 4px; padding: 6px 10px; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+.rhk-lcd[data-shape="chamfer"] .rhk-lcd__row { display: flex; justify-content: space-between; gap: 6px; }
+.rhk-lcd[data-shape="chamfer"] .rhk-lcd__row + .rhk-lcd__row { color: inherit; }
+/* The ticket terminal's big readout line. */
+.rhk-lcd__big {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(22px, 2vw, 30px);
+  line-height: 1;
+  color: #dcebff;
+  text-shadow: 0 0 12px rgba(156, 200, 255, 0.75);
+  white-space: pre;
+}
+/* Key :: value pairs (the lockers readout). */
+.rhk-lcd[data-layout="pairs"] { flex-direction: row; align-items: center; gap: 10px; padding: 11px 14px; white-space: nowrap; }
+.rhk-lcd__k { color: rgba(156, 200, 255, 0.6); }
+.rhk-lcd__k::after { content: " ::"; color: rgba(156, 200, 255, 0.4); }
+.rhk-lcd__v { color: var(--rhk-ice); text-shadow: 0 0 6px rgba(156, 200, 255, 0.5); }
+
+/* ==========================================================================
+   SegmentLcd — the hero countdown strip (wh-lcd): a slim one-line readout,
+   orb + lead + ruler | recessed digit window with unlit 8s behind every digit
+   and unit letters | meta + blinking orb, inside a dim hairline with two ice
+   corner ticks. Powers on like a CRT.
+   ========================================================================== */
+.rhk-seg {
+  --lcd-fs: 17px;
+  --seg-line: rgba(233, 235, 236, 0.3);
+  --seg-line-dim: rgba(233, 235, 236, 0.14);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 10px;
+  background: linear-gradient(180deg, rgba(20, 24, 32, 0.6) 0%, rgba(8, 11, 16, 0.72) 100%);
+  box-shadow: inset 0 0 0 1px var(--seg-line-dim), 0 0 16px rgba(110, 170, 255, 0.06);
+}
+.rhk-seg::before, .rhk-seg::after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--rhk-ice); opacity: 0.8; pointer-events: none; }
+.rhk-seg::before { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.rhk-seg::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+.rhk-seg__lead { font: 700 8px / 1 var(--rhk-font-hud); letter-spacing: 0.26em; margin-right: -0.26em; text-transform: uppercase; color: var(--rhk-mist); white-space: nowrap; }
+.rhk-seg__rule { flex: none; width: 14px; height: 5px; background: linear-gradient(var(--seg-line-dim), var(--seg-line-dim)) center / 100% 1px no-repeat, repeating-linear-gradient(90deg, var(--seg-line) 0 1px, transparent 1px 4px); }
+.rhk-seg__meta { font: 400 10px / 1 var(--rhk-font-pixel); letter-spacing: 0.06em; color: var(--rhk-ice); opacity: 0.8; white-space: nowrap; }
+.rhk-seg__screen {
+  position: relative;
+  display: block;
+  padding: 3px 8px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #04070c 0%, #0a1220 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.85), inset 0 0 0 1px rgba(156, 200, 255, 0.14);
+}
+.rhk-seg__screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.32) 0 1px, transparent 1px 3px); }
+.rhk-seg__digits { position: relative; display: flex; align-items: baseline; }
+.rhk-seg__grp { display: flex; align-items: baseline; }
+.rhk-seg__colon { padding-inline: 0.22em; font: 400 var(--lcd-fs) / 1 var(--rhk-font-pixel); color: var(--rhk-ice); text-shadow: 0 0 4px rgba(156, 200, 255, 0.4); }
+.rhk-seg__cells { display: flex; }
+.rhk-seg__unit { margin-left: 2px; font: 700 8px / 1 var(--rhk-font-hud); color: var(--rhk-mist); }
+.rhk-seg__d {
+  position: relative;
+  display: block;
+  width: 0.86em;
+  font: 400 var(--lcd-fs) / 1 var(--rhk-font-pixel);
+  text-align: center;
+  color: var(--rhk-ice);
+  text-shadow: 0 0 5px rgba(156, 200, 255, 0.4), 0 0 1px rgba(214, 232, 255, 0.7);
+}
+/* Unlit segments behind every digit */
+.rhk-seg__d::before { content: "8"; position: absolute; inset: 0; color: rgba(156, 200, 255, 0.08); text-shadow: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .rhk-seg[data-power] { animation: rhk-seg-power 0.55s var(--rhk-ease) 0.15s both; }
+  .rhk-seg[data-live] .rhk-seg__colon { animation: rhk-seg-colon 20s steps(1, end) infinite; }
+}
+/* Phones (the hero's 640px step): smaller digits, no meta or ruler. */
+@media (max-width: 640px) {
+  .rhk-seg { --lcd-fs: 16px; gap: 8px; padding-inline: 9px; }
+  .rhk-seg__meta, .rhk-seg__rule { display: none; }
+}
+@keyframes rhk-seg-power {
+  0% { opacity: 0; transform: scale(0.5, 0.03); }
+  30% { opacity: 1; transform: scale(1, 0.03); }
+  62% { transform: scale(1, 1.06); }
+  78% { opacity: 0.6; }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes rhk-seg-colon { 0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, 50%, 55%, 60%, 65%, 70%, 75%, 80%, 85%, 90%, 95%, 100% { opacity: 1; } 2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5%, 47.5%, 52.5%, 57.5%, 62.5%, 67.5%, 72.5%, 77.5%, 82.5%, 87.5%, 92.5%, 97.5% { opacity: 0.25; } }
+
+/* ==========================================================================
+   ChromePlate — the silver bevel chip (--wmx-chrome / --hud-silver): a
+   four-stop gradient with a hard break at 48/52% and a white top bevel.
+   Shapes: rect (lockers / map index tag), slant (merch kicker chip),
+   chevron (lineup spine node, menu index chip), tab (title bar corner),
+   trap (the roster's RANDOM key).
+   ========================================================================== */
+.rhk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 4px 9px 4px 8px;
+  background: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  color: #0b0e14;
+  font: 700 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.rhk-chip[data-shape="rect"] { padding: 3px 6px; letter-spacing: 0.2em; }
+.rhk-chip[data-shape="slant"] { clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+.rhk-chip[data-shape="chevron"] { padding: 8px 16px; clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%); }
+.rhk-chip[data-shape="tab"] { padding: 6px 10px; clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px); }
+.rhk-chip[data-shape="trap"] { padding: 6px 16px; letter-spacing: 0.2em; clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 10px 100%); }
+.rhk-chip b { font-weight: 800; color: var(--rhk-volt-deep); }
+.rhk-chip i { font-style: normal; letter-spacing: 0.1em; opacity: 0.55; }
+
+/* ==========================================================================
+   ChromeKey — the FAQ's chrome key: a chamfered silver keycap with a + that
+   turns into × when `on`, while an ice glass state crossfades over it.
+   ========================================================================== */
+.rhk-key {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: linear-gradient(180deg, #f4f6f8 0%, #c3c9d1 48%, #9aa1ac 52%, #b4bac3 100%);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(4, 6, 10, 0.6), 0 2px 0 rgba(4, 6, 10, 0.6);
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  cursor: pointer;
+}
+.rhk-key::after {
+  /* ice glass state (opacity only) */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #cfe6ff 0%, #7ab8ff 46%, #2f62ff 54%, #3d6bff 100%);
+  opacity: 0;
+  transition: opacity var(--rhk-dur) ease;
+}
+.rhk-key i { position: relative; z-index: 1; width: 10px; height: 10px; transition: transform var(--rhk-dur) var(--rhk-ease); }
+.rhk-key i::before, .rhk-key i::after { content: ""; position: absolute; left: 0; top: 4px; width: 10px; height: 2px; background: #0b0e14; }
+.rhk-key i::after { transform: rotate(90deg); }
+.rhk-key[data-on]::after, .rhk-key[aria-pressed="true"]::after, .rhk-key[aria-expanded="true"]::after { opacity: 1; }
+.rhk-key[data-on] i, .rhk-key[aria-pressed="true"] i, .rhk-key[aria-expanded="true"] i { transform: rotate(135deg); }
+.rhk-key:active { transform: translateY(1px); }
+.rhk-key:focus-visible { outline: 2px solid var(--rhk-ice); outline-offset: 3px; }
+
+/* ==========================================================================
+   ChromeSocket — the footer's comms slot: a chamfered silver ring around a
+   recessed dark well with scanlines; the icon lifts and turns ice on hover.
+   ========================================================================== */
+.rhk-sock {
+  --cut: 9px;
+  --sock-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.3) 0 1px, transparent 1px 3px);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rhk-frost);
+  text-decoration: none;
+  isolation: isolate;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--rhk-dur) var(--rhk-ease), color var(--rhk-dur-fast) ease;
+}
+/* chrome socket: silver ring + recessed dark well, both clipped to the chamfer */
+.rhk-sock::before, .rhk-sock::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+.rhk-sock::before { inset: 0; z-index: -2; background: linear-gradient(180deg, #e3e6ea 0%, #9aa1ac 50%, #6f7682 51%, #aab1bb 100%); }
+.rhk-sock::after { inset: 2px; z-index: -1; background: var(--sock-scan), linear-gradient(180deg, #0a1220 0%, #05080e 100%); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9); }
+.rhk-sock__icon { display: block; width: 24px; height: 24px; transition: transform var(--rhk-dur) var(--rhk-ease); }
+.rhk-sock__icon svg { display: block; width: 100%; height: 100%; }
+.rhk-sock__n {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  font: 400 8px / 1 var(--rhk-font-pixel);
+  letter-spacing: 0.04em;
+  color: rgba(156, 200, 255, 0.6);
+}
+@media (hover: hover) {
+  .rhk-sock:hover { transform: translateY(-3px); color: var(--rhk-ice); }
+  .rhk-sock:hover .rhk-sock__icon { transform: scale(1.12); }
+}
+.rhk-sock:focus-visible { outline: 2px solid var(--rhk-ice); outline-offset: 4px; color: var(--rhk-ice); }
+.rhk-sock:active { transform: scale(0.95); }
+
+/* ==========================================================================
+   ChromeHousing — the lockers band's unit: a chamfered steel housing with
+   scanlines, an ice hairline, a silver top rail with two ice pins, and a CRT
+   power-on when it scrolls into view.
+   ========================================================================== */
+.rhk-housing {
+  position: relative;
+  padding: var(--housing-pad, 22px 28px 22px 24px);
+  background:
+    repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.28) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(36, 42, 53, 0.96) 0%, rgba(20, 24, 32, 0.97) 45%, rgba(10, 13, 19, 0.98) 100%);
+  box-shadow: inset 0 0 0 1px rgba(156, 200, 255, 0.14), inset 0 1px 0 rgba(233, 235, 236, 0.1), 0 30px 60px -30px rgba(0, 0, 0, 0.85);
+  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+}
+/* Silver top rail + ice pins (the breeder-unit bar) */
+.rhk-housing__rail {
+  position: absolute;
+  left: 18px;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #959ca8, #e3e6ea 30%, #b9bfc8 70%, #959ca8);
+  pointer-events: none;
+}
+.rhk-housing__rail::before,
+.rhk-housing__rail::after { content: ""; position: absolute; top: 3px; width: 18px; height: 2px; background: var(--rhk-ice); opacity: 0.8; }
+.rhk-housing__rail::before { left: 22%; }
+.rhk-housing__rail::after { right: 22%; }
+.rhk-housing[data-armed]:not([data-in]) { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .rhk-housing[data-armed][data-in] { animation: rhk-housing-crt 0.6s var(--rhk-ease) both; }
+}
+@keyframes rhk-housing-crt {
+  0% { opacity: 0; transform: scale(0.6, 0.03); }
+  35% { opacity: 1; transform: scale(1, 0.03); }
+  70% { transform: scale(1, 1.05); }
+  100% { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .rhk-housing[data-armed]:not([data-in]) { opacity: 1; } }
+
+/* ==========================================================================
+   HoloKey — the HUD bar's MENU / CLOSE key: chamfered ice glass with fine
+   scanlines inside a 1px luminous chamfered ring (even-odd clip).
+   ========================================================================== */
+.rhk-hk {
+  --cut: 8px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 16px 0 14px;
+  border: 0;
+  margin: 0;
+  background: none;
+  color: var(--rhk-frost);
+  font: 700 10px / 1 var(--rhk-font-hud);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.rhk-hk > span:last-child { margin-right: -0.3em; position: relative; }
+.rhk-hk__glass {
+  position: absolute;
+  inset: 4px 0;
+  z-index: -1;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  background:
+    repeating-linear-gradient(180deg, rgba(156, 200, 255, 0.1) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(156, 200, 255, 0.2) 0%, rgba(156, 200, 255, 0.05) 50%, rgba(61, 107, 255, 0.14) 100%),
+    rgba(5, 10, 20, 0.55);
+}
+.rhk-hk__glass::after {
+  /* 1px luminous edge (even-odd chamfered ring, as on the hologram buttons) */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(214, 232, 255, 0.9), rgba(156, 200, 255, 0.55) 52%, rgba(61, 107, 255, 0.75));
+  clip-path: polygon(evenodd,
+    var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut), var(--cut) 0,
+    calc(var(--cut) + 0.414px) 1px, 1px calc(var(--cut) + 0.414px), 1px calc(100% - 1px),
+    calc(100% - var(--cut) - 0.414px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--cut) - 0.414px),
+    calc(100% - 1px) 1px, calc(var(--cut) + 0.414px) 1px);
+}
+.rhk-hk:focus-visible { outline: 2px solid var(--rhk-ice); outline-offset: 2px; }
+.rhk-hk:active { transform: translateY(1px); }
+.rhk-hk__burger { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; width: 16px; }
+.rhk-hk__burger i { display: block; width: 16px; height: 1px; background: currentColor; transition: transform var(--rhk-dur) var(--rhk-ease); }
+.rhk-hk__burger i:nth-child(2) { width: 10px; background: var(--rhk-ice); box-shadow: 0 0 4px rgba(156, 200, 255, 0.8); }
+.rhk-hk__x { position: relative; color: var(--rhk-ice); }
+@media (hover: hover) {
+  .rhk-hk:hover .rhk-hk__burger i:nth-child(1) { transform: translateX(-3px); }
+  .rhk-hk:hover .rhk-hk__burger i:nth-child(3) { transform: translateX(3px); }
+}
+@media (prefers-reduced-motion: reduce) { .rhk-hk__burger i { transition: none; } }
+
+/* ==========================================================================
+   CtaRig — the floating Get tickets' HUD chrome (c9688b5 cta.css): a
+   legibility pool with an ice bloom on the pulse beat, hairline rails with
+   tick rulers and an ice tick running out of both sides, typed readouts on
+   the rails, and a pip under the button. The rails extend in when `shown`.
+   ========================================================================== */
+.rhk-rig { position: relative; display: inline-flex; justify-content: center; width: max-content; max-width: 100%; }
+.rhk-rig__rig { position: absolute; inset: 0; pointer-events: none; }
+/* Legibility pool under the CTA (static), with an ice bloom that flares on the pulse beat. */
+.rhk-rig__floor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(100% + 240px);
+  height: 140px;
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, rgba(4, 6, 10, 0.78), rgba(4, 6, 10, 0.42) 58%, transparent);
+}
+.rhk-rig__floor::after {
+  content: "";
+  position: absolute;
+  inset: 18% 16%;
+  background: radial-gradient(closest-side, rgba(61, 107, 255, 0.42), rgba(61, 107, 255, 0.12) 60%, transparent);
+  opacity: 0.25;
+}
+/* Rails: hairlines running out from both sides, ice tick at the inner end, readout above. */
+.rhk-rig__rail {
+  --rig-rail: rgba(156, 200, 255, 0.7);
+  position: absolute;
+  top: 50%;
+  width: 76px;
+  height: 7px;
+  translate: 0 -50%;
+  background:
+    linear-gradient(var(--rig-rail), var(--rig-rail)) center / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, rgba(233, 235, 236, 0.3) 0 1px, transparent 1px 12px) center / 100% 4px no-repeat;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+.rhk-rig__rail[data-side="l"] {
+  right: calc(100% + 16px);
+  transform-origin: 100% 50%;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 60%);
+  mask-image: linear-gradient(90deg, transparent, #000 60%);
+}
+.rhk-rig__rail[data-side="r"] {
+  left: calc(100% + 16px);
+  transform-origin: 0 50%;
+  -webkit-mask-image: linear-gradient(270deg, transparent, #000 60%);
+  mask-image: linear-gradient(270deg, transparent, #000 60%);
+}
+.rhk-rig__rail::before { content: ""; position: absolute; top: 0; width: 1px; height: 7px; background: var(--rhk-ice); box-shadow: 0 0 5px rgba(156, 200, 255, 0.8); }
+.rhk-rig__rail[data-side="l"]::before { right: 0; }
+.rhk-rig__rail[data-side="r"]::before { left: 0; }
+.rhk-rig__rail b {
+  position: absolute;
+  bottom: calc(100% + 5px);
+  font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rhk-mist);
+  text-shadow: 0 0 6px rgba(4, 6, 10, 0.95);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.rhk-rig__rail[data-side="l"] b { right: 6px; }
+.rhk-rig__rail[data-side="r"] b { left: 6px; color: var(--rhk-ice); }
+.rhk-rig__pip {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  width: 9px;
+  height: 5px;
+  translate: -50% 0;
+  background: var(--rhk-ice);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  opacity: 0.75;
+}
+.rhk-rig[data-shown] .rhk-rig__rail { transform: none; transition: transform 0.55s var(--rhk-ease) 0.16s; }
+.rhk-rig[data-shown] .rhk-rig__rail b { opacity: 1; transition: opacity 0.3s ease 0.45s; }
+@media (prefers-reduced-motion: no-preference) {
+  .rhk-rig__floor::after { animation: rhk-rig-bloom 4.8s ease-out infinite; }
+  .rhk-rig[data-shown] .rhk-hb__lock i { animation: rhk-rig-acquire 0.7s var(--rhk-ease) 0.12s backwards; }
+  .rhk-rig[data-shown] .rhk-rig__rail b { animation: rhk-rig-type 0.4s steps(10, end) 0.45s backwards; }
+}
+@keyframes rhk-rig-bloom { 0%, 100% { opacity: 0.25; } 6% { opacity: 1; } 34% { opacity: 0.25; } }
+@keyframes rhk-rig-acquire {
+  0% { opacity: 0; transform: translate(calc(var(--sx) * -22px), calc(var(--sy) * -22px)); }
+  45% { opacity: 1; transform: translate(calc(var(--sx) * 5px), calc(var(--sy) * 5px)); }
+  60% { opacity: 0.3; }
+  72% { opacity: 1; transform: translate(calc(var(--sx) * -2px), calc(var(--sy) * -2px)); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes rhk-rig-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@media (max-width: 640px) {
+  .rhk-rig__rail { width: 30px; }
+  .rhk-rig__rail[data-side="l"] { right: calc(100% + 12px); }
+  .rhk-rig__rail[data-side="r"] { left: calc(100% + 12px); }
+  .rhk-rig__floor { width: calc(100% + 120px); height: 110px; }
+  .rhk-rig__pip { top: calc(100% + 6px); }
+}
+@media (max-width: 420px) { .rhk-rig__rail b { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .rhk-rig__rail, .rhk-rig[data-shown] .rhk-rig__rail { transform: none; transition: none; }
+}
+
+/* ==========================================================================
+   HudChip — the hero's video chip (wh-chip): a dark pane with a dim hairline,
+   two ice corner ticks, an LED (ice when on) and tracked Orbitron caps.
+   ========================================================================== */
+.rhk-hchip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  background: rgba(4, 6, 10, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(233, 235, 236, 0.14);
+  color: var(--rhk-mist);
+  font: 700 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--rhk-dur-fast) ease, box-shadow var(--rhk-dur-fast) ease;
+}
+.rhk-hchip::before, .rhk-hchip::after { content: ""; position: absolute; width: 6px; height: 6px; border: 0 solid var(--rhk-ice); }
+.rhk-hchip::before { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+.rhk-hchip::after { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+.rhk-hchip svg { width: 8px; height: 8px; flex: none; }
+.rhk-hchip__feed { font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel); letter-spacing: 0.08em; color: var(--rhk-fog); }
+.rhk-hchip__label { margin-right: -0.3em; }
+.rhk-hchip__led { width: 6px; height: 6px; border-radius: 50%; background: var(--rhk-fog); }
+.rhk-hchip[data-on] .rhk-hchip__led { background: var(--rhk-ice); box-shadow: 0 0 6px rgba(156, 200, 255, 0.9); }
+.rhk-hchip:hover { color: var(--rhk-ice); box-shadow: inset 0 0 0 1px rgba(156, 200, 255, 0.45); }
+.rhk-hchip:focus-visible { outline: 2px solid var(--rhk-ice); outline-offset: 3px; }

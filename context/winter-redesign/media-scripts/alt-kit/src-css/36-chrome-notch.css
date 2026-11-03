@@ -1,0 +1,69 @@
+/* ==========================================================================
+   ChromeNotch — the chrome housing hung under the HUD bar's centre
+   (c9688b5 nav.css .whud-notch*): a silver trapezoid with a dark edge, two
+   glass orbs and a recessed, chamfered sector LCD whose text decodes on
+   change while a sweep crosses it. Works on its own or inside HudBar.
+   ========================================================================== */
+.rhk-notch {
+  --hud-nw: 228px;
+  --hud-nd: 18px;
+  --hud-silver: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
+  --hud-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.32) 0 1px, transparent 1px 3px);
+  position: relative;
+  width: var(--hud-nw);
+  height: calc(var(--hud-nd) + 1px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 calc(var(--hud-nw) * 0.08 + 3px) 1px;
+  transform-origin: 50% 0;
+}
+.rhk-bar__in .rhk-notch { --hud-nw: inherit; --hud-nd: inherit; }
+.rhk-notch[data-size="lg"] { --hud-nw: 300px; --hud-nd: 22px; }
+.rhk-notch__body {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+  background:
+    linear-gradient(180deg, rgba(4, 6, 10, 0.55) 0, transparent 2px),
+    var(--hud-silver);
+  box-shadow: inset 0 -1px 0 rgba(4, 6, 10, 0.4);
+}
+.rhk-notch__edge { position: absolute; inset: 0; display: block; width: 100%; height: 100%; overflow: visible; }
+.rhk-notch__edge path { fill: none; stroke: rgba(4, 6, 10, 0.85); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.rhk-notch__lcd {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: calc(100% - 6px);
+  margin-top: 1px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #03050a 0%, #0a1220 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(156, 200, 255, 0.18), 0 1px 0 rgba(255, 255, 255, 0.55);
+  clip-path: polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 0 calc(100% - 4px), 0 4px);
+}
+.rhk-notch__lcd::after { content: ""; position: absolute; inset: 0; background: var(--hud-scan); pointer-events: none; }
+.rhk-notch__text {
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  font: 400 var(--rhk-fs-micro) / 1 var(--rhk-font-pixel);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rhk-ice);
+  text-shadow: 0 0 6px rgba(156, 200, 255, 0.55);
+  contain: layout paint;
+}
+.rhk-notch .rhk-orb { box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.7), 0 1px 0 rgba(255, 255, 255, 0.7); }
+/* Change sweep (WAAPI moves the inner span). */
+.rhk-notch__sweep { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.rhk-notch__sweep > span {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(156, 200, 255, 0.2) 70%, rgba(233, 235, 236, 0.6) 98%, transparent 100%);
+}

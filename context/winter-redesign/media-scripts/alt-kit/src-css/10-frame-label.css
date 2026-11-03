@@ -1,0 +1,57 @@
+/* ==========================================================================
+   HUD micro-labels (Orbitron / Chonky Pixels)
+   ========================================================================== */
+.rhk-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rhk-s-3);
+  font-family: var(--rhk-font-hud);
+  font-size: var(--rhk-fs-micro);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--rhk-mist);
+}
+.rhk-hud[data-tone="frost"] { color: var(--rhk-frost); }
+.rhk-hud[data-tone="fog"] { color: var(--rhk-fog); }
+.rhk-hud[data-tone="ice"] { color: var(--rhk-ice); }
+.rhk-hud[data-font="pixel"] { font-family: var(--rhk-font-pixel); letter-spacing: 0.08em; font-size: 0.8125rem; }
+.rhk-hud[data-size="nano"] { font-size: var(--rhk-fs-nano); letter-spacing: 0.26em; }
+.rhk-hud__idx { color: var(--rhk-fog); font-variant-numeric: tabular-nums; letter-spacing: 0.12em; }
+.rhk-hud__rule { width: 24px; height: 1px; background: currentColor; opacity: 0.4; }
+
+/* ==========================================================================
+   Frame — the Sept corner brackets. One pseudo-element, no extra DOM.
+   ========================================================================== */
+.rhk-frame { position: relative; --fr-c: var(--rhk-bracket); --fr-s: 12px; --fr-o: -1px; }
+.rhk-frame[data-variant="hairline"] { box-shadow: inset 0 0 0 1px var(--rhk-line); }
+.rhk-frame[data-accent] { --fr-c: var(--rhk-bracket-accent); --fr-s: 16px; }
+.rhk-frame[data-size="lg"] { --fr-s: 22px; }
+.rhk-frame::after {
+  content: "";
+  position: absolute;
+  inset: var(--fr-o, -1px);
+  pointer-events: none;
+  z-index: 3;
+  background:
+    linear-gradient(var(--fr-c), var(--fr-c)) left top / var(--fr-s) 1px,
+    linear-gradient(var(--fr-c), var(--fr-c)) left top / 1px var(--fr-s),
+    linear-gradient(var(--fr-c), var(--fr-c)) right top / var(--fr-s) 1px,
+    linear-gradient(var(--fr-c), var(--fr-c)) right top / 1px var(--fr-s),
+    linear-gradient(var(--fr-c), var(--fr-c)) left bottom / var(--fr-s) 1px,
+    linear-gradient(var(--fr-c), var(--fr-c)) left bottom / 1px var(--fr-s),
+    linear-gradient(var(--fr-c), var(--fr-c)) right bottom / var(--fr-s) 1px,
+    linear-gradient(var(--fr-c), var(--fr-c)) right bottom / 1px var(--fr-s);
+  background-repeat: no-repeat;
+  transition: filter var(--rhk-dur-fast) ease, inset var(--rhk-dur) var(--rhk-ease);
+}
+/* Bracket flicker for hoverable frames (cards, tiles). */
+@keyframes rhk-flicker { 0%, 100% { filter: brightness(2.2); } 25% { filter: brightness(1); } 50% { filter: brightness(2.2); } 75% { filter: brightness(1); } }
+.rhk-frame[data-interactive]:hover::after { animation: rhk-flicker 0.25s linear; filter: brightness(2.2); }
+@media (prefers-reduced-motion: reduce) {
+  .rhk-frame[data-interactive]:hover::after { animation: none; }
+}
+
+/* Selection state (the blue build's shared tile / tab / day-switch ring). */
+.rhk-selected { box-shadow: 0 0 0 1px var(--rhk-ice), 0 0 0 3px rgba(61, 107, 255, 0.35), 0 0 22px rgba(61, 107, 255, 0.25); }

@@ -1,0 +1,93 @@
+/* ==========================================================================
+   GlassWindow — the "skinned app window" (Y2K chrome) for artist select and
+   info panels. Steel skin is quiet; chrome skin is the silver bevel bar from
+   the references. data-active = selected/focused window (accent underline + LED).
+   ========================================================================== */
+.rhk-win {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(49, 55, 67, 0.5) 0%, rgba(27, 33, 44, 0.78) 38%, rgba(16, 20, 27, 0.86) 100%);
+  border: 1px solid rgba(156, 200, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(233, 235, 236, 0.1),
+    inset 0 0 0 1px rgba(4, 6, 10, 0.5),
+    0 40px 80px -30px rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(18px) saturate(1.15);
+  isolation: isolate;
+}
+.rhk-win::before {
+  /* chrome sheen */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 30%, rgba(233, 235, 236, 0.035) 44%, transparent 58%);
+}
+.rhk-win__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rhk-s-3);
+  height: 30px;
+  padding: 0 var(--rhk-s-2) 0 var(--rhk-s-3);
+  flex: none;
+  position: relative;
+  background: linear-gradient(180deg, #3d4451 0%, #2a303b 50%, #1f2530 51%, #1b212c 100%);
+  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.16), 0 1px 0 rgba(4, 6, 10, 0.9);
+  color: var(--rhk-mist);
+  font-family: var(--rhk-font-hud);
+  font-size: var(--rhk-fs-nano);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.rhk-win[data-skin="chrome"] .rhk-win__bar {
+  background: linear-gradient(180deg, #e3e6ea 0%, #b9bfc8 48%, #959ca8 52%, #aab1bb 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(4, 6, 10, 0.35), 0 1px 0 rgba(4, 6, 10, 0.9);
+  color: #0b0e14;
+  font-weight: 700;
+}
+.rhk-win__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rhk-win__meta { color: inherit; opacity: 0.75; white-space: nowrap; }
+.rhk-win__led { width: 6px; height: 6px; flex: none; background: var(--rhk-steel); box-shadow: inset 0 0 0 1px rgba(4, 6, 10, 0.6); }
+.rhk-win[data-active] .rhk-win__led { background: var(--rhk-ice); box-shadow: 0 0 6px var(--rhk-volt), inset 0 0 0 1px rgba(255, 255, 255, 0.4); }
+.rhk-win[data-active] .rhk-win__bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--rhk-accent-line);
+}
+.rhk-win__controls { display: flex; gap: 4px; flex: none; }
+.rhk-win__controls i {
+  display: block;
+  width: 13px;
+  height: 11px;
+  background: linear-gradient(180deg, #4a5160, #2a303b);
+  box-shadow: inset 0 1px 0 rgba(233, 235, 236, 0.22), 0 0 0 1px rgba(4, 6, 10, 0.8);
+}
+.rhk-win[data-skin="chrome"] .rhk-win__controls i {
+  background: linear-gradient(180deg, #f4f6f8, #a7aeb8);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(4, 6, 10, 0.55);
+}
+.rhk-win__body { position: relative; flex: 1; min-height: 0; padding: var(--rhk-s-5); }
+.rhk-win[data-flush] .rhk-win__body { padding: 0; }
+.rhk-win__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rhk-s-4);
+  min-height: 24px;
+  padding: 4px var(--rhk-s-3);
+  border-top: 1px solid var(--rhk-line);
+  background: rgba(4, 6, 10, 0.45);
+  font-family: var(--rhk-font-hud);
+  font-size: var(--rhk-fs-nano);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--rhk-fog);
+}

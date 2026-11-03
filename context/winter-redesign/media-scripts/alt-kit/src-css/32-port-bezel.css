@@ -1,0 +1,58 @@
+/* ==========================================================================
+   PortBezel — the armory bezel (c9688b5 merch/MerchBezel.tsx + merch.css
+   .wmx-stage / .wmx-frame*), itself the artist select's StageFrame: chamfered
+   corners, a centre notch connector housing the label, a hairline 6px inside,
+   connector pins in the notch, three-tick docking ports on both side edges,
+   and a tinted glass plate (scanlines + steel core) clipped to the same shape.
+   The component writes --c / --nh / --nd from its measured size so the glass
+   follows the SVG exactly.
+   ========================================================================== */
+.rhk-pb {
+  --c: 14px;
+  --nh: min(88px, 23%);
+  --nd: 18px;
+  --pb-scan: repeating-linear-gradient(0deg, rgba(4, 6, 10, 0.3) 0 1px, transparent 1px 3px);
+  position: relative;
+  isolation: isolate;
+  padding: var(--pb-pad, 30px 12px 14px);
+}
+.rhk-pb > :not(.rhk-pb__frame) { position: relative; z-index: 1; }
+/* The tinted glass plate inside the bezel (follows the chamfers and the notch). */
+.rhk-pb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--pb-scan),
+    radial-gradient(ellipse 60% 50% at 50% 46%, rgba(90, 111, 137, 0.1), transparent 70%),
+    linear-gradient(180deg, rgba(8, 11, 17, 0.8) 0%, rgba(4, 6, 10, 0.9) 100%);
+  clip-path: polygon(
+    var(--c) 0, calc(50% - var(--nh) - var(--nd)) 0, calc(50% - var(--nh)) var(--nd), calc(50% + var(--nh)) var(--nd),
+    calc(50% + var(--nh) + var(--nd)) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)),
+    calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)
+  );
+}
+.rhk-pb[data-glass="none"]::before { display: none; }
+
+.rhk-pb__frame { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.rhk-pb__frame svg { position: absolute; inset: 0; overflow: visible; fill: none; }
+.rhk-pb__outer { stroke: rgba(233, 235, 236, 0.26); stroke-width: 1; }
+.rhk-pb__inner { stroke: rgba(156, 200, 255, 0.14); stroke-width: 1; }
+.rhk-pb__notch { stroke: var(--rhk-ice); stroke-width: 2; opacity: 0.7; }
+.rhk-pb__port { stroke: var(--rhk-ice); stroke-width: 1.5; opacity: 0.55; }
+.rhk-pb__label {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: var(--nd);
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  font: 700 var(--rhk-fs-nano) / 1 var(--rhk-font-hud);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--rhk-mist);
+  white-space: nowrap;
+}

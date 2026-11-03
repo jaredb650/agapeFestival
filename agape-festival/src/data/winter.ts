@@ -157,7 +157,7 @@ export type ArtistSlug =
   | "onlynumbers"
   | "vendex";
 
-export type TbaId = "tba-1" | "tba-2" | "tba-3";
+export type TbaId = "tba-1" | "tba-2";
 
 export type LineupAct =
   | { kind: "artist"; slug: ArtistSlug; displayName: string }
@@ -165,10 +165,9 @@ export type LineupAct =
       kind: "tba";
       id: TbaId;
       /**
-       * Flyer redaction blob this slot belongs to. The flyer has only 2 blobs for
-       * 3 unannounced acts: blob "a" (very wide, line 2) is modelled as 2 slots
-       * (tba-1 + tba-2) and blob "b" (line 3) as 1 (tba-3). Consecutive slots
-       * with the same blob can render as one wide blob. See content-questions.md.
+       * Flyer redaction blob this slot belongs to: one unannounced act per blob, "a" (the wide one, line 2)
+       * and "b" (line 3). The client confirmed Nov 3 that Day 1 has 2 unrevealed acts, not 3 (the wide
+       * blob had been modelled as two slots).
        */
       blob: "a" | "b";
     };
@@ -188,8 +187,8 @@ const tba = (id: TbaId, blob: "a" | "b"): LineupAct => ({ kind: "tba", id, blob 
 //               AZZEL 447 • JOHANNES SCHUSTER / KUKO • ONLYNUMBERS • VENDEX
 const DAY1_LINES: LineupAct[][] = [
   [a("diossa", "DIOSSA"), a("fenimore", "FENIMORE"), a("uberkikz", "ÜBERKIKZ")],
-  [tba("tba-1", "a"), tba("tba-2", "a"), a("ben-klock", "BEN KLOCK")],
-  [a("len-faki", "LEN FAKI"), tba("tba-3", "b")],
+  [tba("tba-1", "a"), a("ben-klock", "BEN KLOCK")],
+  [a("len-faki", "LEN FAKI"), tba("tba-2", "b")],
 ];
 
 const DAY2_LINES: LineupAct[][] = [
@@ -501,7 +500,7 @@ const NAMED_ARTISTS: NamedArtist[] = [
   fromKit("vendex", "Vendex", "VENDEX", 2, VENDEX_BIO, { clip: false, focus: "52% 33%", zoom: 1.3 }),
 ];
 
-const LOCKED_ARTISTS: LockedArtist[] = (["tba-1", "tba-2", "tba-3"] as const).map((slug) => ({
+const LOCKED_ARTISTS: LockedArtist[] = (["tba-1", "tba-2"] as const).map((slug) => ({
   kind: "tba",
   slug,
   name: "To be revealed",
@@ -510,7 +509,7 @@ const LOCKED_ARTISTS: LockedArtist[] = (["tba-1", "tba-2", "tba-3"] as const).ma
   locked: true,
 }));
 
-/** Flash Gea first, then the other named acts in flyer order, then the 3 locked tiles. The UI may shuffle them (grid isn't ordered by day). */
+/** Flash Gea first, then the other named acts in flyer order, then the 2 locked tiles. The UI may shuffle them (grid isn't ordered by day). */
 export const ARTISTS: ArtistEntry[] = [...NAMED_ARTISTS, ...LOCKED_ARTISTS];
 
 export const ARTIST_BY_SLUG: Record<ArtistSlug, NamedArtist> = Object.fromEntries(

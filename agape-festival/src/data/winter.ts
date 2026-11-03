@@ -205,7 +205,8 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
 ];
 
 // ============================================================
-// ARTISTS (artist profiler). Flash Gea has a photo, clip and bio; Diossa has a photo only (no bio yet).
+// ARTISTS (artist profiler). Filled from the press kits: Diossa and Len Faki have no kit bio; Vendex's kit has
+// no video; Azzel 447 and Johannes Schuster have no kit yet (pending).
 // ============================================================
 
 export interface ArtistSocial {
@@ -288,6 +289,147 @@ const FLASH_GEA_BIO =
   "Theater in Chicago and the Ave Live in Philadelphia, and provided direct support for the 240 KMH group at " +
   "their NYC Face 2 Face show with ÄGAPĒ.";
 
+// Winter press-kit bios (Nov 2026, Liminal / Diagonal / Polyamor booker kits). Each is the kit's own text, cut to
+// about Flash Gea's length by dropping whole sentences (dated or tour lines first). Nothing is added; the wording
+// is the kit's apart from the small fixes noted.
+
+// "Ben Klock - Bio.pdf" (Liminal, Oct 2026): the marathon-sets, Dawning/Subzero, remix and Klockworks-roster
+// sentences dropped for length, and "In 2023 the project returns after a pandemic induced break" (dated).
+// Fixes: "however" dropped (its contrast sentence is gone), "the BBC Radio 1’s" → "BBC Radio 1’s",
+// "Sao Paolo" → "São Paulo".
+const BEN_KLOCK_BIO =
+  "Being one of the most in-demand Techno DJs of our times, Ben Klock needs little introduction. " +
+  "His name has been closely associated with Berlin’s legendary club Berghain since 2005. His monthly residency " +
+  "has formed the backdrop to his international success, providing an invaluable platform for his ability to " +
+  "create a room rather than just play to it. It was these inherent abilities that led him to compile the fabric 66 " +
+  "compilation in 2012, before winning BBC Radio 1’s Essential Mix of the Year award in 2015. His releases on " +
+  "Ostgut Ton have become landmarks in the imprint’s history. For many, it is his album One (2009) that best " +
+  "captures Klock’s talents as a producer. Additionally, Klock curates with great passion his own label " +
+  "Klockworks, founded in 2006. In 2017 Ben started his own event series PHOTON which is a unique concept show " +
+  "that blends light, architecture and music. Since then he toured PHOTON at special venues in major cities around " +
+  "the world such as Printworks (London), Gashouder (Amsterdam), Arca (São Paulo), to name a few.";
+
+// "FENIM0RE - Bio.pdf" (Liminal, Oct 2026), complete. The kit styles the name FENIM0RE (with a zero);
+// the flyer's spelling is kept here until that's confirmed.
+const FENIMORE_BIO =
+  "Fenimore creates his signature sound by fusing bouncy bass lines with infectious, high-energy grooves. " +
+  "Known for his seamless transitions and dynamic style, he crafts immersive sets that encourage both physical " +
+  "movement and emotional connection. Part of a new wave of artists pushing techno forward through groove, tempo " +
+  "and high-energy performance, he has played Berlin institutions such as RSO and Tresor, and is closely connected " +
+  "to the BCCO family, with appearances at GRÜV x BCCO and Glitch Festival. As a producer, his music has been " +
+  "released on Agora Records, Vibrant Collective and Inherit Records.";
+
+// "ÜBERKIKZ - Bio.pdf" (Liminal, Oct 2026), complete; the kit's all-caps ÜBERKIKZ written Überkikz.
+const UBERKIKZ_BIO =
+  "Überkikz combines driving kicks, tooly synths, and tribal and folkloric elements into a hypnotic journey. " +
+  "With each kick, she tells stories that resonate deeply, encouraging a confrontation with one’s origins. Free " +
+  "from thought, almost instinctively, her sets are a call to surrender to the moment and experience all these raw " +
+  "emotions in their purest form. At the heart of her sets lies the belief that we all share a common origin — " +
+  "beyond nationality, culture, gender, or sexuality. Music is the universal bond that unites us, and this is the " +
+  "essence Überkikz aims to express through her art: the power of rhythms to bring us together as a community and " +
+  "remind us of the unity of all humanity.";
+
+// "Cara Elizabeth - Bio.pdf" (Liminal, Oct 2026), complete.
+const CARA_ELIZABETH_BIO =
+  "Cara Elizabeth is a Berlin-based Hard Trance producer and DJ, celebrated for her unique ability to blend " +
+  "driving rhythms with melodic depth. Her performances are characterized by striking vocal elements that enhance " +
+  "the dynamic and engaging nature of her sound. With a commitment to connecting with her audience, she delivers " +
+  "each set with a perfect balance of energy and precision, ensuring an unforgettable experience for all who " +
+  "attend. As Cara continues to push boundaries of her genre, she remains a prominent figure in the electronic " +
+  "music scene, captivating listeners with her innovative approach and passion for the art of DJing.";
+
+// "Mika Heggemann - Bio.pdf" (Liminal, Oct 2026): the dated lines dropped ("2025 marks a defining chapter",
+// "This year…" Boiler Room/festival season, "Looking ahead to 2026…"), plus the studio-assistant, BDME and
+// sold-out All Night Long sentences for length.
+const MIKA_HEGGEMANN_BIO =
+  "Mika Heggemann is pioneering Nu Trance — a new wave of club music blending the euphoria of trance with the raw " +
+  "edge of techno and the bounce of hard house. Based in Berlin, Mika’s sound channels high-octane energy and " +
+  "emotional intensity, taking cues from breakbeat and rap culture the way Nu Metal once redefined rock. Beyond his " +
+  "work as a producer and DJ, Mika co-founded Polyamor Berlin — a collective that captures the rebellious, " +
+  "exhilarating spirit of the next generation of club culture. Following standout releases on Polyamor Records, " +
+  "Kontor Records, Teletech, and Warner Music — including collaborations like Discotheque with Davyboi and Acid " +
+  "Base Reactions with DJ Cringey and KYANU — Mika has solidified his position as a driving force in the Nu Trance " +
+  "movement. His single Heartbeat Destiny became a festival anthem. With over 100 shows across Europe, Colombia, " +
+  "Australia, and the United States, and performances at Mondo Disko (Madrid), Fuse (Brussels), Gotec " +
+  "(Karlsruhe), RSO (Berlin), Bootshaus (Cologne), and Input (Barcelona), Mika continues to redefine what " +
+  "high-energy club culture feels like.";
+
+// "Biography_Davyboi.pdf" (Polyamor Agency, Dropbox PK_Davyboi): "His latest podcast on Radio Rudina & Hör
+// Berlin…" dropped (dated), and the "music is more than sound" paragraph for length. Fixes: a comma after
+// "Polish roots", "148 – 155" → "148–155".
+const DAVYBOI_BIO =
+  "Davyboi, DJ and producer with Polish roots, is rapidly becoming one of the most exciting new names in Europe’s " +
+  "rising hard-dance and trance scene. Born on the dancefloor, he blends adrenaline-charged grooves with " +
+  "heart-stirring melodies, never staying in one lane and never letting the energy drop. Driven by an instinct for " +
+  "movement, his signature style fuses trance, eurodance, and hardhouse between 148–155 BPM. Energetic, emotional, " +
+  "and built to lift the crowd higher with every drop. What began as a passion project in Munich’s underground has " +
+  "evolved into a distinct sound marked by fast transitions, bold track selection, and a deep understanding of " +
+  "what makes a crowd move. In the studio, he continues to push boundaries, including collaborations like " +
+  "“Discotheque” with Mika Heggemann, which highlighted his ability to translate his live energy into " +
+  "unforgettable productions. Expect hands in the air, contagious smiles, and a dancefloor that never stands still.";
+
+// "KUKO - Bio.pdf" (Liminal, Oct 2026), complete except "Over the past year," (dated). The kit's all-caps KUKO is
+// written Kuko (as ÜBERKIKZ → Überkikz above); "rising star - KUKO" → "rising star: Kuko".
+const KUKO_BIO =
+  "Emerging from the vibrant city of Cologne, Kuko is rapidly carving out his place as a formidable force in the " +
+  "techno scene with his distinctive melancholic-industrial sound. He has electrified audiences at prestigious " +
+  "events like Unreal, Adrenaline, and Teletech, leaving an indelible mark with every performance. His residencies " +
+  "at Adrenaline and Unreal highlight his significant impact within the community. Kuko’s ability to transport " +
+  "listeners into a realm of haunting melodies and driving rhythms, coupled with his infectious energy on stage, " +
+  "creates an unforgettable experience. Don’t miss your chance to witness the evolution of this rising star: Kuko " +
+  "is an artist destined to shape the future of techno!";
+
+// "Onlynumbers - Bio.pdf" (Liminal, Oct 2026): the "penchant for…" sentence and the closing forward-looking
+// paragraph dropped for length.
+const ONLYNUMBERS_BIO =
+  "Meet Onlynumbers, a rising force in the electrifying realm of techno music. Combining elements of euphoria, " +
+  "percussion, and hard techno, Onlynumbers has carved out a distinct sonic niche that reverberates throughout the " +
+  "hard techno scene. Born from the creative depths of France and now living in Czechia, Onlynumbers burst onto " +
+  "the scene with a meteoric rise. Since then, he has graced the stages of Europe’s premier venues, delivering " +
+  "unforgettable sets that leave crowds craving more. His influence extends far beyond the confines of the stage, " +
+  "as his productions have become staples in the sets of the biggest DJs in the scene. Tracks like “Miss the " +
+  "Rave,” “Euphoric Night,” and his explosive EP “My Heart is Raging” on Taapion Records have solidified his status " +
+  "as a trailblazer in the genre. Collaborating with fellow luminary Basswell, they released a series of legendary " +
+  "tracks including “Lunar,” “Fusion,” and “This is War,” further cementing their places at the forefront of the " +
+  "techno movement.";
+
+// "Vendex - Bio.pdf" (Liminal, Oct 2026), complete.
+const VENDEX_BIO =
+  "Vendex found his way, the path of Techno, with a philosophy that envelops him in a cloak of darkness. " +
+  "Influenced by the literature of Dante Alighieri in his work the Divine Comedy, as well as everything related to " +
+  "history, Vendex comes with the intention of creating a path to an inner journey wrapped in dark melodies, blunt " +
+  "and sharp bass that defy the natural, reaching supernatural sounds that touch or even reach what would be the " +
+  "sound of the underworld. Generating sounds that guide the Dantesque idea of a trip to the underworld with the " +
+  "aim of reaching paradise. All this through a forceful and enveloping sound, thus creating a path to the nine " +
+  "levels of hell, purgatory and finally reaching paradise. Influenced today in his sessions by artists such as " +
+  "Dax J, Parallx, I Hate Models, Scalameriya, Ancient Methods, Tommy Four Seven or Setaoc Mass and many more.";
+
+/**
+ * An act filled from its press kit (Nov 2026): `headshot-600/1200.webp` and, when the kit has usable
+ * performance video, `clip.mp4` + `clip-poster.webp`, all in its artists/<slug>/ folder. See media-notes.md.
+ */
+const fromKit = (
+  slug: ArtistSlug,
+  name: string,
+  displayName: string,
+  day: DayNumber,
+  bio: string | null,
+  media: { clip: boolean; focus: string; zoom: number },
+): NamedArtist => ({
+  kind: "artist",
+  slug,
+  name,
+  displayName,
+  day,
+  bio,
+  headshot: `${WINTER_ARTIST_DIR}/${slug}/headshot-600.webp`,
+  headshotLarge: `${WINTER_ARTIST_DIR}/${slug}/headshot-1200.webp`,
+  clip: media.clip ? `${WINTER_ARTIST_DIR}/${slug}/clip.mp4` : null,
+  clipPoster: media.clip ? `${WINTER_ARTIST_DIR}/${slug}/clip-poster.webp` : null,
+  focus: media.focus,
+  zoom: media.zoom,
+});
+
 const NAMED_ARTISTS: NamedArtist[] = [
   // Day 1
   {
@@ -306,10 +448,15 @@ const NAMED_ARTISTS: NamedArtist[] = [
     focus: "52% 36%",
     zoom: 1.5,
   },
-  pending("fenimore", "Fenimore", "FENIMORE", 1),
-  pending("uberkikz", "Überkikz", "ÜBERKIKZ", 1),
-  pending("ben-klock", "Ben Klock", "BEN KLOCK", 1),
-  pending("len-faki", "Len Faki", "LEN FAKI", 1),
+  // FENIM0RE-370.tif (blue backdrop, eyes to camera); clip from SECTION 2026 (9:16, cut to 4:5).
+  fromKit("fenimore", "Fenimore", "FENIMORE", 1, FENIMORE_BIO, { clip: true, focus: "45% 40%", zoom: 1.15 }),
+  // IMG_0397 (shearling coat, industrial site); clip from HIVE 2026 (kiki_4K_20).
+  fromKit("uberkikz", "Überkikz", "ÜBERKIKZ", 1, UBERKIKZ_BIO, { clip: true, focus: "50% 38%", zoom: 1.3 }),
+  // Joachim Gern portrait (Gern_2); clip from Boiler Room "Glitch 3", after its logo and name cards.
+  fromKit("ben-klock", "Ben Klock", "BEN KLOCK", 1, BEN_KLOCK_BIO, { clip: true, focus: "49% 33%", zoom: 1.3 }),
+  // His kit (Diagonal "presskit" folder) has photos, videos and logos but no bio. "Len Faki 6" (orange light,
+  // direct gaze); clip from De Marktkantine Amsterdam (profile, then from behind over the crowd).
+  fromKit("len-faki", "Len Faki", "LEN FAKI", 1, null, { clip: true, focus: "48% 37%", zoom: 1.15 }),
   // Day 2
   {
     kind: "artist",
@@ -328,14 +475,30 @@ const NAMED_ARTISTS: NamedArtist[] = [
     zoom: 1.5,
     socials: [{ platform: "Instagram", url: "https://www.instagram.com/flash.gea/", handle: "@flash.gea" }],
   },
-  pending("cara-elizabeth", "Cara Elizabeth", "CARA ELIZABETH", 2),
-  pending("mika-heggemann", "Mika Heggemann", "MIKA HEGGEMANN", 2),
-  pending("davyboi", "Davyboi", "DAVYBOI", 2),
+  // 2_Cara Elizabeth (orange tiles; 5_ is only 972 px wide); clip from Schrotty Cologne (Nov 2025).
+  fromKit("cara-elizabeth", "Cara Elizabeth", "CARA ELIZABETH", 2, CARA_ELIZABETH_BIO, {
+    clip: true,
+    focus: "47% 36%",
+    zoom: 1.35,
+  }),
+  // Mika_June_25-4 (orange tee; the only shoot without sunglasses); clip from Schrotty Cologne (8.mp4).
+  fromKit("mika-heggemann", "Mika Heggemann", "MIKA HEGGEMANN", 2, MIKA_HEGGEMANN_BIO, {
+    clip: true,
+    focus: "52% 33%",
+    zoom: 1.4,
+  }),
+  // IMG_6648 (tie and blazer, direct gaze); clip from Unreal @ Junkyard Dortmund (010.mov).
+  fromKit("davyboi", "Davyboi", "DAVYBOI", 2, DAVYBOI_BIO, { clip: true, focus: "56% 36%", zoom: 1.35 }),
+  // No press kit yet.
   pending("azzel-447", "Azzel 447", "AZZEL 447", 2),
   pending("johannes-schuster", "Johannes Schuster", "JOHANNES SCHUSTER", 2),
-  pending("kuko", "Kuko", "KUKO", 2),
-  pending("onlynumbers", "Onlynumbers", "ONLYNUMBERS", 2),
-  pending("vendex", "Vendex", "VENDEX", 2),
+  // "KUKO - PRESSPICS" from the kit's "Updated EPK - Use this!" folder (the older folder says "ONLY USE FULL PIC",
+  // so none of those were cropped); clip from the same EPK's 06_kuko_@weshtech.mp4.
+  fromKit("kuko", "Kuko", "KUKO", 2, KUKO_BIO, { clip: true, focus: "50% 33%", zoom: 1.4 }),
+  // Onlynumbers 1 (red bomber, front-on); clip from his kit's arena footage (copy_550B1038.MOV).
+  fromKit("onlynumbers", "Onlynumbers", "ONLYNUMBERS", 2, ONLYNUMBERS_BIO, { clip: true, focus: "50% 34%", zoom: 1.35 }),
+  // He performs in a gold mask: 123A1907 (PRESS KIT 2023, mask face-on against red). His kit has no video.
+  fromKit("vendex", "Vendex", "VENDEX", 2, VENDEX_BIO, { clip: false, focus: "52% 33%", zoom: 1.3 }),
 ];
 
 const LOCKED_ARTISTS: LockedArtist[] = (["tba-1", "tba-2", "tba-3"] as const).map((slug) => ({

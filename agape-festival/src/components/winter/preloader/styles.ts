@@ -87,11 +87,12 @@ const CSS = String.raw`
  * boot script inserts (only with JS, motion allowed, first visit) and removes at the handover: nothing is set
  * on React-owned elements (no hydration mismatch), and the rules only exist during the boot. The logo is held
  * in its FINAL state rather than paused on a hidden first keyframe, so it paints (it is the LCP element) under
- * the overlay; any entrance it has replays at the handover, under the preloader's copy.
+ * the overlay; any entrance it has replays at the handover, under the preloader's copy. The nav (header.wnav)
+ * has no CSS intro today, so its line holds nothing; it is there so a future one waits for the handover too.
  */
 const HOLD = String.raw`
 #hero *,#hero *::before,#hero *::after,
-header.whud *,header.whud *::before,header.whud *::after{animation-play-state:paused!important}
+header.wnav *,header.wnav *::before,header.wnav *::after{animation-play-state:paused!important}
 #hero [data-boot-logo],#hero .winter-logo,#hero .wh__logo{animation:none!important}
 `;
 

@@ -30,8 +30,8 @@ const THREAD_CROPS = ["18% 24%", "78% 18%", "42% 62%", "70% 38%", "8% 78%", "58%
 /**
  * The roster: the September site's artist cards. Per day a stage heading between hairlines, then a grid
  * of square tiles (two across on phones, three from 768px, all the same size): the photo, graded to black
- * and white, over a dark name plate in Orbitron. Acts without a photo yet show a crop of the thread texture. Day 1's unannounced
- * acts share one "to be revealed" card. Pressing a card (or a name in the lineup) pops its bio out of it.
+ * and white, over a dark name plate in Orbitron. Acts without a photo yet show a crop of the thread texture. Each unannounced act
+ * gets its own "to be revealed" card. Pressing a card (or a name in the lineup) pops its bio out of it.
  *
  * Performance: the bio dialog mounts only once the roster is near the viewport; photos are lazy; an act's
  * clip loads on the first hover (fine pointers only) and plays only while hovered. Touch has no hover: there
@@ -144,11 +144,11 @@ function DayBlock({ day, cropFrom, dialogId, onOpen }: DayBlockProps) {
             <Card act={a} crop={THREAD_CROPS[(cropFrom + i) % THREAD_CROPS.length]} dialogId={dialogId} onOpen={onOpen} />
           </li>
         ))}
-        {day.more && (
-          <li className="rs-cell">
+        {Array.from({ length: day.more }, (_, i) => (
+          <li key={`tba-${i}`} className="rs-cell">
             <Mystery />
           </li>
-        )}
+        ))}
       </ul>
     </div>
   );
@@ -231,7 +231,7 @@ function Card({ act, crop, dialogId, onOpen }: CardProps) {
   );
 }
 
-/** The acts still to come on a day: one card, the September site's red "to be revealed" treatment. */
+/** One act still to come: the September site's red "to be revealed" treatment. */
 function Mystery() {
   return (
     <div className="rs-card rs-card--tba">

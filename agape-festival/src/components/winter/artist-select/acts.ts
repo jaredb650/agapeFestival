@@ -19,8 +19,8 @@ export interface RosterDay {
   /** "Friday, February 19" */
   date: string;
   acts: Act[];
-  /** The day still has unannounced acts (the flyer's redaction blobs). */
-  more: boolean;
+  /** How many acts the day still has unannounced (the flyer's redaction blobs): one "???" card each. */
+  more: number;
 }
 
 export interface Roster {
@@ -43,7 +43,7 @@ export function buildRoster(artists: readonly ArtistEntry[], days: readonly [Win
       label: `Day ${d.day}`,
       date: withoutYear(d.dateLong),
       acts: named.map((artist, i) => ({ artist, day: d.day, index: i + 1, total: named.length })),
-      more: artists.some((a) => !isNamed(a) && a.day === d.day),
+      more: artists.filter((a) => !isNamed(a) && a.day === d.day).length,
     };
   };
   const pair: [RosterDay, RosterDay] = [make(days[0]), make(days[1])];

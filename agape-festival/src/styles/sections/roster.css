@@ -98,14 +98,14 @@
   height: 0;
   padding-bottom: 100%;
   overflow: hidden;
-  /* No photo yet: a crop of the thread texture (its own ground is #080808), held well down by ::before. */
+  /* No photo yet: a crop of the thread texture (its own ground is #080808), held well down by ::before.
+     The image itself is set below, once Roster marks the root data-tex (after load, or near the screen). */
   background-color: #080808;
-  background-image: url("/assets/winter/texture/threads.webp");
   background-size: 380% auto;
   background-position: var(--crop, 50% 50%);
   background-repeat: no-repeat;
 }
-.rs-card__media[data-photo] { background-image: none; }
+.rs[data-tex] .rs-card__media:not([data-photo], .rs-tba) { background-image: url("/assets/winter/texture/threads.webp"); }
 .rs-card__media:not([data-photo])::before {
   content: "";
   position: absolute;

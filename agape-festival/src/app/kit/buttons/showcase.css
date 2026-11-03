@@ -70,14 +70,15 @@
   justify-content: space-between;
   gap: var(--s-4);
   height: 64px;
-  padding: 0 var(--s-2) 0 var(--s-5);
+  /* As the real bar: the squares sit as far from the right edge as from the top and bottom. */
+  padding: 0 10px 0 var(--s-5);
   border: 1px solid var(--c-line);
   background: var(--c-plate);
 }
 .kbs-bar__count { display: flex; gap: var(--s-3); white-space: nowrap; }
 .kbs-bar__day { color: var(--c-mark); }
 .kbs-bar__ctrls { display: flex; align-items: center; gap: var(--s-2); }
-@media (max-width: 767.98px) { .kbs-bar { height: 56px; } }
+@media (max-width: 767.98px) { .kbs-bar { height: 56px; padding-right: 6px; } }
 
 /* A mock of the bar / menu head. */
 .kbs-menuhead { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 var(--s-5); border: 1px solid var(--c-line); background: var(--c-ink); }
@@ -111,6 +112,10 @@
 .kbs-input::placeholder { color: var(--c-text-3); }
 .kbs-input:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
-.kbs-phone { display: flex; flex-direction: column; gap: var(--s-4); width: 390px; max-width: 100%; padding: var(--s-5); border: 1px solid var(--c-line-2); background: var(--c-ink); }
+/* A phone's width: the bars run edge to edge as they do on a phone, everything else keeps the page gutter. */
+.kbs-phone { display: flex; flex-direction: column; gap: var(--s-4); width: 390px; max-width: 100%; padding: var(--s-5) 0; border: 1px solid var(--c-line-2); background: var(--c-ink); }
+.kbs-phone > :not(.kbs-bar, .kbs-menuhead) { margin-inline: var(--s-5); }
+.kbs-phone > :is(.kbs-bar, .kbs-menuhead) { border-inline: 0; }
+.kbs-phone > .kbs-bar { height: 56px; padding-right: 6px; }
 
 .kbs-live { margin-top: var(--s-16); }

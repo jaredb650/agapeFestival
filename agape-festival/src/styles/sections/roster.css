@@ -18,9 +18,12 @@
 
 .rs-day + .rs-day { margin-top: var(--group-gap); }
 
+/* Tiles sit on a doubled track (4 on phones, 6 from 768px) and each spans 2, so they're exactly as wide as a
+   plain 2- or 3-column grid, but a short last row can start half a tile in and sit centred instead of
+   hugging the left edge (Day 2's 9th act on phones). */
 .rs-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   /* Every row as tall as the tallest: a name that wraps never makes one row of tiles taller than another. */
   grid-auto-rows: 1fr;
   gap: var(--card-gap);
@@ -28,10 +31,16 @@
   padding: 0;
   list-style: none;
 }
+.rs-cell { display: flex; min-width: 0; grid-column: auto / span 2; }
+/* Phones: a lone last tile goes in the middle. */
+.rs-cell:last-child:nth-child(odd) { grid-column: 2 / span 2; }
 @media (min-width: 768px) {
-  .rs-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .rs-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .rs-cell:last-child:nth-child(odd) { grid-column: auto / span 2; }
+  /* 3 across: a last row of 1 starts at the middle slot; a last row of 2 starts half a tile in. */
+  .rs-cell:last-child:nth-child(3n + 1) { grid-column: 3 / span 2; }
+  .rs-cell:nth-last-child(2):nth-child(3n + 1) { grid-column: 2 / span 2; }
 }
-.rs-cell { display: flex; min-width: 0; }
 
 /* ---- A tile ------------------------------------------------------------ */
 .rs-card {

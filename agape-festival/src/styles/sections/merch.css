@@ -353,3 +353,10 @@
   .mx-plate[data-enter="go"] { animation: none; }
   .mx-holo { display: none; }
 }
+
+/* ---- Collapsed (Merch.tsx, Nov 3): the title, then a red lock over "Coming soon". A shorter section. */
+.mx--soon { padding-block: calc(var(--sec-y) * 0.6); }
+.mx-soon { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); margin: 0; }
+.mx-soon__icon { display: block; width: 28px; height: 28px; color: var(--c-mark); }
+.mx-soon__icon path { vector-effect: non-scaling-stroke; }
+.mx-soon .k-label { margin-right: -0.2em; color: var(--c-text-2); }

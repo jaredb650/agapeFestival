@@ -54,7 +54,7 @@
 
   /* ---- Page frame. Mobile values first; the nav grows at 1100. ---- */
   --g-nav: 56px;           /* the fixed bar; the hero's --wh-nav matches it */
-  --g-scrim: 0.72;         /* how dark the footage gets under the sections */
+  --g-scrim: 0.86;         /* how dark the footage gets under the sections (0.72 → 0.86 Nov 3: Jared wanted it darker) */
 
   /* ---- Motion: ONE curve, three durations ---- */
   --m-ease: cubic-bezier(0.22, 1, 0.36, 1);

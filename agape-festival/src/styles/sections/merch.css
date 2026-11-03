@@ -1,43 +1,108 @@
 /* ==========================================================================
    MERCH (page/Merch.tsx, merch/MerchViewer.tsx, merch/Preview.tsx,
-   page/MerchCard.tsx). The grid kit plus this file. Classes mx-*.
+   page/MerchCard.tsx), classic. The September site's "The uniform": a
+   centred header, the product cards on name plates, a red View all.
+   Classes mx-*.
 
-   One Row (.mx-board) holds the preview, its Front | Back cells and the
-   product tiles; the shop link is the closing row. From 768px the board is
-   placed explicitly on alternating image / caption lines:
+     from 768px                          phones
+     preview          | card | card     preview
+     (stretches to    | card | card     name · Front Back
+      the cards)      |                 card | card
+     name · Front Back|                 card | card
+            Shop the …   View all       Shop the … / View all
 
-     cols 1–6                 cols 7–9      cols 10–12
-     preview (lines 1…2n-1)   tile image    tile image
-                              tile name     tile name
-                              tile image    tile image
-     Front     | Back         tile name     tile name
-
-   Each tile spans an image line and a caption line (subgrid), so Front |
-   Back sit on the last captions' line and every rule runs straight across.
-   Phones: the preview, Front | Back, the tiles two to a line.
-
-   The photographs are on pure black, so their cells are black: the image
-   runs to the hairlines and its edges disappear.
+   The product photographs are on pure black, so every frame that holds
+   one is pure black too: the photo's edges disappear and the garment
+   floats. They keep their colour (products, not portraits: no grade).
+   The preview's turn, wipe and holographic sheen are unchanged; only the
+   frames around them are classic.
    ========================================================================== */
 
-/* The section is a size container so the board can size its image lines from the column width. */
-.mx { --mx-cap: var(--g-row-1); container-type: inline-size; }
-
-/* ---- Board layout ---------------------------------------------------------- */
-.mx-stage-cell { aspect-ratio: 6 / 5; }
+/* ---- The board ------------------------------------------------------------- */
+.mx-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--card-gap); }
 @media (min-width: 768px) {
-  /* image, caption, image, caption… An image line is one tile (3 of 12 columns) at 6:5. Set
-     explicitly rather than from the tile's aspect-ratio, which Safari's subgrid does not size by. */
-  .mx-board {
-    --mx-img: calc((100cqw - 2 * var(--g-margin) - 1px) / 4 / 1.2);
-    grid-auto-rows: var(--mx-img) minmax(var(--mx-cap), auto);
-  }
-  .mx-stage-cell { aspect-ratio: auto; grid-row: 1 / span var(--mx-span); }
-  .mx-seg { grid-row: var(--mx-seg-row); }
-  .mx-tile { grid-row: var(--mx-row) / span 2; }
+  .mx-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* ---- The preview ------------------------------------------------------------ */
+/* ---- The preview: a black frame over a plate --------------------------------- */
+.mx-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--c-line);
+  background: var(--c-ink);
+}
+.mx-view__stage { position: relative; aspect-ratio: 6 / 5; }
+/* From 768px the frame takes the height the cards give the row. */
+@media (min-width: 768px) {
+  .mx-view__stage { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; }
+}
+
+.mx-view__plate {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: var(--plate-h);
+  padding-left: var(--s-4);
+  border-top: 1px solid var(--c-line);
+  background: var(--c-plate);
+}
+.mx-view__name { align-self: center; min-width: 0; padding-block: var(--s-2); overflow-wrap: break-word; }
+@media (max-width: 767.98px) {
+  .mx-view__plate { padding-left: var(--s-3); }
+}
+
+/* Front | Back: two caps labels at the plate's end. The side showing is lit, with a 2px red mark on
+   the edge the plate shares with the photograph. Between Front and Back the mark travels: the outgoing
+   one shrinks towards the incoming label, the incoming one grows from it. */
+.mx-sides { flex: none; display: flex; }
+.mx-sides__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  margin: 0;
+  padding: 0 var(--s-4);
+  border: 0;
+  background: transparent;
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
+}
+.mx-sides__btn:last-child { padding-right: calc(var(--s-4) - 0.2em); }
+.mx-sides__btn[aria-pressed="true"] { color: var(--c-text-hi); }
+.mx-sides__btn::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: var(--s-2);
+  right: var(--s-2);
+  height: 2px;
+  background: var(--c-mark);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--m-dur-2) var(--m-ease);
+}
+.mx-sides__btn[data-side="back"]::before { transform-origin: left; }
+.mx-sides__btn[aria-pressed="true"]::before { transform: scaleX(1); }
+.mx-sides__btn:active { transform: scale(0.97); }
+.mx-sides__btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+@media (max-width: 767.98px) {
+  .mx-sides__btn { padding: 0 var(--s-3); }
+  .mx-sides__btn:last-child { padding-right: calc(var(--s-3) - 0.2em); }
+}
+
+/* ---- The preview's stage (Preview.tsx): unchanged behaviour ------------------ */
 .mx-stage {
   position: absolute;
   inset: 0;
@@ -63,7 +128,7 @@
 }
 
 /* The flip: the back photograph lies over the front. Showing the front wipes the back's clip shut
-   towards the right (Front is the left-hand cell); showing the back wipes it open again. Both
+   towards the right (Front is the left-hand label); showing the back wipes it open again. Both
    photographs slide a step with the edge, so the garment reads as turning, not swapping. One
    transition per property: a second click mid-way reverses from where it is. */
 .mx-side--back { clip-path: inset(0 0 0 0); transition: clip-path var(--m-dur-3) var(--m-ease); }
@@ -123,76 +188,76 @@
   transform: translate3d(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px)), 0);
 }
 
-/* ---- Front | Back ------------------------------------------------------------ */
-.mx-seg__btn,
-.mx-tile__btn {
-  position: relative;
+/* ---- The product cards (the roster's card, in colour) ------------------------- */
+.mx-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--card-gap);
   margin: 0;
   padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
+  list-style: none;
 }
-.mx-seg__btn {
+.mx-cell { display: flex; min-width: 0; }
+.mx-cell[data-wide] { grid-column: 1 / -1; }
+.mx-cell[data-wide] .mx-card__media { aspect-ratio: 12 / 5; }
+
+.mx-card {
+  position: relative;
   flex: 1 1 auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--mx-cap);
-  padding: 0 var(--g-pad);
-  font-size: var(--t-body);
-  line-height: 1.3;
-  color: var(--c-fg-3);
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--c-line);
+  background: var(--c-plate);
+  color: var(--c-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--m-dur-1) var(--m-ease), border-color var(--m-dur-1) var(--m-ease);
 }
-.mx-seg__btn[aria-pressed="true"] { color: var(--c-fg); }
-/* The side showing: a 2px red mark on the edge it shares with the preview. Between Front and Back it
-   travels: the outgoing mark shrinks towards the incoming cell, the incoming one grows from it. */
-.mx-seg__btn::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--c-mark);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform var(--m-dur-2) var(--m-ease);
-}
-.mx-seg[data-side="back"] .mx-seg__btn::before { transform-origin: left; }
-.mx-seg__btn[aria-pressed="true"]::before { transform: scaleX(1); }
-.mx-seg__btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
+.mx-card:active { transform: scale(0.985); }
+.mx-card:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
-/* ---- Product tiles ------------------------------------------------------------ */
-.mx-tile { gap: 0; }
-.mx-tile__btn { flex: 1 1 auto; display: flex; flex-direction: column; width: 100%; }
-.mx-tile__media { display: block; width: 100%; aspect-ratio: 6 / 5; background: var(--c-ink); }
-.mx-tile__media img { display: block; width: 100%; height: 100%; padding: var(--s-3); object-fit: contain; }
-.mx-tile__name {
+.mx-card__media { position: relative; display: block; aspect-ratio: 6 / 5; overflow: hidden; background: var(--c-ink); }
+.mx-card__media img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: var(--s-3);
+  object-fit: contain;
+  transition: transform 700ms var(--m-ease);
+}
+@media (min-width: 768px) {
+  .mx-card__media img { padding: var(--s-4); }
+}
+
+.mx-card__plate {
   flex: 1 0 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: var(--mx-cap);
-  padding: var(--s-2) var(--g-pad);
-  border-top: 1px solid var(--c-rule); /* taste-skill-ignore: the grid's hairline (client-mandated) */
-  font-size: var(--t-body);
-  line-height: 1.3;
-  color: var(--c-fg-2);
-  transition: color var(--m-dur-1) var(--m-ease);
+  min-height: var(--plate-h);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--c-line);
+  transition: background-color var(--m-dur-1) var(--m-ease);
 }
-.mx-tile__btn[aria-pressed="true"] .mx-tile__name { color: var(--c-fg); }
-/* Selected: a 2px red mark over the tile's bottom rule (the nav's current-section mark). */
-.mx-tile__btn::after {
+@media (max-width: 767.98px) {
+  .mx-card__plate { padding: var(--s-2) var(--s-3); }
+}
+.mx-card__name { min-width: 0; color: var(--c-text-2); overflow-wrap: break-word; transition: color var(--m-dur-1) var(--m-ease); }
+
+/* Selected: the edge lights and a 2px red mark runs along the card's foot (the nav's current mark). */
+.mx-card[aria-pressed="true"] { border-color: var(--c-line-2); }
+.mx-card[aria-pressed="true"] .mx-card__name { color: var(--c-text-hi); }
+.mx-card::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
+  left: -1px;
+  right: -1px;
   bottom: -1px;
   z-index: 1;
   height: 2px;
@@ -201,38 +266,39 @@
   transform-origin: left;
   transition: transform var(--m-dur-1) var(--m-ease);
 }
-.mx-tile__btn[aria-pressed="true"]::after { transform: scaleX(1); transition-duration: var(--m-dur-2); }
-/* The photograph covers the button, so the focus ring is drawn on a layer above it. */
-.mx-tile__btn:focus-visible { outline: none; }
-.mx-tile__btn:focus-visible::before { content: ""; position: absolute; inset: 0; z-index: 2; outline: 2px solid var(--c-focus); outline-offset: -2px; }
+.mx-card[aria-pressed="true"]::after { transform: scaleX(1); transition-duration: var(--m-dur-2); }
 
 @media (hover: hover) and (pointer: fine) {
-  .mx-seg__btn:hover,
-  .mx-tile__btn:hover { background-color: var(--c-wash); }
-  .mx-seg__btn:hover,
-  .mx-tile__btn:hover .mx-tile__name { color: var(--c-fg); }
+  .mx-card:hover { border-color: var(--c-line-2); }
+  .mx-card:hover .mx-card__media img { transform: scale(1.035); }
+  .mx-card:hover .mx-card__plate { background-color: var(--c-plate-hi); }
+  .mx-card:hover .mx-card__name { color: var(--c-text-hi); }
+  .mx-sides__btn:hover { color: var(--c-text-hi); }
 }
-.mx-seg__btn:active,
-.mx-tile__btn:active { background-color: var(--c-wash); }
 
-/* From 768px a tile lies on the board's image line and caption line. */
-@supports (grid-template-rows: subgrid) {
-  @media (min-width: 768px) {
-    .mx-tile { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; }
-    .mx-tile__btn { grid-row: 1 / span 2; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; row-gap: 0; }
-    .mx-tile__media { aspect-ratio: auto; }
-  }
+/* ---- The shop links ------------------------------------------------------------ */
+.mx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-3);
+  margin-top: var(--s-10);
+}
+@media (max-width: 767.98px) {
+  .mx-actions { flex-direction: column; margin-top: var(--s-8); }
+  .mx-actions .w-btn { width: 100%; }
 }
 @media (min-width: 768px) {
-  .mx-tile__media img { padding: var(--s-4); }
+  .mx-actions { margin-top: var(--s-12); }
 }
 
 /* ---- Reduced motion: the end state, no travel ---------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .mx-side--back,
   .mx-side img,
-  .mx-seg__btn::before,
-  .mx-tile__btn::after { transition-duration: 0.01ms; }
+  .mx-sides__btn::before,
+  .mx-card::after,
+  .mx-card__media img { transition-duration: 0.01ms; }
   .mx-plate[data-enter="go"] { animation: none; }
   .mx-holo { display: none; }
 }

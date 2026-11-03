@@ -1,4 +1,4 @@
-import { SectionGrid, SectionHeader } from "@/components/winter/grid";
+import { Section } from "@/components/winter/classic";
 import { MerchViewer } from "@/components/winter/merch/MerchViewer";
 import type { Product } from "@/components/winter/merch/types";
 import { sentenceCase } from "@/components/winter/nav/sections";
@@ -6,8 +6,10 @@ import { MERCH, SHOP_LINK_PARAMS, SHOP_URL } from "@/data/winter";
 import "@/styles/sections/merch.css";
 
 /**
- * Merch: a preview of the shop's four pieces. Pick a product, turn it front to back, follow it to its
- * page in the shop. No prices or stock (the shop is the point of sale and the data has neither).
+ * Merch, as the September site's "The uniform": a centred header, the preview beside the product cards
+ * (photo over a name plate, as on the roster), then the shop links, the red one to the whole shop. Pick a
+ * product, turn it front to back, follow it to its page in the shop. No prices or stock (the shop is the
+ * point of sale and the data has neither).
  */
 export function Merch() {
   const items: Product[] = MERCH.items.map((it) => ({
@@ -17,9 +19,8 @@ export function Merch() {
     front: it.frontImage,
   }));
   return (
-    <SectionGrid id="merch" labelledBy="merch-title" className="mx">
-      <SectionHeader id="merch-title" title="Merch" aside={MERCH.body} />
-      <MerchViewer items={items} />
-    </SectionGrid>
+    <Section id="merch" title="Merch" intro={MERCH.body} align="center" className="mx">
+      <MerchViewer items={items} shopUrl={MERCH.shopUrl} />
+    </Section>
   );
 }

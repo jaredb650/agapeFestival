@@ -1,0 +1,35 @@
+/* ==========================================================================
+   LOCKERS (page/Lockers.tsx), classic. A slim band between the FAQ and
+   Getting here: one translucent panel with the name, one line and the
+   booking link (secondary). It reads as the foot of the FAQ, as on the
+   September site: no hairline of its own, and when it follows the FAQ the
+   FAQ closes up to it. Classes lk-*.
+   ========================================================================== */
+
+.k-sec.lk { padding-top: 0; }
+.k-sec.lk::before { display: none; }
+/* The FAQ's own bottom padding becomes the gap above the band. Needs the two to be adjacent: it takes
+   effect once page.tsx drops the grid <Gap /> between them (phase-2 integration). */
+.k-sec.fq:has(+ .lk) { padding-bottom: var(--group-gap); }
+
+.lk-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s-5);
+  padding: var(--s-6) var(--s-5);
+}
+.lk-text { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.lk-line { margin: 0; font-size: var(--t-body); line-height: 1.5; color: var(--c-text-2); }
+
+@media (min-width: 768px) {
+  .lk-panel {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-8);
+    padding: var(--s-6) var(--s-6) var(--s-6) var(--s-8);
+  }
+  .lk-text { flex-direction: row; align-items: baseline; flex-wrap: wrap; column-gap: var(--s-6); }
+  .lk-btn { flex: none; }
+}

@@ -1,7 +1,7 @@
-import { SectionGrid, SectionHeader } from "@/components/winter/grid";
+import { Section } from "@/components/winter/classic";
 import { FaqList, type FaqEntry } from "@/components/winter/faq/FaqList";
 import { sentenceCase } from "@/components/winter/nav/sections";
-import { FAQ } from "@/data/winter";
+import { FAQ, WINTER } from "@/data/winter";
 import "@/styles/sections/faq.css";
 
 /** A link's kind decides its icon and target: DICE leaves the site, mail opens the mail app, #… stays on the page. */
@@ -14,16 +14,29 @@ function linkOf(link: (typeof FAQ)[number]["link"]): FaqEntry["link"] {
 }
 
 /**
- * FAQ, on the grid: the header row, then one row holding the questions and their answers. Server
- * wrapper: maps the data (unconfirmed items already carry safe "to be announced" wording) to plain
+ * FAQ, as the September site set it: the heading on the left (from 1024px it holds its column while the
+ * list scrolls past), then an accordion of hairline rows, questions in Orbitron, answers in Archivo.
+ * Server wrapper: maps the data (unconfirmed items already carry safe "to be announced" wording) to plain
  * props, so winter.ts never ships in the client chunk. The open state is the one client island.
  */
 export function Faq() {
   const items: FaqEntry[] = FAQ.map((item) => ({ id: item.id, q: item.q, paras: item.a.split("\n\n"), link: linkOf(item.link) }));
+  const email = WINTER.contactEmail;
   return (
-    <SectionGrid id="faq" labelledBy="faq-title" className="fq">
-      <SectionHeader id="faq-title" title="FAQ" />
+    <Section
+      id="faq"
+      title="FAQ"
+      className="fq"
+      intro={
+        <p className="k-lead fq-lead">
+          Still have questions? Email{" "}
+          <a className="fq-lead__link" href={`mailto:${email}`}>
+            {email}
+          </a>
+        </p>
+      }
+    >
       <FaqList items={items} />
-    </SectionGrid>
+    </Section>
   );
 }

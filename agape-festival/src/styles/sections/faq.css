@@ -1,52 +1,92 @@
 /* ==========================================================================
-   FAQ (page/Faq.tsx, faq/FaqList.tsx). The rows and lines come from grid.css;
-   this file places the questions and answers and runs the open/close.
-   - Below 1024px: an accordion. Each question is a full-width row; its answer
-     opens beneath it in the same cell (no rule between them).
-   - From 1024px: the questions are a column of cells (6 of 12, 5 from
-     1280px) and the selected answer sits in a reading cell beside them (the
-     rest, every line of the row). The hairline between the selected question
-     and the reading cell is the red mark.
-   Motion: one curve; height only through grid-template-rows on the phone
-   accordion, otherwise clip-path, transform and opacity. Classes fq-*.
+   FAQ (page/Faq.tsx, faq/FaqList.tsx), classic. The September accordion:
+   the heading on the left, then one hairline row per question (Orbitron
+   600 at ~15px), its answer (Archivo) easing open beneath it.
+   - Below 1024px the list sits under the heading, full width.
+   - From 1024px the heading takes a narrow column and stays in view while
+     the list scrolls past it in the wide column.
+   Motion: the answer's height eases open through grid-template-rows (the
+   one height animation, kept from the grid version), its text fades in a
+   beat later; shutting is quicker. Classes fq-*.
    ========================================================================== */
 
-/* ---- Question ------------------------------------------------------------ */
+/* ---- Heading column ------------------------------------------------------ */
+.fq-lead__link {
+  color: var(--c-text);
+  text-decoration: underline;
+  text-decoration-color: var(--c-line-2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  overflow-wrap: anywhere;
+  transition: color var(--m-dur-1) var(--m-ease), text-decoration-color var(--m-dur-1) var(--m-ease);
+}
+.fq-lead__link:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .fq-lead__link:hover { color: var(--c-text-hi); text-decoration-color: currentColor; }
+}
+
+@media (min-width: 1024px) {
+  .fq > .k-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    column-gap: var(--s-16);
+    align-items: start;
+  }
+  .fq .k-head {
+    position: sticky;
+    top: calc(var(--g-nav) + var(--s-12));
+    margin-bottom: 0;
+  }
+}
+
+/* ---- The list ------------------------------------------------------------ */
+.fq-list { border-bottom: 1px solid var(--c-line); }
+.fq-item { border-top: 1px solid var(--c-line); }
+
 .fq-h { margin: 0; font: inherit; }
 .fq-btn {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--s-4);
+  gap: var(--s-6);
   width: 100%;
-  min-height: var(--s-16);
-  padding: var(--s-5) var(--g-pad);
-  border: 0;
+  min-height: var(--row-h);
   margin: 0;
+  padding: var(--s-5) 0;
+  border: 0;
   background: none;
-  color: var(--c-fg);
-  font: 500 var(--t-body) / 1.5 var(--f-ui);
+  color: var(--c-text);
+  font: inherit;
   text-align: start;
-  text-wrap: pretty;
   cursor: pointer;
-  transition: background-color var(--m-dur-1) var(--m-ease), color var(--m-dur-1) var(--m-ease);
   -webkit-tap-highlight-color: transparent;
 }
-.fq-btn:active { background-color: var(--c-wash); }
-.fq-btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: -2px; }
-@media (hover: hover) and (pointer: fine) {
-  .fq-btn:hover { background-color: var(--c-wash); color: var(--c-fg); }
+@media (min-width: 768px) {
+  .fq-btn { padding-block: var(--s-6); }
+}
+.fq-btn:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+
+.fq-q {
+  font-family: var(--f-display);
+  font-size: clamp(0.875rem, 0.84rem + 0.16vw, 0.9375rem); /* 14 → 15 */
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+  text-wrap: pretty;
+  transition: color var(--m-dur-1) var(--m-ease);
 }
 
-/* Plus → minus: two 1.5px bars; the upright one folds away. Red when open (the active mark). */
+/* Plus → minus: two 1.5px bars; the upright one folds away. */
 .fq-plus {
   position: relative;
   flex: none;
   width: var(--s-3);
   height: var(--s-3);
-  margin-top: 6px; /* centres the 12px glyph on the 24px first line */
-  color: var(--c-fg-3);
-  transition: color var(--m-dur-2) var(--m-ease);
+  /* Centres the 12px glyph on the question's first line (line-height 1.55). */
+  margin-top: calc((1.55em - var(--s-3)) / 2);
+  font-size: clamp(0.875rem, 0.84rem + 0.16vw, 0.9375rem);
+  color: var(--c-text-3);
+  transition: color var(--m-dur-1) var(--m-ease);
 }
 .fq-plus::before,
 .fq-plus::after {
@@ -58,129 +98,54 @@
 }
 .fq-plus::before { width: 100%; height: 1.5px; }
 .fq-plus::after { width: 1.5px; height: 100%; transition: transform var(--m-dur-2) var(--m-ease); }
+.fq-item[data-open] .fq-plus { color: var(--c-text); }
+.fq-item[data-open] .fq-plus::after { transform: scaleY(0); }
 
-/* ---- Answer -------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .fq-btn:hover .fq-q { color: var(--c-text-hi); }
+  .fq-btn:hover .fq-plus { color: var(--c-text-hi); }
+}
+
+/* ---- The answer: shut, a zero-height row; open, its own height ------------- */
+.fq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows var(--m-dur-2) var(--m-ease), visibility 0s linear var(--m-dur-2);
+}
+.fq-item[data-open] .fq-a {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows var(--m-dur-3) var(--m-ease), visibility 0s;
+}
+.fq-a__clip { min-height: 0; overflow: hidden; }
 .fq-a__body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--s-4);
+  /* Clear of the plus column, so the text never runs under it. */
+  padding: 0 calc(var(--s-3) + var(--s-6)) var(--s-6) 0;
+  opacity: 0;
+  transform: translateY(calc(var(--s-2) * -1));
+  transition: opacity var(--m-dur-1) var(--m-ease), transform var(--m-dur-2) var(--m-ease);
 }
-.fq-a__p { margin: 0; max-width: 62ch; font-size: var(--t-body); line-height: 1.55; color: var(--c-fg-2); text-wrap: pretty; }
-.fq-a__link { margin-top: var(--s-2); }
-.fq-a__echo { display: none; }
-
-/* The reading cell's frame only exists in the wide layout. */
-.fq-list > .fq-frame { display: none; }
-
-/* ---- Accordion (below 1024px) --------------------------------------------- */
-@media (max-width: 1023.98px) {
-  .fq-q[data-open] .fq-plus { color: var(--c-mark); }
-  .fq-q[data-open] .fq-plus::after { transform: scaleY(0); }
-
-  /* The answer continues its question's cell: the left frame line runs on, no rule above it.
-     Closed it is a zero-height row, so the next question's rule sits right under this one. */
-  .fq-list > .fq-a {
-    display: grid;
-    grid-template-rows: 0fr;
-    border-top: 0;
-    visibility: hidden;
-    transition: grid-template-rows var(--m-dur-2) var(--m-ease), visibility 0s linear var(--m-dur-2);
-  }
-  .fq-list > .fq-a[data-open] {
-    grid-template-rows: 1fr;
-    visibility: visible;
-    transition: grid-template-rows var(--m-dur-3) var(--m-ease), visibility 0s;
-  }
-  .fq-a__clip { min-height: 0; overflow: hidden; }
-  .fq-a__body {
-    padding: 0 calc(var(--g-pad) + var(--s-3) + var(--s-4)) var(--s-6) var(--g-pad);
-    opacity: 0;
-    transform: translateY(calc(var(--s-2) * -1));
-    transition: opacity var(--m-dur-1) var(--m-ease), transform var(--m-dur-2) var(--m-ease);
-  }
-  .fq-a[data-open] .fq-a__body {
-    opacity: 1;
-    transform: none;
-    transition: opacity var(--m-dur-2) var(--m-ease) var(--m-stagger), transform var(--m-dur-3) var(--m-ease);
-  }
+.fq-item[data-open] .fq-a__body {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--m-dur-2) var(--m-ease) var(--m-stagger), transform var(--m-dur-3) var(--m-ease);
 }
-
-/* ---- Questions + reading cell (from 1024px) ------------------------------- */
-@media (min-width: 1024px) {
-  /* Questions 6 + reading cell 6; from 1280px 5 + 7. Every question stays on one line. */
-  .fq-q { --start: 1; --span: 6; }
-  .fq-list > .fq-frame,
-  .fq-list > .fq-a { --start: 7; --span: 6; }
-  .fq-plus { display: none; }
-  .fq-btn { align-items: center; color: var(--c-fg-2); }
-  .fq-q[data-sel] .fq-btn { background-color: var(--c-wash); color: var(--c-fg); }
-
-  /* The red mark: 2px over the hairline that joins the selected question to the reading cell. */
-  .fq-q::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: -1px;
-    width: 2px;
-    background: var(--c-mark);
-    transform: scaleY(0);
-    transition: transform var(--m-dur-1) var(--m-ease);
-    pointer-events: none;
-  }
-  .fq-q[data-sel]::after { transform: none; transition-duration: var(--m-dur-2); }
-
-  .fq-list > .fq-frame,
-  .fq-list > .fq-a { grid-row: 1 / span var(--fq-n); }
-  .fq-list > .fq-frame { display: flex; }
-  /* Every answer lies over the frame; only the selected one is visible. */
-  .fq-list > .fq-a {
-    z-index: 1;
-    border: 0;
-    visibility: hidden;
-    transition: visibility 0s linear var(--m-dur-1);
-  }
-  .fq-list > .fq-a[data-sel] { visibility: visible; transition: none; }
-  .fq-a__clip { flex: 1 1 auto; }
-
-  /* The answer stays in view under the bar while the list scrolls past. */
-  .fq-a__body {
-    position: sticky;
-    top: var(--g-nav);
-    /* The title's top lines up with the first question's text. */
-    padding: var(--s-5) var(--g-pad) var(--s-12);
-    /* Leaving: it retracts upward, fast. */
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(calc(var(--s-2) * -1));
-    transition: clip-path var(--m-dur-1) var(--m-ease), transform var(--m-dur-1) var(--m-ease);
-  }
-  /* Arriving: it wipes down from the cell's top edge once the old one is gone. */
-  .fq-a[data-sel] .fq-a__body {
-    clip-path: inset(0);
-    transform: none;
-    transition:
-      clip-path var(--m-dur-3) var(--m-ease) calc(var(--m-stagger) * 2),
-      transform var(--m-dur-3) var(--m-ease) calc(var(--m-stagger) * 2);
-  }
-  .fq-a__echo { display: block; max-width: 18em; }
-  .fq-a__p { max-width: 36em; font-size: var(--t-lead); line-height: 1.45; }
+@media (min-width: 768px) {
+  .fq-a__body { padding-bottom: var(--s-8); }
 }
-@media (min-width: 1280px) {
-  .fq-q { --span: 5; }
-  .fq-list > .fq-frame,
-  .fq-list > .fq-a { --start: 6; --span: 7; }
-}
+.fq-a__p { margin: 0; max-width: 62ch; font-size: var(--t-body); line-height: 1.65; color: var(--c-text-2); text-wrap: pretty; }
+.fq-a__link { margin-top: calc(var(--s-1) * -1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .fq-list > .fq-a,
-  .fq-list > .fq-a[data-open],
-  .fq-list > .fq-a[data-sel],
-  .fq-a .fq-a__body,
-  .fq-a[data-open] .fq-a__body,
-  .fq-a[data-sel] .fq-a__body,
-  .fq-q::after,
-  .fq-q[data-sel]::after,
+  .fq-a,
+  .fq-item[data-open] .fq-a,
+  .fq-a__body,
+  .fq-item[data-open] .fq-a__body,
   .fq-plus,
   .fq-plus::after {
     transition: none;

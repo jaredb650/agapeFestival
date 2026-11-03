@@ -21,11 +21,10 @@ import { BASE_PATH, COPY, FESTIVAL, LOCKER_URL, SOCIALS, type SocialLink } from 
 export { SOCIALS, LOCKER_URL };
 export type { SocialLink };
 
-// ---- Feature flag ----
-// Static export inlines NEXT_PUBLIC_* at build time. The Cloudflare Pages
-// preview sets NEXT_PUBLIC_SHOW_ARTIST_SELECT=1; the GitHub Pages production
-// build doesn't, so the artist select stays hidden there.
-export const SHOW_ARTIST_SELECT = process.env.NEXT_PUBLIC_SHOW_ARTIST_SELECT === "1";
+// ---- The roster ----
+// On everywhere since the winter site went live (Nov 3, client approved). NEXT_PUBLIC_SHOW_ARTIST_SELECT
+// (on for Cloudflare branch previews only) now gates just the preview-only /kit showcase pages.
+export const SHOW_ARTIST_SELECT = true;
 
 // ---- Confirmation marker ----
 /** Every confirm note starts with this literal, so `grep TODO_CONFIRM` finds them all. */

@@ -1,72 +1,83 @@
-import { Cell, LinkCell, Row, SectionGrid } from "@/components/winter/grid";
+import { Section } from "@/components/winter/classic";
 import { sentenceCase } from "@/components/winter/nav/sections";
+import { ArrowRight, ArrowUpRight, Button } from "@/components/winter/ui";
 import { TICKETS, WINTER, WINTER_DAYS } from "@/data/winter";
 import "@/styles/sections/tickets.css";
 
-/** "FRI FEB 19" → "Feb 19". */
-const monthDay = (date: string) => {
-  const [, month, day] = date.split(" ");
-  return `${month.charAt(0)}${month.slice(1).toLowerCase()} ${day}`;
-};
+/** "Friday, February 19, 2027" → "Friday, February 19". */
+const dayDate = (dateLong: string) => dateLong.replace(/,\s*\d{4}$/, "");
 
 /**
- * Tickets, on the grid. The title stands on a hairline and its reflection hangs below it (a flipped
- * copy under a mask fade, CSS only). Then one band: the red ticket cell beside four facts from the data.
- * Tiers and prices aren't published here (TODO_CONFIRM in winter.ts); they live on the DICE page, so the
- * section names none. Server-rendered, no client JS.
+ * Tickets, classic: the September "Secure your entry" block, quieter. A centred display title over the
+ * background footage, standing on its own reflection (a flipped copy under a mask fade, CSS only, kept
+ * from the grid version). Then the facts as hairline rows (the days, the venue, doors once announced) and
+ * one red Get tickets to DICE. Tiers and prices aren't published here (TODO_CONFIRM in winter.ts); they
+ * live on the DICE page, so the section names none. Server-rendered, no client JS.
  */
 export function Tickets() {
   const { provider, url, cta } = WINTER.tickets;
   const title = sentenceCase(TICKETS.eyebrow);
 
   return (
-    <SectionGrid id="tickets" labelledBy="tickets-title" className="tk">
-      <Row>
-        <Cell h={3} y="end" className="tk-head">
-          <h2 id="tickets-title" className="w-display tk-word">
+    <Section
+      id="tickets"
+      align="center"
+      className="tk"
+      title={
+        <>
+          <span className="tk-word">{title}</span>
+          {/* The reflection: decorative, so it's left out of the heading's name. */}
+          <span className="tk-word tk-word--mirror" aria-hidden="true">
             {title}
-          </h2>
-        </Cell>
-      </Row>
-
-      {/* The reflection: the row's top hairline is the surface the title stands on. */}
-      <Row aria-hidden="true">
-        <Cell className="tk-mirror">
-          <span className="w-display tk-word tk-word--mirror">{title}</span>
-        </Cell>
-      </Row>
-
-      <Row>
-        <LinkCell
-          href={url}
-          external
-          variant="primary"
-          size="title"
-          h={4}
-          label={`On sale now via ${provider}`}
-          className="tk-ticket"
-          aria-label={`${cta} on ${provider} (opens in a new tab)`}
-        >
-          {cta}
-        </LinkCell>
-        {WINTER_DAYS.map((day) => (
-          <Cell key={day.day} as="dl" spanSm={2} y="between" className="tk-fact">
-            <dt className="tk-fact__k">{day.weekday}</dt>
-            <dd className="w-title w-num">
-              <time dateTime={day.isoDate}>{monthDay(day.date)}</time>
+          </span>
+        </>
+      }
+      intro={TICKETS.body}
+    >
+      <div className="tk-body">
+        <dl className="tk-facts" data-reveal="">
+          {WINTER_DAYS.map((day) => (
+            <div key={day.day} className="tk-row">
+              <dt className="k-label k-label--red">{sentenceCase(day.label)}</dt>
+              <dd className="tk-value">
+                <time dateTime={day.isoDate}>{dayDate(day.dateLong)}</time>
+              </dd>
+            </div>
+          ))}
+          <div className="tk-row">
+            <dt className="k-label">Venue</dt>
+            <dd className="tk-value">
+              <a href="#getting-here" className="tk-link">
+                <span>
+                  {WINTER.venue.name}
+                  <span className="tk-value__city">, {WINTER.venue.city}</span>
+                </span>
+                <span className="w-sr-only">, getting here</span>
+                <ArrowRight className="tk-arrow" size={16} />
+              </a>
             </dd>
-          </Cell>
-        ))}
-        <LinkCell href="#getting-here" icon="arrow" size="title" label="Venue" className="tk-fact">
-          {WINTER.venue.name}
-        </LinkCell>
-        <Cell as="dl" y="between" className="tk-fact">
-          <dt className="tk-fact__k">Doors</dt>
-          <dd className="w-title" data-tba={WINTER.hours ? undefined : ""}>
-            {WINTER.hours ?? "To be announced"}
-          </dd>
-        </Cell>
-      </Row>
-    </SectionGrid>
+          </div>
+          {WINTER.hours && (
+            <div className="tk-row">
+              <dt className="k-label">Doors</dt>
+              <dd className="tk-value">{WINTER.hours}</dd>
+            </div>
+          )}
+        </dl>
+
+        <div className="tk-cta">
+          <Button
+            href={url}
+            external
+            size="lg"
+            className="tk-btn"
+            icon={<ArrowUpRight className="w-btn__icon" size={16} />}
+            aria-label={`${cta} on ${provider} (opens in a new tab)`}
+          >
+            {cta}
+          </Button>
+        </div>
+      </div>
+    </Section>
   );
 }

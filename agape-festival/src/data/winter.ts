@@ -629,12 +629,16 @@ export interface SectionDef {
   enabled: boolean;
 }
 
-/** Page order. Gallery and partners sections are intentionally dropped for winter. */
+/**
+ * Page order: keep it the same as page.tsx renders the sections, so the bar, the menu and the footer list
+ * them top to bottom (the roster, when it's on, sits above the lineup). Gallery and partners sections are
+ * intentionally dropped for winter.
+ */
 export const SECTIONS: SectionDef[] = [
   { id: "hero", label: "TOP", href: "#hero", inNav: true, enabled: true },
   { id: "flyer", label: "FLYER", href: "#flyer", inNav: false, enabled: true },
-  { id: "lineup", label: "LINEUP", href: "#lineup", inNav: true, enabled: true },
   { id: "artists", label: "THE ROSTER", href: "#artists", inNav: true, enabled: SHOW_ARTIST_SELECT },
+  { id: "lineup", label: "LINEUP", href: "#lineup", inNav: true, enabled: true },
   { id: "tickets", label: "TICKETS", href: "#tickets", inNav: true, enabled: true },
   { id: "merch", label: "MERCH", href: "#merch", inNav: true, enabled: true },
   { id: "faq", label: "FAQ", href: "#faq", inNav: true, enabled: true },

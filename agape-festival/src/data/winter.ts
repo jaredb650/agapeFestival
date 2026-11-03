@@ -14,21 +14,12 @@
 // re-exported from festival.ts, so there is one copy of it.
 // ============================================================
 
-import {
-  BASE_PATH,
-  COPY,
-  FESTIVAL,
-  LOCKER_URL,
-  MERCH_ITEMS,
-  SHOP_LINK_PARAMS,
-  SHOP_URL,
-  SOCIALS,
-  type MerchItem,
-  type SocialLink,
-} from "./festival";
+import { BASE_PATH, COPY, FESTIVAL, LOCKER_URL, SOCIALS, type SocialLink } from "./festival";
 
-export { MERCH_ITEMS, SHOP_URL, SHOP_LINK_PARAMS, SOCIALS, LOCKER_URL };
-export type { MerchItem, SocialLink };
+// The September shop (festival.ts MERCH_ITEMS / SHOP_URL) is deliberately NOT imported: it's sold out
+// and the winter line isn't designed yet, so nothing on this page may link or point to it.
+export { SOCIALS, LOCKER_URL };
+export type { SocialLink };
 
 // ---- Feature flag ----
 // Static export inlines NEXT_PUBLIC_* at build time. The Cloudflare Pages
@@ -596,21 +587,49 @@ export const LOCKERS: LockersInfo = {
 };
 
 // ============================================================
-// MERCH ("THE UNIFORM")
+// MERCH: locked until the winter line is ready
 // ============================================================
+// The September line is sold out and the new designs are still being made, so every piece shows
+// as a locked shadow of its garment: no product photographs, no prices, and no link to any shop.
+// The four pieces keep the September line's shapes (two tees, two hoodies). The silhouettes come
+// from the old product cut-outs with every print removed
+// (context/winter-redesign/media-scripts/merch_silhouettes.py). When the line drops, give each
+// piece its real photographs and a page again.
+
+export type MerchGarment = "tee" | "hoodie";
+
+export interface MerchPiece {
+  id: string;
+  /** As shown on the plate (mixed case; Orbitron). */
+  name: string;
+  garment: MerchGarment;
+}
+
+const MERCH_DIR = `${BASE_PATH}/assets/winter/merch`;
+
+/** Each garment's shadow, front and back. A base path: the image adds `-640.webp` / `-1280.webp`. */
+export const MERCH_SILHOUETTES: Record<MerchGarment, { front: string; back: string }> = {
+  tee: { front: `${MERCH_DIR}/tee-front`, back: `${MERCH_DIR}/tee-back` },
+  hoodie: { front: `${MERCH_DIR}/hoodie-front`, back: `${MERCH_DIR}/hoodie-back` },
+};
+
+const MERCH_PIECES: MerchPiece[] = [
+  { id: "tee-01", name: "Tee 01", garment: "tee" },
+  { id: "hoodie-01", name: "Hoodie 01", garment: "hoodie" },
+  { id: "tee-02", name: "Tee 02", garment: "tee" },
+  { id: "hoodie-02", name: "Hoodie 02", garment: "hoodie" },
+];
 
 export const MERCH = {
   eyebrow: "MERCH",
   heading: "THE UNIFORM",
-  // Sept copy said "printed with the 2026 festival artwork. Festival pickup
-  // only — order online, collect at Industry City." Pickup isn't confirmed for winter.
-  body: "Heavyweight blanks printed with ÄGAPĒ festival artwork.",
-  cta: "VIEW ALL →",
-  shopUrl: `${SHOP_URL}${SHOP_LINK_PARAMS}`,
-  items: MERCH_ITEMS,
+  body: "New designs are in the works. Merch is coming soon.",
+  /** The lock's caption, on every piece and the preview. */
+  status: "Coming soon",
+  items: MERCH_PIECES,
   needsConfirm: true,
   confirmNote:
-    "TODO_CONFIRM: merch still on sale for winter? festival pickup at Industry City again? any winter-specific items?" satisfies ConfirmNote,
+    "TODO_CONFIRM: the winter merch line: which pieces, their names and the drop date? Until then the section stays locked, with no shop link." satisfies ConfirmNote,
 } as const;
 
 // ============================================================

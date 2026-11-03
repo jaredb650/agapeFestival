@@ -15,11 +15,11 @@ interface PreviewProps {
 }
 
 /**
- * The large preview: the selected garment on its black ground. Each plate holds both photographs, the
- * back laid over the front; merch.css turns the garment by wiping the back's clip open or shut while
- * both photographs slide a step the same way (one transition, so a second click reverses it mid-way).
- * A newly selected product wipes down over the last one once its photograph has loaded. Clicking the
- * photograph flips it.
+ * The large preview: the selected piece's silhouette on its dark ground (the lock sits over it, in
+ * MerchViewer). Each plate holds both views, the back laid over the front; merch.css turns the garment
+ * by wiping the back's clip open or shut while both images slide a step the same way (one transition,
+ * so a second click reverses it mid-way). A newly selected piece wipes down over the last one once its
+ * image has loaded. Clicking the image flips it.
  */
 export const Preview = memo(function Preview({ id, items, plates, side, onFlip, onSettled }: PreviewProps) {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -71,10 +71,10 @@ function PlateView({ plate, item, side, current, onSettled }: { plate: Plate; it
       onAnimationEnd={plate.enter ? (e) => e.target === e.currentTarget && onSettled(plate.key) : undefined}
     >
       <div className="mx-side mx-side--front">
-        <ProductImage src={item.front} sizes={PREVIEW_SIZES} alt={current && side === "front" ? `${item.name}, front` : ""} onLoad={loaded("front")} />
+        <ProductImage src={item.front} sizes={PREVIEW_SIZES} alt={current && side === "front" ? `${item.name}, front, silhouette` : ""} onLoad={loaded("front")} />
       </div>
       <div className="mx-side mx-side--back">
-        <ProductImage src={item.back} sizes={PREVIEW_SIZES} alt={current && side === "back" ? `${item.name}, back` : ""} onLoad={loaded("back")} />
+        <ProductImage src={item.back} sizes={PREVIEW_SIZES} alt={current && side === "back" ? `${item.name}, back, silhouette` : ""} onLoad={loaded("back")} />
       </div>
     </div>
   );

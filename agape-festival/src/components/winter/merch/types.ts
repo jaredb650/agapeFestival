@@ -1,8 +1,11 @@
-/** One product as the merch section shows it: the name in sentence case, its shop page, its two photographs. */
+/**
+ * One piece as the merch section shows it while the line is locked: its name and its garment's two
+ * shadow silhouettes (base paths; ProductImage adds the width and extension). No shop page.
+ */
 export interface Product {
+  id: string;
   name: string;
-  href: string;
-  /** Back print: the lead image. */
+  /** Back view: the lead image. */
   back: string;
   front: string;
 }

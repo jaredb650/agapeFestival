@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { MetaPixel } from "@/components/winter/analytics/MetaPixel";
 import "./globals.css";
 
 // viewportFit "cover" lets env(safe-area-inset-*) report the iPhone notch/home-bar insets (the floating CTA uses them).
@@ -25,5 +26,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <MetaPixel />
+      </body>
+    </html>
+  );
 }

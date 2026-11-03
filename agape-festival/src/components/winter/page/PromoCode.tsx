@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/winter/classic";
+import { trackCustom } from "@/components/winter/analytics/pixel";
 import { CheckIcon, CopyIcon } from "@/components/winter/ui";
 
 /** Clipboard API first (needs a secure context); the old hidden-textarea copy as a fallback. */
@@ -49,6 +50,7 @@ export function PromoCode({ code, until }: { code: string; until?: string }) {
 
   const copy = async () => {
     const ok = await copyText(code);
+    if (ok) trackCustom("CopyPromoCode", { code });
     setState(ok ? "copied" : "failed");
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setState("idle"), 1800);

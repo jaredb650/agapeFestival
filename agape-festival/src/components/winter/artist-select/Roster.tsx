@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SyntheticEvent } from "react";
 import { flushSync } from "react-dom";
 import { StageHeading } from "@/components/winter/classic";
+import { track } from "@/components/winter/analytics/pixel";
 import { afterLoadIdle } from "@/components/winter/page/idle";
 import { observeInView } from "@/components/winter/perf";
 import { ArrowRight } from "@/components/winter/ui";
@@ -67,7 +68,9 @@ export function Roster({ artists, days, id, venue }: RosterProps) {
       setNear(true);
       setOpen(true);
     });
-  }, []);
+    // After the commit, so the clip's play() stays first inside the tap.
+    track("ViewContent", { content_name: roster.bySlug.get(next)?.artist.name, content_category: "artist" });
+  }, [roster]);
   const close = useCallback(() => setOpen(false), []);
 
   // Names in the lineup link here (a[data-artist]): open that act's bio right where it was pressed.

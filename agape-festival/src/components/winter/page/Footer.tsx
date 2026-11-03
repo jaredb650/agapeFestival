@@ -93,6 +93,7 @@ export function Footer({ links }: { links: { label: string; href: string }[] }) 
         <div className="ft-base">
           <p>{legal(FOOTER.copyright)}</p>
           <p>{COPY.origin}</p>
+          <p>We use the Meta Pixel to measure and improve our ads.</p>
           <a href={FOOTER.credit.url} target="_blank" rel="noopener noreferrer" className="ft-credit">
             Site design by MEKA
             <NewTab />

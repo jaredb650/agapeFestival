@@ -12,8 +12,7 @@
    RevealObserver), the Button (ui/Button.tsx) restyled below.
 
    Load order (page.tsx): winter.css → winter-page.css → this file →
-   section stylesheets. The grid kit is retired (Nov 3): nothing imports
-   grid.css or components/winter/grid any more.
+   section stylesheets. The grid kit was retired and deleted (Nov 3).
 
    The hero, the flyer layover and the preloader are frozen: nothing here
    may style them. Every rule is scoped to a classic class, and the Button

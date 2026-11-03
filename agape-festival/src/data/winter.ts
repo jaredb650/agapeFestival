@@ -16,8 +16,8 @@
 
 import { BASE_PATH, COPY, FESTIVAL, LOCKER_URL, SOCIALS, type SocialLink } from "./festival";
 
-// The September shop (festival.ts MERCH_ITEMS / SHOP_URL) is deliberately NOT imported: it's sold out
-// and the winter line isn't designed yet, so nothing on this page may link or point to it.
+// The September Shopify shop data was removed (Nov 3): it's sold out and the winter line isn't designed
+// yet, so nothing on this site may link or point to the store.
 export { SOCIALS, LOCKER_URL };
 export type { SocialLink };
 

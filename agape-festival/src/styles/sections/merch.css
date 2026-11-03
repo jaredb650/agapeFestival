@@ -33,10 +33,11 @@
   border: 1px solid var(--c-line);
   background: var(--c-ink);
 }
-.mx-view__stage { position: relative; aspect-ratio: 6 / 5; }
+/* Phones: 6:5 by height 0 + padding-bottom (a share of the frame's width), never by aspect-ratio. */
+.mx-view__stage { position: relative; flex: none; width: 100%; height: 0; padding-bottom: 83.3333%; }
 /* From 768px the frame takes the height the cards give the row. */
 @media (min-width: 768px) {
-  .mx-view__stage { flex: 1 1 auto; min-height: 0; aspect-ratio: auto; }
+  .mx-view__stage { flex: 1 1 auto; min-height: 0; height: auto; padding-bottom: 0; }
 }
 
 .mx-view__plate {
@@ -199,29 +200,49 @@
 }
 .mx-cell { display: flex; min-width: 0; }
 .mx-cell[data-wide] { grid-column: 1 / -1; }
-.mx-cell[data-wide] .mx-card__media { aspect-ratio: 12 / 5; }
+.mx-cell[data-wide] .mx-card__media { padding-bottom: 41.6667%; } /* 12:5 */
 
+/* Plain boxes with a transparent <button> laid over them (MerchCard.tsx): iOS Safari does not stretch a
+   <button>'s children, so nothing visible is laid out inside one. */
 .mx-card {
   position: relative;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   width: 100%;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 1px solid var(--c-line);
   background: var(--c-plate);
   color: var(--c-text);
-  font: inherit;
   text-align: start;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
   transition: transform var(--m-dur-1) var(--m-ease), border-color var(--m-dur-1) var(--m-ease);
 }
 .mx-card:active { transform: scale(0.985); }
-.mx-card:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.mx-card__hit {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  z-index: 3;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mx-card__hit:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
-.mx-card__media { position: relative; display: block; aspect-ratio: 6 / 5; overflow: hidden; background: var(--c-ink); }
+/* 6:5 by height 0 + padding-bottom (a share of the card's width), never by aspect-ratio. */
+.mx-card__media { position: relative; display: block; flex: none; width: 100%; height: 0; padding-bottom: 83.3333%; overflow: hidden; background: var(--c-ink); }
 .mx-card__media img {
   position: absolute;
   inset: 0;
@@ -251,8 +272,8 @@
 .mx-card__name { min-width: 0; color: var(--c-text-2); overflow-wrap: break-word; transition: color var(--m-dur-1) var(--m-ease); }
 
 /* Selected: the edge lights and a 2px red mark runs along the card's foot (the nav's current mark). */
-.mx-card[aria-pressed="true"] { border-color: var(--c-line-2); }
-.mx-card[aria-pressed="true"] .mx-card__name { color: var(--c-text-hi); }
+.mx-card[data-selected] { border-color: var(--c-line-2); }
+.mx-card[data-selected] .mx-card__name { color: var(--c-text-hi); }
 .mx-card::after {
   content: "";
   position: absolute;
@@ -266,7 +287,7 @@
   transform-origin: left;
   transition: transform var(--m-dur-1) var(--m-ease);
 }
-.mx-card[aria-pressed="true"]::after { transform: scaleX(1); transition-duration: var(--m-dur-2); }
+.mx-card[data-selected]::after { transform: scaleX(1); transition-duration: var(--m-dur-2); }
 
 @media (hover: hover) and (pointer: fine) {
   .mx-card:hover { border-color: var(--c-line-2); }

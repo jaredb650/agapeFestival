@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type SyntheticEvent } from "react";
 import { StageHeading } from "@/components/winter/classic";
-import { playWithRescue } from "@/components/winter/page/GestureRescue";
 import { observeInView } from "@/components/winter/perf";
 import { ArrowRight } from "@/components/winter/ui";
 import type { ArtistEntry, WinterDay } from "@/data/winter";
 import { BioDialog } from "./BioDialog";
 import { useReducedMotion } from "./hooks";
-import { buildRoster, photoSet, type Act, type RosterDay } from "./acts";
+import { buildRoster, photoSet, tileWords, type Act, type RosterDay } from "./acts";
 import "@/styles/sections/roster.css";
 
 export interface RosterProps {
@@ -28,8 +27,8 @@ const THREAD_CROPS = ["18% 24%", "78% 18%", "42% 62%", "70% 38%", "8% 78%", "58%
 
 /**
  * The roster: the September site's artist cards. Per day a stage heading between hairlines, then a grid
- * of cards (two across on phones, three from 768px): the photo, graded to black and white, over a dark
- * name plate in Orbitron. Acts without a photo yet show a crop of the thread texture. Day 1's unannounced
+ * of square tiles (two across on phones, three from 768px, all the same size): the photo, graded to black
+ * and white, over a dark name plate in Orbitron. Acts without a photo yet show a crop of the thread texture. Day 1's unannounced
  * acts share one "to be revealed" card. Pressing a card (or a name in the lineup) pops its bio out of it.
  *
  * Performance: the bio dialog mounts only once the roster is near the viewport; photos are lazy; an act's
@@ -116,11 +115,9 @@ interface DayBlockProps {
   onOpen: (slug: string, from: HTMLElement) => void;
 }
 
-/** One day: the stage heading, then its cards. An odd count on phones gives the first card the full width. */
+/** One day: the stage heading, then its cards, every one the same square tile. */
 function DayBlock({ day, cropFrom, dialogId, onOpen }: DayBlockProps) {
   const headingId = `artists-day-${day.day}`;
-  const count = day.acts.length + (day.more ? 1 : 0);
-  const wideFirst = count % 2 === 1;
   return (
     <div className="rs-day">
       <StageHeading label={day.label} id={headingId} red>
@@ -128,8 +125,8 @@ function DayBlock({ day, cropFrom, dialogId, onOpen }: DayBlockProps) {
       </StageHeading>
       <ul className="rs-grid" aria-labelledby={headingId} data-reveal="">
         {day.acts.map((a, i) => (
-          <li key={a.artist.slug} className="rs-cell" data-wide={(wideFirst && i === 0) || undefined}>
-            <Card act={a} crop={THREAD_CROPS[(cropFrom + i) % THREAD_CROPS.length]} dialogId={dialogId} onOpen={onOpen} wide={wideFirst && i === 0} />
+          <li key={a.artist.slug} className="rs-cell">
+            <Card act={a} crop={THREAD_CROPS[(cropFrom + i) % THREAD_CROPS.length]} dialogId={dialogId} onOpen={onOpen} />
           </li>
         ))}
         {day.more && (
@@ -142,43 +139,42 @@ function DayBlock({ day, cropFrom, dialogId, onOpen }: DayBlockProps) {
   );
 }
 
+/**
+ * The tile's rendered width (a third of the 1280 column from 768px, half the screen on phones), times
+ * the act's zoom: a 1.5x crop asks for the 1200 photo where the whole one would take the 600.
+ */
+const tileSizes = (zoom: number) =>
+  `(min-width: 1376px) ${Math.round(416 * zoom)}px, (min-width: 768px) ${Math.round(32 * zoom)}vw, ${Math.round(50 * zoom)}vw`;
+
 interface CardProps {
   act: Act;
   crop: string;
   dialogId: string;
-  wide: boolean;
   onOpen: (slug: string, from: HTMLElement) => void;
 }
 
-function Card({ act, crop, dialogId, wide, onOpen }: CardProps) {
+/**
+ * One act. The tile is plain boxes (the square photo over the name plate); the press target is a
+ * transparent <button> laid over the whole tile. iOS Safari does not stretch a <button>'s children
+ * across it (they shrink to their content), which collapsed the photo to nothing and left only the
+ * plate, so no visible layout lives inside the button: it is sized by explicit width and height.
+ */
+function Card({ act, crop, dialogId, onOpen }: CardProps) {
   const { artist } = act;
   const photo = photoSet(artist);
   const [hovered, setHovered] = useState(false);
   const [clipOn, setClipOn] = useState(false);
-  const style = photo ? undefined : ({ "--crop": crop } as CSSProperties);
+  const style = (photo ? { "--focus": artist.focus, "--zoom": artist.zoom } : { "--crop": crop }) as unknown as CSSProperties;
   return (
-    <button
-      type="button"
-      className="rs-card"
-      data-slug={artist.slug}
-      aria-haspopup="dialog"
-      aria-controls={dialogId}
-      onClick={(e) => onOpen(artist.slug, e.currentTarget)}
-      onPointerEnter={(e) => {
-        if (e.pointerType !== "mouse") return;
-        setHovered(true);
-        if (artist.clip) setClipOn(true);
-      }}
-      onPointerLeave={() => setHovered(false)}
-    >
-      <span className="rs-card__media" data-photo={photo ? "" : undefined} style={style}>
+    <div className="rs-card" data-slug={artist.slug}>
+      <div className="rs-card__media" data-photo={photo ? "" : undefined} style={style}>
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             className="rs-card__img"
             src={photo.src}
             srcSet={photo.srcSet}
-            sizes={wide ? "(min-width: 768px) 400px, 100vw" : "(min-width: 768px) 400px, 50vw"}
+            sizes={tileSizes(artist.zoom ?? 1)}
             alt=""
             width={600}
             height={600}
@@ -187,15 +183,36 @@ function Card({ act, crop, dialogId, wide, onOpen }: CardProps) {
           />
         )}
         {clipOn && artist.clip && <Clip src={artist.clip} play={hovered} />}
-      </span>
-      <span className="rs-card__plate">
-        <span className="k-name rs-card__name">{artist.name}</span>
+      </div>
+      <div className="rs-card__plate" aria-hidden="true">
+        <span className="k-name rs-card__name">
+          {tileWords(artist.name).map((w, i) => (
+            <Fragment key={i}>
+              {i > 0 && " "}
+              <span className="rs-card__word">{w}</span>
+            </Fragment>
+          ))}
+        </span>
         <ArrowRight className="rs-card__arrow" size={16} />
-      </span>
-      <span className="w-sr-only">
-        , Day {act.day}. {artist.bio ? "Read bio" : "Bio to be announced"}
-      </span>
-    </button>
+      </div>
+      <button
+        type="button"
+        className="rs-card__hit"
+        aria-haspopup="dialog"
+        aria-controls={dialogId}
+        onClick={(e) => onOpen(artist.slug, e.currentTarget)}
+        onPointerEnter={(e) => {
+          if (e.pointerType !== "mouse") return;
+          setHovered(true);
+          if (artist.clip) setClipOn(true);
+        }}
+        onPointerLeave={() => setHovered(false)}
+      >
+        <span className="w-sr-only">
+          {artist.name}, Day {act.day}. {artist.bio ? "Read bio" : "Bio to be announced"}
+        </span>
+      </button>
+    </div>
   );
 }
 
@@ -203,36 +220,44 @@ function Card({ act, crop, dialogId, wide, onOpen }: CardProps) {
 function Mystery() {
   return (
     <div className="rs-card rs-card--tba">
-      <span className="rs-card__media rs-tba" aria-hidden="true">
+      <div className="rs-card__media rs-tba" aria-hidden="true">
         <span className="rs-tba__marks">???</span>
-      </span>
-      <span className="rs-card__plate">
+      </div>
+      <div className="rs-card__plate">
         <span className="k-label rs-tba__label">To be revealed</span>
-      </span>
+      </div>
     </div>
   );
 }
 
-/** A muted loop over the photo: visible only once it is actually playing; unloaded on unmount. */
+/**
+ * A muted loop over the photo (fine pointers, while hovered). It stays transparent until it is actually
+ * playing, so a clip that is blocked, still loading or failed never covers the photo; if play() is
+ * refused the photo simply stays (no retry on a later tap: that tap opens the bio). Unloaded on unmount.
+ */
 function Clip({ src, play }: { src: string; play: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
+  // First (effects run in order): the source is (re)attached before play() below. Unmount unloads it;
+  // a remount of the same element (React's dev double-run) puts it back.
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    if (!v.getAttribute("src")) v.setAttribute("src", src);
+    return () => {
+      v.pause();
+      v.removeAttribute("src");
+      v.load();
+    };
+  }, [src]);
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
     if (play) {
       v.currentTime = 0;
-      playWithRescue(v);
+      v.play()?.catch(() => {});
     } else v.pause();
   }, [play]);
-  useEffect(() => {
-    const v = ref.current;
-    return () => {
-      if (!v) return;
-      v.pause();
-      v.removeAttribute("src");
-      v.load();
-    };
-  }, []);
+  const off = (e: SyntheticEvent<HTMLVideoElement>) => e.currentTarget.removeAttribute("data-playing");
   return (
     <video
       ref={ref}
@@ -247,7 +272,9 @@ function Clip({ src, play }: { src: string; play: boolean }) {
       tabIndex={-1}
       aria-hidden="true"
       onPlaying={(e) => e.currentTarget.setAttribute("data-playing", "")}
-      onPause={(e) => e.currentTarget.removeAttribute("data-playing")}
+      onPause={off}
+      onEmptied={off}
+      onError={off}
     />
   );
 }

@@ -20,28 +20,33 @@ interface MerchCardProps {
 /**
  * One product card, the roster's card in colour: the back print on its black ground over a dark name
  * plate. Pressing it puts the product in the preview. Selected = a lit edge and the red mark along its
- * foot (merch.css).
+ * foot (merch.css). The card is plain boxes; the press target is a transparent <button> laid over it at
+ * an explicit size, because iOS Safari does not stretch a <button>'s children across it (a photo box
+ * inside the button came out 0 tall). Same construction as the roster's tiles.
  */
 export const MerchCard = memo(function MerchCard({ item, i, selected, controls, onSelect }: MerchCardProps) {
   // Intent (hover, press, focus) starts fetching this product's preview photographs.
   const warm = () => warmPreview(item.back, item.front);
   return (
-    <button
-      type="button"
-      className="mx-card"
-      aria-pressed={selected}
-      aria-controls={controls}
-      onPointerEnter={warm}
-      onPointerDown={warm}
-      onFocus={warm}
-      onClick={() => onSelect(i)}
-    >
-      <span className="mx-card__media">
+    <div className="mx-card" data-selected={selected || undefined}>
+      <div className="mx-card__media">
         <ProductImage src={item.back} sizes={SIZES} alt="" />
-      </span>
-      <span className="mx-card__plate">
+      </div>
+      <div className="mx-card__plate" aria-hidden="true">
         <span className="k-name mx-card__name">{item.name}</span>
-      </span>
-    </button>
+      </div>
+      <button
+        type="button"
+        className="mx-card__hit"
+        aria-pressed={selected}
+        aria-controls={controls}
+        onPointerEnter={warm}
+        onPointerDown={warm}
+        onFocus={warm}
+        onClick={() => onSelect(i)}
+      >
+        <span className="w-sr-only">{item.name}</span>
+      </button>
+    </div>
   );
 });

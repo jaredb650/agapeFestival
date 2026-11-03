@@ -246,6 +246,13 @@ export interface NamedArtist {
    * (default "50% 30%"). Set it when the subject sits off-centre in a 9:16 clip.
    */
   splashFocus?: string;
+  /**
+   * Where the face sits in the headshot, as a CSS position ("48% 32%"). The roster's square tile and the
+   * bio photo crop around it (object-position), and the tile zooms in on it. Default "50% 28%".
+   */
+  focus?: string;
+  /** How far the roster's square tile zooms in on `focus` (1 = the whole photo). Default 1. */
+  zoom?: number;
   socials?: ArtistSocial[];
 }
 
@@ -309,6 +316,9 @@ const NAMED_ARTISTS: NamedArtist[] = [
     headshotLarge: `${WINTER_ARTIST_DIR}/flash-gea/headshot-1200.webp`,
     clip: `${WINTER_ARTIST_DIR}/flash-gea/clip.mp4`,
     clipPoster: `${WINTER_ARTIST_DIR}/flash-gea/clip-poster.webp`,
+    // The press shot is wide (a whole graffiti wall): the tile closes in on his face and folded arms.
+    focus: "48% 32%",
+    zoom: 1.5,
     socials: [{ platform: "Instagram", url: "https://www.instagram.com/flash.gea/", handle: "@flash.gea" }],
   },
   pending("cara-elizabeth", "Cara Elizabeth", "CARA ELIZABETH", 2),

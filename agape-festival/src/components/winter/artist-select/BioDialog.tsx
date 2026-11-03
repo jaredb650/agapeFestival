@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, type CSSProperties, type KeyboardEvent, type RefObject } from "react";
 import { ArrowRight, ArrowUpRight, CloseIcon } from "@/components/winter/ui";
 import { photoSet, type Act, type RosterDay } from "./acts";
 import { originOf, popClose, popOpen } from "./popout";
@@ -164,9 +164,11 @@ export function BioDialog({ id, act, day, open, anchorRef, venue, reduced, onClo
 
           <div className="rs-body">
             {photo && (
-              <div key={`photo-${artist.slug}`} className="rs-photo">
+              <div key={`photo-${artist.slug}`} className="rs-photo" style={{ "--focus": artist.focus } as CSSProperties}>
+                {/* The frame is taller than it is wide (4:5 on phones, the panel's height beside the text), so a
+                    square photo covers it at its height: 125vw / 640px. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 768px) 420px, 100vw" alt={artist.name} decoding="async" />
+                <img src={photo.src} srcSet={photo.srcSet} sizes="(min-width: 768px) 640px, 125vw" alt={artist.name} decoding="async" />
               </div>
             )}
             <div key={artist.slug} className="rs-text">

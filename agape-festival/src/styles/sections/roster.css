@@ -1,10 +1,19 @@
 /* ==========================================================================
    THE ROSTER (page/ArtistSelectSection.tsx, artist-select/*), classic.
    The September site's artist cards, refined: per day a stage heading
-   between hairlines, then a grid of cards (2 across on phones, 3 from
-   768px). A card = a 4:5 photo graded to black and white over a dark name
-   plate in Orbitron. The bio is a <dialog> that pops out of the card.
-   Classes rs-*. Motion: transform and opacity only; one curve (--m-ease).
+   between hairlines, then a grid of tiles (2 across on phones, 3 from
+   768px), every one the same size. A tile = a square photo graded to
+   black and white over a dark name plate in Orbitron. The bio is a
+   <dialog> that pops out of the tile. Classes rs-*. Motion: transform
+   and opacity only; one curve (--m-ease).
+
+   Built so it cannot collapse (iOS Safari): the tile is plain boxes, the
+   press target a transparent <button> laid over it at an explicit size.
+   iOS does not stretch a <button>'s children across it (they shrink to
+   their content), so a photo box sized by aspect-ratio inside the button
+   came out 0 wide and 0 tall and only the plate showed. The square is
+   height 0 + padding-bottom 100% (padding resolves against the tile's
+   width): it never depends on aspect-ratio or on a button's layout.
    ========================================================================== */
 
 .rs-day + .rs-day { margin-top: var(--group-gap); }
@@ -12,6 +21,8 @@
 .rs-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Every row as tall as the tallest: a name that wraps never makes one row of tiles taller than another. */
+  grid-auto-rows: 1fr;
   gap: var(--card-gap);
   margin: 0;
   padding: 0;
@@ -21,36 +32,55 @@
   .rs-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .rs-cell { display: flex; min-width: 0; }
-/* Phones, an odd count: the first card takes the full width (a 4:3 crop, so it stays one screen). */
-@media (max-width: 767.98px) {
-  .rs-cell[data-wide] { grid-column: 1 / -1; }
-  .rs-cell[data-wide] .rs-card__media { aspect-ratio: 4 / 3; }
-}
 
-/* ---- A card ------------------------------------------------------------ */
+/* ---- A tile ------------------------------------------------------------ */
 .rs-card {
   position: relative;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   width: 100%;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 1px solid var(--c-line);
   background: var(--c-plate);
   color: var(--c-text);
   text-align: start;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
   transition: transform var(--m-dur-1) var(--m-ease), border-color var(--m-dur-1) var(--m-ease);
 }
-.rs-card:active { transform: scale(0.985); }
-.rs-card:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
+.rs-card:not(.rs-card--tba):active { transform: scale(0.985); }
+
+/* The press target: the whole tile, border included. Holds only screen-reader text. */
+.rs-card__hit {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  z-index: 3;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rs-card__hit:focus-visible { outline: 2px solid var(--c-focus); outline-offset: 2px; }
 
 .rs-card__media {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 5;
+  flex: none;
+  width: 100%;
+  /* The square: padding % is a share of the tile's width, so the box is always as tall as it is wide. */
+  height: 0;
+  padding-bottom: 100%;
   overflow: hidden;
   /* No photo yet: a crop of the thread texture (its own ground is #080808), held well down by ::before. */
   background-color: #080808;
@@ -58,9 +88,6 @@
   background-size: 380% auto;
   background-position: var(--crop, 50% 50%);
   background-repeat: no-repeat;
-}
-@media (min-width: 768px) {
-  .rs-card__media { aspect-ratio: 4 / 3; }
 }
 .rs-card__media[data-photo] { background-image: none; }
 .rs-card__media:not([data-photo])::before {
@@ -83,7 +110,8 @@
 .rs-card__img,
 .rs-card__clip {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -92,21 +120,34 @@
   filter: grayscale(1) contrast(1.08) brightness(0.86);
   transition: transform 700ms var(--m-ease);
 }
+/* Per act (winter.ts focus / zoom): where the face is, and how far the square closes in on it. */
+.rs-card__img {
+  object-position: var(--focus, 50% 28%);
+  transform-origin: var(--focus, 50% 28%);
+  transform: scale(var(--zoom, 1));
+}
+/* The clip stays transparent until it is actually playing: blocked, loading or failed, the photo shows. */
 .rs-card__clip { z-index: 1; opacity: 0; transition: opacity var(--m-dur-2) var(--m-ease), transform 700ms var(--m-ease); }
 .rs-card__clip[data-playing] { opacity: 1; }
 
 .rs-card__plate {
   position: relative;
+  /* Takes whatever height the row gives the tile beyond the square. */
+  flex: 1 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
-  min-height: var(--plate-h);
+  /* Room for a name on two lines on every plate (+ the 1px top border and rounding), so a wrapped name
+     never changes a tile's size. */
+  min-height: max(var(--plate-h), calc(2.5 * var(--t-name) + 2 * var(--s-3) + 2px));
   padding: var(--s-3) var(--s-4);
   border-top: 1px solid var(--c-line);
   transition: background-color var(--m-dur-1) var(--m-ease);
 }
 .rs-card__name { min-width: 0; overflow-wrap: break-word; transition: color var(--m-dur-1) var(--m-ease); }
+/* A name wraps between its words first; a word wider than the plate alone breaks at its soft hyphen (acts.ts). */
+.rs-card__word { display: inline-block; max-width: 100%; }
 .rs-card__arrow {
   flex: none;
   color: var(--c-text-3);
@@ -119,36 +160,42 @@
   .rs-card__arrow { opacity: 1; transform: none; }
 }
 @media (hover: hover) and (pointer: fine) {
-  .rs-card:hover { border-color: var(--c-line-2); }
-  .rs-card:hover .rs-card__img,
+  .rs-card:not(.rs-card--tba):hover { border-color: var(--c-line-2); }
+  .rs-card:hover .rs-card__img { transform: scale(calc(var(--zoom, 1) * 1.035)); }
   .rs-card:hover .rs-card__clip { transform: scale(1.035); }
-  .rs-card:hover .rs-card__media::after { opacity: 0.55; }
-  .rs-card:hover .rs-card__plate { background-color: var(--c-plate-hi); }
+  .rs-card:not(.rs-card--tba):hover .rs-card__media::after { opacity: 0.55; }
+  .rs-card:not(.rs-card--tba):hover .rs-card__plate { background-color: var(--c-plate-hi); }
   .rs-card:hover .rs-card__name { color: var(--c-text-hi); }
   .rs-card:hover .rs-card__arrow { opacity: 1; transform: none; color: var(--c-text-hi); }
 }
 @media (max-width: 767.98px) {
-  .rs-card__plate { padding: var(--s-2) var(--s-3); }
+  .rs-card__plate {
+    gap: var(--s-2);
+    min-height: max(var(--plate-h), calc(2.5 * var(--t-name) + 2 * var(--s-2) + 2px));
+    padding: var(--s-2) var(--s-3);
+  }
 }
 
 /* ---- The acts still to come: dark, the red question marks ---------------- */
-.rs-card--tba { cursor: default; border-color: rgba(139, 0, 0, 0.28); }
-.rs-card--tba:active { transform: none; }
-.rs-tba {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.rs-card--tba { border-color: rgba(139, 0, 0, 0.28); }
+.rs-card__media.rs-tba {
   background-color: #070707;
   background-image: none;
 }
-.rs-tba::after { display: none; }
+.rs-card__media.rs-tba::after { display: none; }
 .rs-tba__marks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The tracking also follows the last mark: the same on the left keeps the three visually centred. */
+  padding-left: 0.24em;
   font-family: var(--f-display);
   font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.24em;
-  margin-right: -0.24em;
   color: var(--c-red-ink);
 }
 .rs-tba__label { color: var(--c-text-3); }
@@ -270,7 +317,8 @@ html.rs-lock { overflow: hidden; }
   overscroll-behavior: contain;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-.rs-photo { position: relative; aspect-ratio: 4 / 5; max-height: 58vh; width: 100%; overflow: hidden; background: #080808; }
+/* Phones: 4:5 by an explicit height (no aspect-ratio), at most 58% of the screen. */
+.rs-photo { position: relative; width: 100%; height: min(125vw, 58vh); overflow: hidden; background: #080808; }
 .rs-photo img {
   position: absolute;
   inset: 0;
@@ -278,7 +326,7 @@ html.rs-lock { overflow: hidden; }
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 50% 28%;
+  object-position: var(--focus, 50% 28%);
   filter: grayscale(1) contrast(1.08) brightness(0.9);
 }
 .rs-text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-5); padding: var(--s-8) var(--s-5) var(--s-10); }
@@ -332,7 +380,7 @@ html.rs-lock { overflow: hidden; }
 @media (min-width: 768px) {
   .rs-bar { padding-left: var(--s-6); }
   .rs-body { display: flex; overflow: hidden; }
-  .rs-photo { flex: 0 0 40%; aspect-ratio: auto; max-height: none; height: auto; border-right: 1px solid var(--c-line); }
+  .rs-photo { flex: 0 0 40%; max-height: none; height: auto; border-right: 1px solid var(--c-line); }
   .rs-text { flex: 1 1 auto; min-width: 0; min-height: 0; padding: var(--s-10) var(--s-10) var(--s-10); overflow: hidden; }
   .rs-bio {
     flex: 1 1 auto;

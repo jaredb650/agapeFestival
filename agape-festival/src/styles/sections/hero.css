@@ -146,8 +146,9 @@
 @media (prefers-reduced-motion: no-preference) {
   /* On the text-free logo box, so the preloader (which already revealed the logo) can find and skip it. */
   .wh__logo-box { animation: wh-logo-in 0.8s 0.15s both; }
-  .wh__edition span { animation: wh-type 0.85s steps(14, end) 0.75s both; }
-  .wh__date span { animation: wh-type 0.6s steps(9, end) 1.45s both; }
+  /* `backwards`, not `both`: Safari ends steps(9) one step short and held that clip, cutting the "0" off "Feb 19–20". */
+  .wh__edition span { animation: wh-type 0.85s steps(14, end) 0.75s backwards; }
+  .wh__date span { animation: wh-type 0.6s steps(9, end) 1.45s backwards; }
   .wh__reveal { animation: wh-quiet-in 1s 1.9s both; }
   .wh__frame, .wh__meta, .wh__next { animation: wh-quiet-in 1.5s 2.2s both; }
   .wh__next svg { animation: wh-pixel-down 2.2s ease-in-out infinite; }

@@ -1,8 +1,11 @@
-// The kit's CSS first, so section stylesheets (imported by their components below) can build on it.
+// The kits' CSS first, so section stylesheets (imported by their components below) can build on it. The
+// grid kit stays until phase 2 has moved every section to the classic kit (classic.css, loaded last).
 import "@/styles/winter.css";
 import "@/styles/grid.css";
 import "@/styles/winter-page.css";
+import "@/styles/classic.css";
 import { preload } from "react-dom";
+import { RevealObserver } from "@/components/winter/classic";
 import { winterFontVariables } from "@/components/winter/fonts";
 import { Gap } from "@/components/winter/grid";
 import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
@@ -84,10 +87,10 @@ export default function Home() {
           <FlyerSection />
           <div className="wposter__scan" aria-hidden="true" />
         </div>
-        {/* The grid: every section is a stack of rows of cells; a gap band separates sections. */}
+        {/* Classic sections (components/winter/classic): each draws its own hairline and padding. */}
         {SHOW_ARTIST_SELECT && <ArtistSelectSection />}
-        {SHOW_ARTIST_SELECT && <Gap />}
         <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
+        {/* Grid sections, until phase 2 moves them to the classic kit: a gap band separates them. */}
         <Gap />
         <Tickets />
         <Gap />
@@ -101,6 +104,7 @@ export default function Home() {
         <Gap />
       </main>
       <Footer links={NAV_LINKS} />
+      <RevealObserver />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </div>
   );

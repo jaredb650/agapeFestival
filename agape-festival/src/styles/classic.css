@@ -1,0 +1,213 @@
+/* ==========================================================================
+   ÄGAPĒ WINTER — CLASSIC REFINED (Nov 2026)
+
+   The September 2026 site's look, executed with more care: Orbitron for
+   titles, names and short caps labels; Archivo for reading; black, white and
+   deep red; dark plates and translucent panels over the background loop;
+   fading hairlines between sections; editorial layout with real breathing
+   room. No cell grid.
+
+   Guide (tokens, rules, recipes): context/winter-redesign/classic-brief.md.
+   Components: src/components/winter/classic/ (Section, StageHeading,
+   RevealObserver), the Button (ui/Button.tsx) restyled below.
+
+   Load order (page.tsx): winter.css → grid.css → winter-page.css → this
+   file → section stylesheets. The grid kit (grid.css, --g-*, --c-fg*,
+   --c-rule*, --t-display, --t-title) stays only until every section has been
+   moved over (phase 2); new code never uses it.
+
+   The hero, the flyer layover and the preloader are frozen: nothing here
+   may style them. Every rule is scoped to a classic class, and the Button
+   rules skip the hero's .wh__cta.
+   ========================================================================== */
+
+.winter {
+  /* ---- Colour ----------------------------------------------------------
+     Text roles (on black): text 16:1 · text-2 8.7:1 · text-3 5.0:1.
+     Shared with the old kit and unchanged: --c-ink, --c-red, --c-red-hover,
+     --c-mark, --c-focus. */
+  --c-text: #ececec;                        /* headings, names, values */
+  --c-text-hi: #fff;                        /* hover / current */
+  --c-text-2: #a8a8a8;                      /* reading text, leads */
+  --c-text-3: #7d7d7d;                      /* labels, meta, captions */
+  --c-line: rgba(255, 255, 255, 0.08);      /* hairlines: between sections, rows, plate edges */
+  --c-line-2: rgba(255, 255, 255, 0.18);    /* a control's outline, a hovered edge, the heading rule */
+  --c-plate: #0a0a0a;                       /* name plates, card bodies (solid) */
+  --c-plate-hi: #141414;                    /* a plate under the pointer */
+  --c-panel: rgba(8, 8, 8, 0.78);           /* a translucent panel over the footage */
+  --c-red-ink: #c0141b;                     /* red display text ("???"): large sizes only, 3.4:1 */
+
+  /* ---- Type ------------------------------------------------------------
+     Two families. Orbitron (display): section titles, sub-headings, artist
+     names and short caps labels (3 words max). Archivo (interface): every
+     sentence. Orbitron is a subset (load/fonts/orbitron.woff2): rerun
+     context/winter-redesign/media-scripts/p3_fonts.py after adding copy
+     with new characters. */
+  --f-display: var(--font-hud, "Orbitron"), var(--f-ui);
+  --t-h1: clamp(1.75rem, 1.29rem + 1.96vw, 2.75rem);    /* 28 → 44: section title */
+  --t-h2: clamp(1rem, 0.89rem + 0.47vw, 1.25rem);       /* 16 → 20: sub-heading, a day */
+  --t-name: clamp(0.875rem, 0.82rem + 0.24vw, 1rem);    /* 14 → 16: a name on a plate */
+  --t-label: 0.75rem;                                   /* 12: caps label */
+  /* Archivo sizes are the existing --t-lead (18 → 20), --t-body (16), --t-small (14). */
+
+  /* ---- Rhythm (4px steps; --s-1 … --s-32 as before) --------------------- */
+  --sec-y: 88px;            /* a section's top and bottom padding */
+  --sec-x: 20px;            /* page side padding */
+  --wrap: 1280px;           /* content max width */
+  --head-gap: 40px;         /* section heading → content */
+  --group-gap: 64px;        /* between groups inside a section (Day 1 → Day 2) */
+  --card-gap: 12px;         /* between cards in a grid */
+  --plate-h: 48px;          /* a name plate's height */
+  --row-h: 56px;            /* a list row's height */
+
+  /* ---- Motion (one curve: --m-ease; --m-dur-1/2/3 = 160/240/420ms) ------ */
+  --m-reveal: 640ms;        /* the one scroll entrance: fade + 16px rise */
+  --m-reveal-step: 50ms;    /* stagger between siblings, capped at 8 */
+}
+@media (min-width: 768px) {
+  .winter { --sec-y: 120px; --sec-x: 32px; --head-gap: 56px; --group-gap: 88px; --card-gap: 16px; --plate-h: 56px; --row-h: 64px; }
+}
+@media (min-width: 1024px) {
+  .winter { --sec-y: 152px; --sec-x: 48px; --head-gap: 64px; --group-gap: 104px; }
+}
+
+/* ==========================================================================
+   Type roles
+   ========================================================================== */
+.k-h1 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: var(--t-h1);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-text);
+  text-wrap: balance;
+}
+.k-h2 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: var(--t-h2);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-text);
+}
+.k-name {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: var(--t-name);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  color: var(--c-text);
+}
+.k-label {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+}
+.k-label--red { color: var(--c-mark); }
+.k-lead { margin: 0; max-width: 40em; font-size: var(--t-lead); line-height: 1.6; color: var(--c-text-2); text-wrap: pretty; }
+.k-body { margin: 0; max-width: 62ch; font-size: var(--t-body); line-height: 1.65; color: var(--c-text-2); text-wrap: pretty; }
+.k-small { margin: 0; font-size: var(--t-small); line-height: 1.5; color: var(--c-text-3); }
+
+/* ==========================================================================
+   Section shell (classic/Section.tsx). Padding gives the rhythm; a fading
+   hairline marks the top edge of every section (the September SectionLine).
+   ========================================================================== */
+.k-sec {
+  position: relative;
+  z-index: var(--z-content, 1);
+  padding: var(--sec-y) var(--sec-x);
+}
+.k-sec::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--c-line) 20%, var(--c-line) 80%, transparent);
+  pointer-events: none;
+}
+.k-wrap { max-width: var(--wrap); margin-inline: auto; }
+
+/* The heading block: title, a 48px rule, an optional lead. */
+.k-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-5); margin-bottom: var(--head-gap); }
+.k-head__rule { width: 48px; height: 1px; background: var(--c-line-2); }
+.k-head[data-align="center"] { align-items: center; text-align: center; }
+/* Tracked caps carry the tracking after the last letter: pull it back so centred titles sit centred. */
+.k-head[data-align="center"] .k-h1 { margin-right: -0.06em; }
+
+/* A sub-group heading centred between two fading hairlines (the September stage headers). */
+.k-stage { display: flex; align-items: center; gap: var(--s-5); margin-bottom: var(--s-8); }
+.k-stage__line { flex: 1 1 0; height: 1px; background: linear-gradient(90deg, transparent, var(--c-line-2)); }
+.k-stage__line:last-child { background: linear-gradient(90deg, var(--c-line-2), transparent); }
+.k-stage__text { flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--s-1); text-align: center; }
+.k-stage__text .k-label { margin-right: -0.2em; }
+.k-stage__text .k-h2 { margin-right: -0.08em; }
+
+/* A panel over the footage: long text, a form, a map. */
+.k-panel { background: var(--c-panel); border: 1px solid var(--c-line); }
+
+/* ==========================================================================
+   Button (ui/Button.tsx), classic. Flat rectangles, Orbitron caps.
+   Primary = deep red fill; secondary = hairline outline; link = Archivo
+   text with an underline. No glow, no ticks, no radius. The hero's frozen
+   Get tickets (.wh__cta) is excluded.
+   ========================================================================== */
+.w-btn:not(.wh__cta) {
+  font-family: var(--f-display);
+  font-size: var(--t-label);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 0 var(--s-8);
+}
+.w-btn:not(.wh__cta) .w-btn__label { margin-right: -0.16em; }
+.w-btn:not(.wh__cta)[data-size="sm"] { padding: 0 var(--s-5); }
+.w-btn:not(.wh__cta)[data-size="lg"] { padding: 0 var(--s-10); font-size: 0.8125rem; }
+.w-btn:not(.wh__cta)[data-variant="secondary"] { border-color: var(--c-line-2); }
+@media (hover: hover) and (pointer: fine) {
+  .w-btn:not(.wh__cta)[data-variant="secondary"]:hover { border-color: var(--c-text-3); background-color: rgba(255, 255, 255, 0.04); }
+}
+.w-btn:not(.wh__cta)[data-variant="link"] {
+  padding: 0;
+  font-family: var(--f-ui);
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--c-text-2);
+  text-decoration-color: var(--c-line-2);
+}
+.w-btn:not(.wh__cta)[data-variant="link"] .w-btn__label { margin-right: 0; }
+
+/* ==========================================================================
+   The one scroll entrance (classic/RevealObserver.tsx). Put data-reveal on
+   a container: its children fade and rise 16px, 50ms apart, once, as it
+   enters. Content is visible if JS never runs (the observer sets "wait"
+   only on containers still below the fold). Reduced motion: none.
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal="wait"] > * { opacity: 0; transform: translateY(16px); }
+  [data-reveal="in"] > * {
+    transition: opacity var(--m-reveal) var(--m-ease), transform var(--m-reveal) var(--m-ease);
+  }
+  [data-reveal="in"] > :nth-child(2) { transition-delay: calc(1 * var(--m-reveal-step)); }
+  [data-reveal="in"] > :nth-child(3) { transition-delay: calc(2 * var(--m-reveal-step)); }
+  [data-reveal="in"] > :nth-child(4) { transition-delay: calc(3 * var(--m-reveal-step)); }
+  [data-reveal="in"] > :nth-child(5) { transition-delay: calc(4 * var(--m-reveal-step)); }
+  [data-reveal="in"] > :nth-child(6) { transition-delay: calc(5 * var(--m-reveal-step)); }
+  [data-reveal="in"] > :nth-child(7) { transition-delay: calc(6 * var(--m-reveal-step)); }
+  [data-reveal="in"] > :nth-child(n + 8) { transition-delay: calc(7 * var(--m-reveal-step)); }
+}

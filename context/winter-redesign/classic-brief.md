@@ -126,8 +126,8 @@ Press is `scale(0.97–0.985)`. Hover rules go inside `@media (hover: hover) and
 ## The kit
 
 ```tsx
-import { Section, StageHeading } from "@/components/winter/classic";
-import { Button, ArrowRight, ArrowUpRight, CloseIcon, MenuIcon } from "@/components/winter/ui";
+import { Section, StageHeading, Button, IconButton, CloseButton, Segmented, TabRail } from "@/components/winter/classic";
+import { ArrowRight, ArrowUpRight, CloseIcon, MenuIcon } from "@/components/winter/ui";
 ```
 
 - **`<Section id title intro? align?>`** renders a `<section class="k-sec">` with:
@@ -139,14 +139,33 @@ import { Button, ArrowRight, ArrowUpRight, CloseIcon, MenuIcon } from "@/compone
   Keep the ids (the nav finds `main > section[id]`). Titles are as the nav names them, set in caps by CSS. `align="center"` is for short sections that have one block of content.
 - **`<StageHeading label="Day 1" red>Friday, February 19</StageHeading>`** is a centred sub-heading between two fading hairlines.
 - **`data-reveal` on a container** makes its children fade and rise 16px, 50ms apart, once, as the container enters the viewport (`RevealObserver`, mounted in page.tsx). Content is visible without JS. Use it once or twice per section, on the heading (automatic) and the main list or grid. Don't use it on single small elements.
-- **`Button`** (`ui/Button.tsx`, `.w-btn`) is restyled by classic.css:
-  - **Primary:** flat `#8b0000`, Orbitron 600 caps 12px, 0.16em tracking. One per view.
-  - **Secondary:** a 1px `--c-line-2` outline.
-  - **Link:** Archivo with an underline.
-  - No glow, ticks or radius. Sizes are sm 40, md 48 and lg 56 high.
-  - The hero's Get tickets (`.wh__cta`) is excluded on purpose.
+- **Controls** (`Button`, `IconButton`, `CloseButton`, `Segmented`, `TabRail`): see "Controls" below. `ui/Button` (`.w-btn`) is the frozen hero's Get tickets only; don't use it in sections.
 - **`.k-panel`** is a dark translucent panel with a hairline. Use it behind long text, a form or a map over the footage.
 - **Icons:** `ui/icons.tsx` (1.5 stroke, square caps, `currentColor`, 16/20px). Don't use emoji or Unicode arrows.
+
+## Controls (Nov 3, branch `classic-buttons`)
+
+Every button, toggle and tab below the hero is one family: `components/winter/classic/{Button,IconButton,Segmented,TabRail}.tsx`, styled by `styles/kit/buttons.css` (imported by page.tsx after classic.css). Showcase with every variant x state x size: `/kit/buttons` (preview builds only, noindex).
+
+| Control | Look | Use |
+|---|---|---|
+| `Button variant="primary"` | `#8b0000` fill, white Orbitron 600 caps; hover `#a00000` | The one action a view exists for: Get tickets. sm 40 (the bar), lg 56 (a section CTA, the menu) |
+| `Button variant="secondary"` | `--c-plate` with a `--c-line-2` hairline (the card's material); hover `--c-plate-hi` + `--c-text-3` edge | Every other boxed action: Lockers, directions, socials (`meta="@handle"` adds the handle in Archivo) |
+| `Button variant="ghost"` | Orbitron caps + arrow, no box, `--c-text-2` | "View all →", footer section links, Back to top |
+| `Button variant="link"` | Archivo, `--c-text-2`; `underline` beside running text | Handles, emails, FAQ answer links. Inside a sentence use the inline `.k-link` class instead |
+| `IconButton` plain / outline / red | One glyph in a square: sm 36, md 44, lg 56 | Previous / next (outline), toggles with `aria-pressed` (sound, play) |
+| `CloseButton` | The red square with an X | **Close, everywhere**: the bio pop-out, the menu, any future panel or dialog |
+| `Segmented` | Equal cells between hairlines, a red mark slides to the choice | A small set of exclusive values changed in place: a side, a day, a size (`disabled` = struck through) |
+| `TabRail` | Icon tiles (glyph over an Orbitron label), the chosen tile lifts, glyph red, red foot bar (`--kt-mark`) | Options that each show their own panel: Getting here's ways in (tablist semantics, arrows move and pick) |
+
+Rules:
+- States everywhere: hover on fine pointers only (colour / plate step; arrows nudge 3px), press `scale(0.97)` (0.94 on a small square, 0.98 on a tile) 100ms in / 160ms out, a 2px white `:focus-visible` ring, disabled (bare hairline, muted text), `loading` (label dims, a hairline runs along the foot, `aria-busy`), selected (`aria-pressed` / `aria-current` / `aria-selected`: white + a red mark along the foot).
+- Touch: 44px targets at every size; a smaller box grows an invisible `::before`.
+- `href` renders `<a>`; `external` adds `target`/`rel`, the ↗ arrow and a screen-reader "(opens in a new tab)" (unless you pass an `aria-label`). Otherwise `<button type="button">`.
+- Retune with custom properties on your own class (`--kb-fg`, `--kb-bg`, `--kb-h`, `--kt-cols`, `--kt-mark`, ...): modifiers live in `:where()`, so one section class wins and the states follow.
+- Nothing inside a control is laid out by stretching (iOS Safari doesn't stretch a `<button>`'s children).
+- Reduced motion: colours still change; no scale, nudge or sliding marks; the loading hairline stands still.
+- Not controls: list rows that are links (lineup names, the tickets venue row, FAQ questions, menu rows, nav links) and the roster / merch cards keep their own row and card patterns.
 
 ## Layout rules
 
@@ -218,7 +237,7 @@ These must look and behave exactly as they do now:
 - **The hero:** `Hero.tsx`, `HeroBits.tsx`, `sections/hero.css`, and the `.wh` block plus `.wh .w-btn.wh__cta` in `winter.css`.
 - **The flyer layover:** `FlyerSection.tsx`, `FlyerStage.tsx`, and `.wposter` / `.wflyer` / `.wbg` in `winter-page.css`.
 
-Every classic rule is scoped to a classic class, and the Button rules use `.w-btn:not(.wh__cta)`.
+Every classic rule is scoped to a classic class. The controls use `.k-*` classes, so the hero's `.w-btn.wh__cta` is never matched.
 
 Before and after a change, screenshot the hero and the flyer at 0, 0.5, 1.4, 2.4, 2.9 and 3.5 viewport heights, at 390 and 1440. Diff them below the nav.
 

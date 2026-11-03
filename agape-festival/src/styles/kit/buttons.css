@@ -158,13 +158,13 @@
   --kb-track: 0em;
   gap: var(--s-2);
   font-family: var(--f-ui);
-  font-weight: 500;
+  font-weight: 400;
   text-transform: none;
   text-align: start;
   white-space: normal;
   overflow-wrap: anywhere;
 }
-.k-btn:where([data-variant="link"][data-size="sm"]) { --kb-fs: var(--t-small); }
+.k-btn:where([data-variant="link"][data-size="sm"]) { --kb-fs: var(--t-small); font-weight: 500; }
 .k-btn:where([data-variant="link"][data-size="lg"]) { --kb-fs: var(--t-lead); }
 .k-btn:where([data-underline]) {
   text-decoration: underline;

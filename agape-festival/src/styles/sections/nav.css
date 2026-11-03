@@ -42,7 +42,18 @@
   opacity: 0;
   transition: opacity var(--m-dur-2) var(--m-ease);
 }
-.wnav__bar::before { inset: 0; z-index: -1; background: rgba(0, 0, 0, 0.86); }
+/* Solid once the page moves: near-opaque black over a blur, so headings scrolling under the bar never read
+   through it (at 86% they did). Without backdrop-filter, a flat 97% black. */
+.wnav__bar::before {
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in srgb, var(--c-ink) 90%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wnav__bar::before { background: color-mix(in srgb, var(--c-ink) 97%, transparent); }
+}
 .wnav__bar::after { bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--c-line-2) 20%, var(--c-line-2) 80%, transparent); }
 .wnav[data-scrolled] .wnav__bar::before,
 .wnav[data-scrolled] .wnav__bar::after { opacity: 1; }

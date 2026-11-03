@@ -4,7 +4,7 @@ import type { SyntheticEvent } from "react";
 // to browsers that take them), so one URL gives a full srcset. All are ~6:5 on a pure black ground.
 const WIDTHS = [400, 800, 1200, 1600];
 
-/** The preview's slot: six of twelve columns from 768px, the full width on phones. */
+/** The preview's slot: half the merch board from 768px (beside the cards), the full width on phones. */
 export const PREVIEW_SIZES = "(min-width: 768px) 50vw, 100vw";
 
 const withWidth = (url: string, w: number) => (/[?&]width=\d+/.test(url) ? url.replace(/([?&])width=\d+/, `$1width=${w}`) : `${url}${url.includes("?") ? "&" : "?"}width=${w}`);

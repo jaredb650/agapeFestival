@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState, type CSSProperties } from "react";
-import { Cell, LinkCell, Row } from "@/components/winter/grid";
+import { useCallback, useRef, useState } from "react";
 import { MerchCard } from "@/components/winter/page/MerchCard";
+import { ArrowUpRight, Button } from "@/components/winter/ui";
 import { Preview } from "./Preview";
 import type { Plate, Product, Side } from "./types";
 
@@ -13,12 +13,13 @@ const SIDES: { side: Side; label: string }[] = [
 ];
 
 /**
- * The merch board (one Row) and the shop row. From 768px: the preview on columns 1–6 with Front | Back
- * under it, the products two per line on columns 7–12. On phones: the preview, Front | Back, the products
- * two to a line, then the shop. Selecting a product puts it in the preview and on the shop link; the red
- * mark shows which product and which side are showing.
+ * The merch board and its shop links. From 768px the preview (with its plate: the product's name and
+ * Front | Back) sits beside the product cards, two by two, and stretches to their height; on phones the
+ * preview comes first, the cards two to a line under it. Selecting a product puts it in the preview and
+ * on the "Shop the …" link; the red marks show which product and which side are showing. Below, centred:
+ * that product's page, and the whole shop in red.
  */
-export function MerchViewer({ items }: { items: Product[] }) {
+export function MerchViewer({ items, shopUrl }: { items: Product[]; shopUrl: string }) {
   const [sel, setSel] = useState(0);
   const [side, setSide] = useState<Side>("back");
   const [plates, setPlates] = useState<Plate[]>([{ key: 0, i: 0 }]);
@@ -41,48 +42,60 @@ export function MerchViewer({ items }: { items: Product[] }) {
     setTouched(true);
   }, []);
 
-  const n = items.length;
-  const lines = Math.ceil(n / 2);
-  const board = { "--mx-span": lines * 2 - 1, "--mx-seg-row": lines * 2 } as CSSProperties;
   const item = items[sel];
+  // An odd count: the first card takes both columns, so the set still closes square.
+  const wideFirst = items.length % 2 === 1;
 
   return (
     <>
-      <Row className="mx-board" style={board}>
-        <Cell span={6} start={1} pad="none" className="mx-stage-cell">
-          <Preview id={PREVIEW_ID} items={items} plates={plates} side={side} onFlip={flip} onSettled={settle} />
+      <div className="mx-board">
+        <div className="mx-view">
+          <div className="mx-view__stage">
+            <Preview id={PREVIEW_ID} items={items} plates={plates} side={side} onFlip={flip} onSettled={settle} />
+          </div>
+          <div className="mx-view__plate">
+            <p className="k-name mx-view__name">{item.name}</p>
+            <div className="mx-sides" role="group" aria-label="Side shown">
+              {SIDES.map((s) => (
+                <button
+                  key={s.side}
+                  type="button"
+                  className="mx-sides__btn"
+                  data-side={s.side}
+                  aria-pressed={side === s.side}
+                  aria-controls={PREVIEW_ID}
+                  onClick={() => {
+                    setSide(s.side);
+                    setTouched(true);
+                  }}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <p className="w-sr-only" aria-live="polite">
             {touched ? `${item.name}, ${side}` : ""}
           </p>
-        </Cell>
-        {SIDES.map((s, k) => (
-          <Cell key={s.side} span={3} spanSm={2} start={1 + k * 3} pad="none" className="mx-seg" data-side={s.side}>
-            <button
-              type="button"
-              className="mx-seg__btn"
-              aria-pressed={side === s.side}
-              aria-controls={PREVIEW_ID}
-              onClick={() => {
-                setSide(s.side);
-                setTouched(true);
-              }}
-            >
-              {s.label}
-            </button>
-          </Cell>
-        ))}
-        {items.map((it, i) => (
-          <MerchCard key={it.href} item={it} i={i} selected={i === sel} controls={PREVIEW_ID} onSelect={select} />
-        ))}
-        {n % 2 === 1 && (
-          <Cell span={3} spanSm={2} start={10} className="mx-tile" style={{ "--mx-row": lines * 2 - 1 } as CSSProperties} aria-hidden="true" />
-        )}
-      </Row>
-      <Row>
-        <LinkCell href={item.href} external fx="wipe" size="title" h={2} y="center" className="mx-shop">
+        </div>
+        <ul className="mx-cards" aria-label="Products">
+          {items.map((it, i) => (
+            <li key={it.href} className="mx-cell" data-wide={(wideFirst && i === 0) || undefined}>
+              <MerchCard item={it} i={i} selected={i === sel} controls={PREVIEW_ID} onSelect={select} />
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="mx-actions">
+        <Button variant="secondary" href={item.href} external icon={<ArrowUpRight className="w-btn__icon" />}>
           Shop the {item.name}
-        </LinkCell>
-      </Row>
+          <span className="w-sr-only"> (opens in a new tab)</span>
+        </Button>
+        <Button variant="primary" href={shopUrl} external icon={<ArrowUpRight className="w-btn__icon" />}>
+          View all
+          <span className="w-sr-only"> merch in the shop (opens in a new tab)</span>
+        </Button>
+      </div>
     </>
   );
 }

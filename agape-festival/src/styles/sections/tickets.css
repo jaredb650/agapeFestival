@@ -92,3 +92,62 @@
 @media (max-width: 767px) {
   .tk-btn { width: 100%; }
 }
+
+/* ---- Promo code: the last row. The code is a quiet secondary button that copies itself
+   (PromoCode.tsx); its expiry sits beside it in small type. On a phone the two stack, right-aligned,
+   so the label keeps its side of the row. */
+.tk-row--promo { padding-block: var(--s-3); }
+.tk-promo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-1);
+  min-width: 0;
+  margin: 0;
+}
+@media (min-width: 480px) {
+  .tk-promo { flex-direction: row; align-items: center; gap: var(--s-4); }
+}
+.tk-code {
+  --kb-fs: 0.8125rem; /* 13: a touch over the sm label, it's the thing to read */
+  --kb-track: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+/* "Copied" takes the code's cell, so the button never changes width. */
+.tk-code__swap { display: inline-grid; }
+.tk-code__swap > * { grid-area: 1 / 1; text-align: center; }
+.tk-code__done { visibility: hidden; }
+.tk-code[data-copied] .tk-code__text { visibility: hidden; }
+.tk-code[data-copied] .tk-code__done { visibility: visible; }
+/* Copied reads as the kit's selected state: white glyph, the red mark along the foot. */
+.tk-code[data-copied] { --kb-fg: var(--c-text-hi); --kb-ic: var(--c-text-hi); --kb-bd: var(--c-text-3); }
+.tk-code[data-copied]::after { transform: scaleX(1); }
+.tk-promo__exp {
+  font-family: var(--f-ui);
+  font-size: var(--t-label);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--c-text-3);
+}
+
+/* ---- Afterpay: one quiet line under the button. The official white wordmark at 14px tall, the note
+   in small grey Archivo. Wraps under the mark on a phone rather than breaking mid-phrase. */
+.tk-pay {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2) var(--s-3);
+  margin: var(--s-5) 0 0;
+  font-family: var(--f-ui);
+  font-size: var(--t-label);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--c-text-3);
+  text-align: center;
+}
+.tk-pay__logo { display: block; flex: none; width: auto; height: 14px; }
+.tk-pay__note { text-wrap: balance; }

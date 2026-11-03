@@ -814,6 +814,22 @@ export const TICKETS = {
   url: WINTER.tickets.url,
   needsConfirm: WINTER.tickets.needsConfirm,
   confirmNote: WINTER.tickets.confirmNote,
+  /**
+   * The promo code row (a tap copies the code). PLACEHOLDERS (Nov 3): swap `code` and `expires` for the
+   * real ones, one line each. `expires` is shown exactly as written. Set `code` to null to hide the row.
+   */
+  promo: {
+    label: "Promo code",
+    code: "AGAPE00" as string | null, // PLACEHOLDER: the real DICE promo code
+    expires: "00/00/00", // PLACEHOLDER: the real expiry date (MM/DD/YY)
+    needsConfirm: true,
+    confirmNote: "TODO_CONFIRM: the real promo code and its expiry date (both are placeholders)" satisfies ConfirmNote,
+  },
+  /** The quiet pay-later line under Get tickets (client voice note, Nov 3): the Afterpay mark + this note. */
+  afterpay: {
+    logo: `${BASE_PATH}/assets/winter/afterpay-white.svg`, // official white wordmark, from static.afterpay.com
+    note: "Available at checkout · 4 interest-free installments",
+  },
 } as const;
 
 // ============================================================
@@ -891,6 +907,7 @@ export function pendingConfirmations(): { where: string; note: string }[] {
   };
   push("WINTER.venue", WINTER.venue);
   push("WINTER.tickets", WINTER.tickets);
+  push("TICKETS.promo", TICKETS.promo);
   push("WINTER.countdown", WINTER.countdown);
   FAQ.forEach((item) => push(`FAQ.${item.id}`, item));
   push("GETTING_HERE", GETTING_HERE);

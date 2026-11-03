@@ -2,6 +2,7 @@ import { Button, Section } from "@/components/winter/classic";
 import { sentenceCase } from "@/components/winter/nav/sections";
 import { ArrowRight } from "@/components/winter/ui";
 import { TICKETS, WINTER, WINTER_DAYS } from "@/data/winter";
+import { PromoCode } from "./PromoCode";
 import "@/styles/sections/tickets.css";
 
 /** "Friday, February 19, 2027" → "Friday, February 19". */
@@ -12,11 +13,13 @@ const dayDate = (dateLong: string) => dateLong.replace(/,\s*\d{4}$/, "");
  * background footage, standing on its own reflection (a flipped copy under a mask fade, CSS only, kept
  * from the grid version). Then the facts as hairline rows (the days, the venue, doors once announced) and
  * one red Get tickets to DICE. Tiers and prices aren't published here (TODO_CONFIRM in winter.ts); they
- * live on the DICE page, so the section names none. Server-rendered, no client JS.
+ * live on the DICE page, so the section names none. The last row is the promo code (a tap copies it: the
+ * one client island, PromoCode), and under the button a small Afterpay line. Otherwise server-rendered.
  */
 export function Tickets() {
   const { provider, url, cta } = WINTER.tickets;
   const title = sentenceCase(TICKETS.eyebrow);
+  const { promo, afterpay } = TICKETS;
 
   return (
     <Section
@@ -63,6 +66,15 @@ export function Tickets() {
               <dd className="tk-value">{WINTER.hours}</dd>
             </div>
           )}
+          {promo.code && (
+            <div className="tk-row tk-row--promo">
+              <dt className="k-label">{promo.label}</dt>
+              <dd className="tk-promo">
+                <PromoCode code={promo.code} />
+                <span className="tk-promo__exp">Expires {promo.expires}</span>
+              </dd>
+            </div>
+          )}
         </dl>
 
         <div className="tk-cta">
@@ -70,6 +82,12 @@ export function Tickets() {
             {cta}
           </Button>
         </div>
+
+        <p className="tk-pay">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a 3 KB SVG mark; static export, no optimiser */}
+          <img className="tk-pay__logo" src={afterpay.logo} width={72} height={14} alt="Afterpay" />
+          <span className="tk-pay__note">{afterpay.note}</span>
+        </p>
       </div>
     </Section>
   );

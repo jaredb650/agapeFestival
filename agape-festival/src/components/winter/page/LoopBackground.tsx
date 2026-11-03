@@ -6,6 +6,7 @@ import { BG_GLITCH_EVENT } from "./events";
 import { playWithRescue } from "./GestureRescue";
 import { afterLoadIdle } from "./idle";
 import type { BgMedia } from "./media";
+import { onLayoutResize } from "./viewport";
 
 /**
  * The page-wide background (grid redesign): the tower footage as a plain muted LOOP with a gentle
@@ -221,7 +222,9 @@ export function LoopBackground({ media }: { media: BgMedia }) {
     measure();
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", remeasure, { passive: true });
+    // Not on the iOS toolbar's height-only resizes: they fire mid-scroll, measure() forces a layout, and
+    // every position it reads is in lvh/document space, which the toolbar never moves.
+    const offResize = onLayoutResize(remeasure);
     document.addEventListener("visibilitychange", syncPlayback);
     // Layout settles after fonts, lazy media and late sections.
     let roTimer = 0;
@@ -240,7 +243,7 @@ export function LoopBackground({ media }: { media: BgMedia }) {
       clearTimeout(roTimer);
       ro.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", remeasure);
+      offResize();
       document.removeEventListener("visibilitychange", syncPlayback);
       v?.removeEventListener("loadeddata", syncPlayback);
       box.style.transform = "";

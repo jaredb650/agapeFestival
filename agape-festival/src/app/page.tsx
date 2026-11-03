@@ -1,13 +1,11 @@
-// The kits' CSS first, so section stylesheets (imported by their components below) can build on it. The
-// grid kit stays until phase 2 has moved every section to the classic kit (classic.css, loaded last).
+// The kits' CSS first, so section stylesheets (imported by their components below) can build on it:
+// base tokens and the button, the page frame, then the classic kit (classic.css, loaded last).
 import "@/styles/winter.css";
-import "@/styles/grid.css";
 import "@/styles/winter-page.css";
 import "@/styles/classic.css";
 import { preload } from "react-dom";
 import { RevealObserver } from "@/components/winter/classic";
 import { winterFontVariables } from "@/components/winter/fonts";
-import { Gap } from "@/components/winter/grid";
 import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
 import { FlyerSection } from "@/components/winter/page/FlyerSection";
 import { Footer } from "@/components/winter/page/Footer";
@@ -90,18 +88,11 @@ export default function Home() {
         {/* Classic sections (components/winter/classic): each draws its own hairline and padding. */}
         {SHOW_ARTIST_SELECT && <ArtistSelectSection />}
         <Lineup linkToSelect={SHOW_ARTIST_SELECT} />
-        {/* Grid sections, until phase 2 moves them to the classic kit: a gap band separates them. */}
-        <Gap />
         <Tickets />
-        <Gap />
         <Merch />
-        <Gap />
         <Faq />
-        <Gap />
         {LOCKERS.enabled && <Lockers />}
-        {LOCKERS.enabled && <Gap />}
         <GettingHere />
-        <Gap />
       </main>
       <Footer links={NAV_LINKS} />
       <RevealObserver />

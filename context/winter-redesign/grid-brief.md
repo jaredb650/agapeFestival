@@ -1,3 +1,5 @@
+> **Superseded (Nov 3 2026)** by [`classic-brief.md`](classic-brief.md). The hairline-grid look was replaced by the classic-refined system, and the grid kit (`styles/grid.css`, `components/winter/grid/`) is no longer imported anywhere. Kept for history; don't build from it.
+
 # Grid redesign: common brief (Nov 2026; supersedes red-hybrid styling)
 
 ## Why

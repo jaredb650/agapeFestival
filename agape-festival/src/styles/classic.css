@@ -11,10 +11,9 @@
    Components: src/components/winter/classic/ (Section, StageHeading,
    RevealObserver), the Button (ui/Button.tsx) restyled below.
 
-   Load order (page.tsx): winter.css → grid.css → winter-page.css → this
-   file → section stylesheets. The grid kit (grid.css, --g-*, --c-fg*,
-   --c-rule*, --t-display, --t-title) stays only until every section has been
-   moved over (phase 2); new code never uses it.
+   Load order (page.tsx): winter.css → winter-page.css → this file →
+   section stylesheets. The grid kit is retired (Nov 3): nothing imports
+   grid.css or components/winter/grid any more.
 
    The hero, the flyer layover and the preloader are frozen: nothing here
    may style them. Every rule is scoped to a classic class, and the Button

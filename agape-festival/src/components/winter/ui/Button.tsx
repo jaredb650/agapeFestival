@@ -16,7 +16,7 @@ interface BaseProps {
   size?: ButtonSize;
   /** Full width of its container (e.g. a cell). */
   block?: boolean;
-  /** Optional trailing icon (16px, currentColor), e.g. from components/winter/grid/icons. */
+  /** Optional trailing icon (16px, currentColor), e.g. from ui/icons. */
   icon?: ReactNode;
   className?: string;
 }

@@ -1,3 +1,5 @@
+> **Superseded (Nov 3 2026)** by [`classic-brief.md`](classic-brief.md). The hairline-grid look was replaced by the classic-refined system, and the grid kit (`styles/grid.css`, `components/winter/grid/`) is no longer imported anywhere. Kept for history; don't build from it.
+
 # Grid system (G0, Nov 2026): how to build a section
 
 Everything below the flyer is built from one system: **rows of hairline cells on a 12-column page grid**, one interface face, black/white/greys and a rare red. The lines ARE the layout. The footer (`page/Footer.tsx`) is the worked example; copy its patterns.

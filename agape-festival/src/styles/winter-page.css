@@ -1,8 +1,9 @@
 /* ==========================================================================
-   ÄGAPĒ WINTER — the home page frame (grid redesign).
+   ÄGAPĒ WINTER — the home page frame.
    Page root, skip link, the looping background (LoopBackground.tsx), the
    frozen hero + flyer region (.wposter) and the flyer stage. Sections build
-   from grid.css; each section's own styles live in styles/sections/*.css.
+   on the classic kit (classic.css); each section's own styles live in
+   styles/sections/*.css.
    ========================================================================== */
 
 .wpage { position: relative; isolation: isolate; min-height: 100vh; overflow-x: clip; }
@@ -14,7 +15,7 @@
 
 .wskip {
   position: fixed;
-  left: var(--g-margin);
+  left: var(--sec-x);
   top: -120px;
   z-index: var(--z-skip);
   padding: var(--s-3) var(--s-4);

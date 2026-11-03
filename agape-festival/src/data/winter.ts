@@ -571,8 +571,8 @@ export const FAQ: FaqItem[] = [
   },
   {
     id: "set-times",
-    q: "When are set times announced?",
-    a: "Set times haven't been announced yet. They'll be shared closer to the festival. Join the newsletter to get them first.",
+    q: "Will set times be announced?",
+    a: "Yes! Full set times will be released closer to the festival. Keep in mind that our headliners will be playing earlier, with the first headliner starting at 6:00 PM each day. We highly recommend arriving early.",
     needsConfirm: false,
   },
   {
@@ -591,6 +591,26 @@ export const FAQ: FaqItem[] = [
     needsConfirm: true,
     confirmNote:
       "TODO_CONFIRM: refund/transfer policy on DICE (Sept on Posh was 'non-refundable but transferable'; DICE handles transfers differently)",
+  },
+  {
+    id: "tiers",
+    q: "What is the difference between GA, VIP, and Backstage?",
+    a: "General Admission (GA): Access to the festival and all general admission areas.\n\nVIP: Includes festival admission and access to an exclusive VIP area with private bars and dedicated amenities for a more comfortable experience.\n\nBackstage: Includes festival admission and access to the backstage area with direct access to the stage.",
+    needsConfirm: false,
+  },
+  {
+    id: "payment-plan",
+    q: "Can I purchase tickets using a payment plan?",
+    a: "Yes! You can split your ticket purchase into 4 interest-free payments with Afterpay through DICE, subject to eligibility. Select Afterpay at checkout to view your available options.",
+    link: { label: "Get tickets on DICE", href: WINTER.tickets.url, external: true },
+    needsConfirm: false,
+  },
+  {
+    id: "upgrades",
+    q: "Can I upgrade my ticket to VIP or Backstage?",
+    a: "Ticket upgrades may be available depending on availability. Please contact our team for assistance before purchasing another ticket.",
+    link: { label: FESTIVAL.contactEmail, href: `mailto:${FESTIVAL.contactEmail}`, external: true },
+    needsConfirm: false,
   },
   {
     id: "age",
@@ -619,6 +639,12 @@ export const FAQ: FaqItem[] = [
     confirmNote: "TODO_CONFIRM: prohibited items unchanged from Sept (no pro cameras / outside drinks)? any bag policy? (age line depends on FAQ.age)",
   },
   {
+    id: "food",
+    q: "Will there be food and drinks available?",
+    a: "Yes! A selection of bars and food options will be available throughout the festival, so you can stay refreshed during the event.",
+    needsConfirm: false,
+  },
+  {
     id: "coat-check",
     q: "Is there a coat check?",
     a: "There will be no traditional coat check. Instead, lockers will be available to securely store your coats and personal belongings throughout the festival. We recommend reserving yours in advance to guarantee availability.",
@@ -627,8 +653,8 @@ export const FAQ: FaqItem[] = [
   },
   {
     id: "lockers",
-    q: "Will there be lockers?",
-    a: "Yes. Lockers will be available to securely store your coats and personal belongings throughout the festival. We recommend reserving yours in advance to guarantee availability.",
+    q: "Are lockers available at the festival?",
+    a: "Yes! Lockers will be available throughout the festival to safely store your coats and personal belongings. We strongly recommend reserving yours in advance, as availability is limited.",
     link: { label: "Reserve a locker", href: LOCKER_URL, external: true },
     needsConfirm: true,
     confirmNote:

@@ -843,7 +843,7 @@ export interface SectionDef {
  */
 export const SECTIONS: SectionDef[] = [
   { id: "hero", label: "TOP", href: "#hero", inNav: true, enabled: true },
-  { id: "flyer", label: "FLYER", href: "#flyer", inNav: false, enabled: true },
+  { id: "flyer", label: "FLYER", href: "#flyer", inNav: false, enabled: false }, // classic-notext: not mounted
   { id: "artists", label: "THE ROSTER", href: "#artists", inNav: true, enabled: SHOW_ARTIST_SELECT },
   { id: "lineup", label: "LINEUP", href: "#lineup", inNav: true, enabled: true },
   { id: "tickets", label: "TICKETS", href: "#tickets", inNav: true, enabled: true },

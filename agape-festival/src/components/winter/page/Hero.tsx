@@ -1,9 +1,12 @@
 import type { CSSProperties } from "react";
 import { Button } from "@/components/winter/ui";
-import { WINTER } from "@/data/winter";
+import { SHOW_ARTIST_SELECT, WINTER } from "@/data/winter";
 import { HERO, HERO_LOGO, HERO_PORTRAIT_QUERY } from "./media";
 import { Countdown, HeroExit, HeroFit, HeroLogo, HeroVideo, HeroVideoToggle } from "./HeroBits";
 import "@/styles/sections/hero.css";
+
+/** The section right below the hero (classic-notext: no flyer between them). */
+const NEXT = SHOW_ARTIST_SELECT ? { href: "#artists", label: "Scroll to the roster" } : { href: "#lineup", label: "Scroll to the lineup" };
 
 function Chevron() {
   return (
@@ -78,7 +81,7 @@ export function Hero() {
         </div>
       </div>
 
-      <a className="wh__next" href="#flyer" data-hero-meta aria-label="Scroll to the lineup">
+      <a className="wh__next" href={NEXT.href} data-hero-meta aria-label={NEXT.label}>
         <Chevron />
       </a>
       {HERO.video && (

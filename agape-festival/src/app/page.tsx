@@ -8,7 +8,6 @@ import { preload } from "react-dom";
 import { RevealObserver } from "@/components/winter/classic";
 import { winterFontVariables } from "@/components/winter/fonts";
 import { ArtistSelectSection } from "@/components/winter/page/ArtistSelectSection";
-import { FlyerSection } from "@/components/winter/page/FlyerSection";
 import { Footer } from "@/components/winter/page/Footer";
 import { GestureRescue } from "@/components/winter/page/GestureRescue";
 import { Hero } from "@/components/winter/page/Hero";
@@ -80,10 +79,10 @@ export default function Home() {
         socials={WINTER.socials.map(({ url, handle }) => ({ url, handle }))}
       />
       <main id="main" tabIndex={-1}>
-        {/* Frozen: the hero and the flyer layover, under their own scanlines (winter-page.css .wposter). */}
+        {/* Frozen: the hero, under its own scanlines (winter-page.css .wposter). classic-notext: no flyer
+            section, so the hero hands straight over to the first grid section. */}
         <div className="wposter">
           <Hero />
-          <FlyerSection />
           <div className="wposter__scan" aria-hidden="true" />
         </div>
         {/* Classic sections (components/winter/classic): each draws its own hairline and padding. */}

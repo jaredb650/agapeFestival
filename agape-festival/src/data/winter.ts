@@ -202,9 +202,9 @@ export const LINEUP: readonly [LineupDay, LineupDay] = [
 ];
 
 // ============================================================
-// ARTISTS (artist profiler). Filled from the press kits: Diossa's and Len Faki's kits have no bio, so theirs are
-// written from public sources (see DIOSSA_BIO / LEN_FAKI_BIO); Azzel 447 has no bio (his rider limits promotion to
-// press-kit material). Vendex's and Azzel 447's kits have no video.
+// ARTISTS (artist profiler). Filled from the press kits: Len Faki's kit has no bio, so his is written from public
+// sources (see LEN_FAKI_BIO); Diossa's bio is the client's own (DIOSSA_BIO); Azzel 447 has no bio (his rider limits
+// promotion to press-kit material). Vendex's and Azzel 447's kits have no video.
 // ============================================================
 
 export interface ArtistSocial {
@@ -401,24 +401,22 @@ const JOHANNES_SCHUSTER_BIO =
   "attention has also been given to his fantastic productions on his own label 7E6D and other prominent labels, " +
   "such as NineTimesNine, Soma, Green Fetish, Voxnox, and many more.";
 
+// Diossa: the client's own bio (Andres via WhatsApp, Nov 4, 2026), complete and word for word, its three
+// paragraphs run together like the kit bios above. Replaces the bio written from public sources on Nov 3.
+const DIOSSA_BIO =
+  "DIOSSA is a Colombian techno DJ and producer who has paved her way to becoming one of the most relevant " +
+  "exponents for techno in Latin America. Her sonic output is fast, driving, and deeply immersive. " +
+  "With roots in Colombia's underground, she has conquered most of the country's biggest stages such as Baum, " +
+  "Estereo Picnic, and EDC, and will soon participate in first edition of Awakenings Exo, taking place in Bogota " +
+  "in December. Now based in New York, she is a resident with Ägape Music, has performed at the Brooklyn " +
+  "Storehouse, H0l0, the first edition of Ägape Festival and has headlined all over the US. " +
+  "As a producer, her debut EP Oberon on Infrablack Records reached the Top 20 on Beatport's Hypnotic Techno " +
+  "chart, she then released an EP on Praxys Music, and is releasing in November with E-Hrzn Records. She is also " +
+  "in the process of launching her own imprint, Obsidia Records, as a platform for bold and rhythmically complex " +
+  "techno that’s meant to further her sonic identity.";
+
 // Bios written for the site (Nov 2026) because the kits have none. Fresh wording, only facts the sources below
 // support.
-
-// Diossa: no kit bio. Sources (accessed Nov 3, 2026):
-//   https://ra.co/dj/diossa/biography (Colombian-rooted, Miami debut 2020, opened for Layton Giordani)
-//   https://ra.co/dj/diossa/past-events (ÄGAPĒ at The Chocolate Factory, Signal, H0L0 and ÄGAPĒ Festival 2026;
-//     Kaputt Club and Radio Estrella Bogotá; BAUM Festival 2025; EDC Colombia 2026; ADE 2025 Sketch Club Train)
-//   https://ra.co/events/2398493 (Pulse PDX: "groove, hypnosis, and velocity"; NYC underground; ÄGAPĒ residency)
-//   https://ra.co/events/1600031 (OSW presents ORIGINS: Layton Giordani, Miami 2022)
-//   https://www.beatport.com/artist/diossa/1144413 (Colombian rooted, developed in Miami)
-//   https://hoer.live/artist/diossa/ (HÖR Bogotá Pop-up, Feb 2025; HÖR x Sennheiser Amsterdam Pop-up, Oct 2025)
-const DIOSSA_BIO =
-  "Diossa is a Colombian-rooted DJ who came up in Miami, making her debut there in 2020 and opening for the likes " +
-  "of Layton Giordani. Her sound sits where groove, hypnosis and speed meet, built for sets that keep the body " +
-  "moving. In New York she is a regular at ÄGAPĒ, from its parties at the Chocolate Factory, Signal and H0L0 to " +
-  "the ÄGAPĒ Festival in September 2026. Her calendar also runs through Bogotá, where she plays clubs like Kaputt " +
-  "Club and Radio Estrella and has appeared at BAUM Festival and EDC Colombia. She has recorded HÖR sets in Bogotá " +
-  "and Amsterdam, where she also played Amsterdam Dance Event in 2025.";
 
 // Len Faki: no kit bio (Diagonal "presskit" folder). Sources (accessed Nov 3, 2026):
 //   https://ra.co/dj/lenfaki/biography (Berghain resident since its 2004 opening, moved to Berlin 2003, Monoid and
@@ -472,12 +470,14 @@ const NAMED_ARTISTS: NamedArtist[] = [
     name: "Diossa",
     displayName: "DIOSSA",
     day: 1,
-    // Her press kit has photos only (no bio, clip or socials yet): the bio is written from public sources.
+    // Bio from the client (Nov 4); no socials yet.
     bio: DIOSSA_BIO,
     headshot: `${WINTER_ARTIST_DIR}/diossa/headshot-600.webp`,
     headshotLarge: `${WINTER_ARTIST_DIR}/diossa/headshot-1200.webp`,
-    clip: null,
-    clipPoster: null,
+    // Her at ÄGAPĒ NYC (her Drive "Videos" folder, "Agape NYC Kuko.MOV"): profile at the decks, then the room, then
+    // arms up to the crowd, 576x720.
+    clip: `${WINTER_ARTIST_DIR}/diossa/clip.mp4`,
+    clipPoster: `${WINTER_ARTIST_DIR}/diossa/clip-poster.webp`,
     // Press-kit portrait (_DSC3806, Sept 2025), squared from head to jacket: the tile closes in on her face and hand.
     focus: "52% 36%",
     zoom: 1.5,
